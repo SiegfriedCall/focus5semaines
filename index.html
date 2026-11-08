@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-512.png">
+<meta name="apple-mobile-web-app-title" content="Focus 5 semaines">
+<title>Focus 5 semaines</title>
+<style>
+:root{
+  --bg:#f1f5f9;--card:#fff;--ink:#243447;--mut:#62778d;--line:#dbe4ec;
+  --acc:#46729f;--acc-soft:#dce8f3;--acc-ink:#fff;--pill:#e7eef5;
+  --warn:#c0542a;--warn-soft:#fde3d6;--gold:#e1a73a;--ok:#2f8a5b;--ok-soft:#d8efe2;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua','Noto Serif',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Avenir Next','Segoe UI',Roboto,'Helvetica Neue',sans-serif}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111a24;--card:#182532;--ink:#e4ecf3;--mut:#93a8bc;--line:#263646;
+  --acc:#8db3d8;--acc-soft:#25405a;--acc-ink:#0d1a26;--pill:#1e2f40;
+  --warn:#f0916a;--warn-soft:#3b2519;--gold:#e8b957;--ok:#6fd0a0;--ok-soft:#1f3b2e;color-scheme:dark}}
+body.tools{
+  --bg:#1f2124;--card:#2a2d31;--ink:#eeeeea;--mut:#9a9fa6;--line:#3a3e43;
+  --acc:#9ad9bb;--acc-soft:#2d4a3e;--acc-ink:#12251c;--pill:#34383d;
+  --warn:#ffb347;--warn-soft:#3d3220;--gold:#ffb347;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);letter-spacing:.005em;
+  padding:8px max(14px,env(safe-area-inset-right,0px)) 48px max(14px,env(safe-area-inset-left,0px));transition:background .25s,color .25s}
+.app{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+input,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0}
+input[type=text],input[type=email],input[type=password]{width:100%;margin:0 0 10px}
+svg.i{width:1.2em;height:1.2em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
+.motto{font-family:var(--serif);font-style:italic;font-size:1.08rem;line-height:1.3;text-align:center;text-wrap:balance;padding:8px 8px 0}
+.appname{text-align:center;font-family:var(--serif);font-weight:700;font-size:1.5rem;margin:16px 0 4px}
+.bar{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tabs{display:grid;gap:6px;background:var(--pill);padding:5px;border-radius:16px;position:relative}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;border-radius:12px;padding:8px 2px;font-size:.76rem;font-weight:600;color:var(--mut);position:relative}
+.dfc{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start}.dfl{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:1.35rem;background:var(--pill);color:var(--mut)}.dfc.ok .dfl{background:var(--acc);color:var(--acc-ink)}.dfh{font-weight:700;margin-bottom:2px}.dfc p{margin:4px 0}.dfbar{height:10px;border-radius:99px;background:var(--pill);overflow:hidden}.dfbar i{display:block;height:100%;background:var(--acc);border-radius:99px}.dfdots{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.dfdots i{width:16px;height:16px;border-radius:50%;background:var(--pill)}.dfdots i.on{background:var(--acc)}
+.tab svg{width:1.4em;height:1.4em}
+.tab[aria-selected=true]{background:var(--card);color:var(--acc);box-shadow:0 1px 4px #0002}
+.dot{position:absolute;top:5px;right:calc(50% - 20px);width:9px;height:9px;border-radius:50%;background:var(--warn)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border-radius:20px;padding:16px;border:1px solid var(--line)}
+.h{font-family:var(--serif);font-size:1.15rem;margin:0 0 4px;font-weight:700}
+.mut{color:var(--mut);font-size:.88rem}.tiny{font-size:.74rem;color:var(--mut)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sp{justify-content:space-between}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 14px;font-weight:600;font-size:.9rem}
+.btn.p{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.btn.g{background:transparent;border-color:transparent;color:var(--mut);text-decoration:underline;padding:6px 4px}
+.btn.dg{color:var(--warn);border-color:var(--warn)}
+.btn.sm{padding:5px 10px;font-size:.8rem}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;border-radius:8px;padding:2px 8px;background:var(--pill);color:var(--mut)}
+.tag.ex{background:var(--warn-soft);color:var(--warn)}
+.big{font-family:var(--serif);font-size:2.7rem;line-height:1;font-variant-numeric:tabular-nums;color:var(--acc);font-weight:700}
+.pills{display:flex;gap:8px;margin:12px 0 0}
+.pill{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--pill);color:var(--mut)}
+.pill.d{background:var(--acc-soft);color:var(--acc)}
+.pill.n{background:var(--acc);color:var(--acc-ink);box-shadow:0 0 0 3px var(--acc-soft)}
+.pbar{height:8px;border-radius:99px;background:var(--pill);overflow:hidden;margin-top:12px}.pbar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 6px;font-weight:600;font-size:.84rem}
+.seg button[aria-pressed=true]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.seg.wrap{grid-auto-flow:row;grid-template-columns:repeat(2,1fr)}
+.crow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px;border-radius:16px;background:var(--pill)}
+.cic{width:38px;height:38px;border-radius:50%;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center}.cic svg{width:1.4em;height:1.4em}
+.ctx{display:flex;flex-direction:column;min-width:0}.ctx b{font-size:.9rem;line-height:1.2}.ctx span{font-size:.8rem}.ctx small{font-size:.7rem;color:var(--mut)}
+.cstep{display:flex;align-items:center;gap:4px}
+.cstep output{min-width:2ch;text-align:center;font-weight:700;font-size:1.1rem;font-variant-numeric:tabular-nums}
+.cstep button,.step button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:1.4rem;font-weight:700;line-height:1;display:grid;place-items:center;padding:0}
+.cstep .cp{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.cstep button:active,.step button:active{transform:scale(.92)}
+.step{display:flex;align-items:center;gap:12px}
+.step output{font-family:var(--serif);font-size:2rem;min-width:2ch;text-align:center;font-variant-numeric:tabular-nums}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.nav .btn{width:44px;padding:8px 0}
+.goal{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:6px 0}
+.gbar{height:8px;border-radius:99px;background:var(--pill);overflow:hidden}.gbar i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .25s}
+.gbar.full i{background:var(--ok)}
+.gst{display:flex;align-items:center;gap:6px}.gst button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-weight:700;padding:0}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+.cal .dw{font-size:.65rem;text-align:center;color:var(--mut)}
+.cal .dd{aspect-ratio:1;border-radius:9px;display:grid;place-items:center;font-size:.72rem;background:var(--pill);color:var(--mut)}
+.cal .dd.a{background:var(--acc);color:var(--acc-ink);font-weight:700}
+.cal .dd.m{background:var(--warn-soft);color:var(--warn);font-weight:700}
+.cal .dd.s{opacity:.45}
+.cal .dd.t{box-shadow:0 0 0 2px var(--acc);color:var(--ink);background:var(--card)}
+.leg{display:flex;flex-wrap:wrap;gap:12px;font-size:.72rem;color:var(--mut);margin-top:6px}.leg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+ol.rank,ul.rank{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rank li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--pill)}
+.rank li.me{background:var(--acc-soft);font-weight:700}
+.rank li.al{background:var(--warn-soft);color:var(--warn)}
+.rank .n{width:26px;height:26px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:.78rem;font-weight:700;flex:none;color:var(--ink)}
+.rank .pt{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{padding:7px 6px;text-align:center;border-top:1px solid var(--line);white-space:nowrap}
+td.rl,th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}
+td.tt,tr.pt td{font-weight:700}
+.hb{border:0;background:none;padding:2px 4px;color:var(--acc);font-size:.8rem;font-weight:700}
+.sum3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sum3 div{background:var(--pill);border-radius:14px;padding:10px;text-align:center}
+.sum3 b{display:block;font-size:1.2rem;font-variant-numeric:tabular-nums}.sum3 span{font-size:.7rem;color:var(--mut)}
+.warnbox{background:var(--warn-soft);border-radius:16px;padding:14px}
+.alertbar{background:var(--warn-soft);color:var(--warn);border-radius:14px;padding:10px 14px;font-weight:600}
+.gauge{position:relative;max-width:340px;margin:14px auto 0;padding:14px 12px 14px;border-radius:24px;background:radial-gradient(120% 90% at 50% 20%,#17283b,#09111a);box-shadow:inset 0 0 0 2px #3d546c,inset 0 0 26px rgba(0,0,0,.65),0 6px 18px rgba(8,18,30,.25);color:#eaf3fb}
+.gauge svg{width:100%;height:auto;display:block}.gauge .gtr{stroke:#1e3045}.gauge .gvol{stroke:#2f6db5;filter:drop-shadow(0 0 3px rgba(47,109,181,.8))}.gauge .genc{stroke:#a8d0f2;filter:drop-shadow(0 0 3px rgba(168,208,242,.6))}
+.gauge .gt{stroke:#6c849b;stroke-width:1}.gauge .gtm{stroke:#dfeaf5;stroke-width:2}.gauge .gl{fill:#c9d9e8;font-size:8px;font-weight:600}
+.gauge .gp{fill:#fff;font-size:21px;font-weight:800}.gauge .gs{fill:#93a8bc;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase}
+.gauge .needle{transition:transform 1.2s cubic-bezier(.2,.9,.25,1.05)}.gauge .needle polygon{fill:#ff6b57;filter:drop-shadow(0 0 2px rgba(255,107,87,.8))}.gauge .needle circle{fill:#d5e1ec}.gauge .needle .hub{fill:#0d1722}
+.gnone{position:absolute;left:0;right:0;top:25%;text-align:center;font-size:.78rem;color:#93a8bc;padding:0 34px}
+.odo{margin-top:10px}.olb{display:flex;align-items:center;gap:7px;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:#93a8bc;margin-bottom:5px}.olb i{width:10px;height:10px;border-radius:50%;display:inline-block}.ov .olb i{background:#2f6db5;box-shadow:0 0 6px #2f6db5}.oe .olb i{background:#a8d0f2;box-shadow:0 0 6px #a8d0f2}
+.odr{display:flex;align-items:center;gap:3px}.odr b{min-width:0;flex:1;max-width:30px;height:38px;display:grid;place-items:center;border-radius:6px;background:linear-gradient(#000,#1b2735 48%,#05090e 52%,#0c141d);border:1px solid #2b3d52;color:#f2f8fd;font:700 1.25rem/1 ui-monospace,Menlo,Consolas,monospace}.oe .odr b{color:#bfe0fa}
+.odu{margin-left:6px;font-weight:700;color:#93a8bc}
+.ring{position:relative;width:96px;height:96px;flex:none}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:700}
+.ring circle.bg{fill:none;stroke:var(--pill);stroke-width:11}.ring circle.fg{fill:none;stroke:var(--acc);stroke-width:11;stroke-linecap:round;stroke-dasharray:263.9}
+/* Outils */
+.tool-list{display:grid;gap:10px}
+.tool-item{display:flex;align-items:center;gap:12px;text-align:left;width:100%;border:1px solid var(--line);background:var(--card);border-radius:18px;padding:14px}
+.tool-item .ic{width:46px;height:46px;border-radius:14px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;flex:none}.tool-item .ic svg{width:1.5em;height:1.5em}
+.tool-item small{display:block;color:var(--mut)}
+.fld{display:grid;gap:4px;padding:10px 0;border-top:1px solid var(--line)}.fld:first-child{border-top:0}
+.fld .lb{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.85rem;color:var(--mut)}
+.fld .lb input{width:116px;text-align:right}
+.fld.out .lb{color:var(--acc);font-weight:700}.fld.out input{background:var(--acc-soft);border-color:var(--acc);color:var(--acc);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--acc);padding:0}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.res .b{background:var(--pill);border-radius:14px;padding:10px 12px}.res .b.main{grid-column:1/-1;background:var(--acc-soft)}
+.res b{display:block;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.res .main b{font-family:var(--serif);font-size:2rem;color:var(--acc)}.res span{font-size:.72rem;color:var(--mut)}
+.adv summary{cursor:pointer;font-weight:600;color:var(--mut);list-style:none;display:flex;align-items:center;gap:6px}.adv summary::-webkit-details-marker{display:none}
+.back{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--acc);font-weight:600;padding:4px 0}
+#chart{width:100%;height:auto;display:block}
+/* fenêtres */
+.modal{position:fixed;inset:0;background:rgba(10,15,25,.72);display:flex;align-items:center;justify-content:center;padding:18px;z-index:30}
+.mbox{background:var(--card);color:var(--ink);border-radius:22px;padding:24px 20px;max-width:440px;width:100%;max-height:90vh;overflow:auto;border:2px solid var(--acc);text-align:center}
+.mbox .bd{font-size:3.6rem;line-height:1}.mbox h2{font-family:var(--serif);font-size:1.4rem;margin:8px 0 12px}
+.mbox p{margin:0 0 10px}.mbox .mut{font-size:.85rem}.mbox .fl{text-align:left;display:grid;gap:8px;margin:10px 0}
+.mbox .fl label{font-size:.8rem;color:var(--mut)}.mbox .fl input{width:100%}
+.mbtn{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.85rem;max-width:min(92vw,420px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="appname" id="appname">Focus 5 semaines</div>
+
+<section class="card" id="auth">
+<input type="email" id="em" placeholder="E-mail" autocomplete="email">
+<input type="password" id="pw" placeholder="Mot de passe (8 caractères minimum)" autocomplete="current-password">
+<input type="text" id="nm" placeholder="Prénom et initiale du nom (inscription uniquement)">
+<input type="text" id="cd" placeholder="Code d’invitation (inscription uniquement)">
+<div class="row"><button class="btn p" id="login">Se connecter</button><button class="btn" id="signup">Créer mon compte</button></div>
+<p class="mut" id="msg" role="status"></p>
+</section>
+
+<div id="app" class="stack" hidden>
+<div class="motto" id="motto"></div>
+<div class="bar"><b id="who"></b><button class="btn sm" id="out">Quitter</button></div>
+<nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+ <button class="tab" role="tab" data-tab="focus" aria-selected="true"><svg class="i"><use href="#target"/></svg>Focus</button>
+ <button class="tab" role="tab" data-tab="exo" aria-selected="false"><svg class="i"><use href="#cal"/></svg>Mon exercice</button>
+ <button class="tab" role="tab" data-tab="outils" aria-selected="false"><svg class="i"><use href="#tools"/></svg>Outils</button>
+ <button class="tab" role="tab" data-tab="defis" aria-selected="false" id="tabDefis" hidden><svg class="i"><use href="#flag"/></svg>5 DÉFIS<span class="dot" id="defiDot" hidden></span></button>
+ <button class="tab" role="tab" data-tab="run" aria-selected="false" id="tabRun" hidden><svg class="i"><use href="#flag"/></svg>90j</button>
+ <button class="tab" role="tab" data-tab="team" aria-selected="false" id="tabTeam" hidden><svg class="i"><use href="#users"/></svg>Équipe<span class="dot" id="teamDot" hidden></span></button>
+</nav>
+
+<!-- FOCUS -->
+<section id="focus" class="stack">
+ <div class="card" id="ro" hidden><div class="row sp"><span class="mut" id="roTxt"></span><button class="btn sm" id="roBack">Revenir à mon Focus</button></div></div>
+ <div class="card" id="hero"></div>
+ <div class="card" id="goalCard" hidden></div>
+ <div class="seg" id="modes"><button id="m-day">Jour</button><button id="m-week">Semaine</button><button id="m-all">Focus</button></div>
+ <div class="card" id="view"></div>
+ <div class="card" id="streak"></div>
+ <div class="card" id="agendaF"></div>
+ <button class="btn sm" id="defiBack" hidden>Découvrir le challenge des 5 DÉFIS</button>
+ <div class="card" id="topCard"><h2 class="h">Top 5 des consultants</h2><ul class="rank" id="top"></ul>
+  <div id="progBox" hidden><div class="mut" style="margin-top:14px">Meilleure progression de la semaine</div><ul class="rank" id="prog"></ul></div></div>
+</section>
+
+<!-- MON EXERCICE -->
+<section id="exo" class="stack" hidden></section>
+<section id="run" class="stack" hidden></section>
+
+<!-- OUTILS -->
+<section id="outils" class="stack" hidden>
+ <div id="toolList" class="stack">
+  <div class="mut">Choisis un outil</div>
+  <div class="tool-list">
+   <button class="tool-item" data-tool="tEpargne"><span class="ic"><svg class="i"><use href="#piggy"/></svg></span><span><b>Calculatrice d’épargne</b><small>Capital, épargne, rendement ou durée</small></span></button>
+   <button class="tool-item" data-tool="tCredit"><span class="ic"><svg class="i"><use href="#home"/></svg></span><span><b>Mensualités de crédit</b><small>Mensualité, assurance, coût total</small></span></button>
+   <button class="tool-item" data-tool="tPlan"><span class="ic"><svg class="i"><use href="#target"/></svg></span><span><b>Planificateur d’objectif</b><small>Combien de R1 pour atteindre ton chiffre</small></span></button>
+   <button class="tool-item" data-tool="tRet"><span class="ic"><svg class="i"><use href="#ret"/></svg></span><span><b>Capital pour la retraite</b><small>Capital à constituer et épargne mensuelle</small></span></button>
+   <button class="tool-item" data-tool="tCap"><span class="ic"><svg class="i"><use href="#chart"/></svg></span><span><b>Capacité d’emprunt</b><small>Taux d’endettement et montant empruntable</small></span></button>
+  </div>
+ </div>
+ <div id="tEpargne" class="stack" hidden>
+  <button class="back" data-back><svg class="i"><use href="#back"/></svg>Outils</button>
+  <div class="card"><h3 class="h">Calculatrice d’épargne</h3>
+   <div class="seg wrap" id="modeSeg" role="group" aria-label="Valeur à calculer"></div>
+   <div id="fields" style="margin-top:8px"></div>
+   <details class="adv" style="margin-top:6px"><summary><svg class="i"><use href="#chev"/></svg>Paramètres avancés</summary><div id="advF" style="margin-top:6px"></div></details>
+  </div>
+  <div class="res" id="res"></div>
+  <div class="card"><div class="row sp"><b>Projection</b><span class="tag" id="chartTag"></span></div>
+   <svg id="chart" viewBox="0 0 320 190" role="img" aria-label="Évolution du capital"></svg><div class="leg" id="chartLeg"></div></div>
+  <div class="card"><div class="row sp"><div><b>Coût de l’attente</b><div class="mut" id="waitTxt"></div></div>
+   <div class="step"><button id="wM" aria-label="Moins">−</button><output id="wV" style="font-size:1.3rem">1</output><button id="wP" aria-label="Plus">+</button></div></div>
+   <div class="row" style="margin-top:8px"><button class="btn" id="waitBtn">Afficher</button><button class="btn" id="cmpBtn">Comparer 2 scénarios</button><button class="btn" id="shE">Partager le résultat</button></div>
+   <div id="cmpBox" hidden style="margin-top:8px"></div></div>
+  <div class="tiny">Simulation indicative et non contractuelle. Les performances passées ne préjugent pas des performances futures.</div>
+ </div>
+ <div id="tCredit" class="stack" hidden>
+  <button class="back" data-back><svg class="i"><use href="#back"/></svg>Outils</button>
+  <div class="card"><h3 class="h">Mensualités de crédit</h3><div id="cFields"></div>
+   <div class="seg" style="grid-template-columns:repeat(5,1fr);grid-auto-flow:row;margin-top:6px" id="cDur"></div>
+   <div class="tiny" style="margin-top:6px" id="cRatesInfo"></div></div>
+  <div class="res" id="cRes"></div>
+  <div class="card row"><button class="btn p" id="dlAmort">Télécharger le tableau d’amortissement</button><button class="btn" id="shC">Partager le résultat</button></div>
+  <div class="tiny">Simulation indicative et non contractuelle. Assurance calculée sur le capital emprunté.</div>
+ </div>
+ <div id="tPlan" class="stack" hidden>
+  <button class="back" data-back><svg class="i"><use href="#back"/></svg>Outils</button>
+  <div class="card"><h3 class="h">Planificateur d’objectif</h3><div class="mut">Volume d’affaires = nombre de R1 × taux de transformation × panier moyen</div><div id="pFields" style="margin-top:8px"></div></div>
+  <div class="res" id="pRes"></div>
+  <div class="tiny">Estimation indicative, selon les chiffres que tu renseignes.</div>
+ </div>
+ <div id="tRet" class="stack" hidden>
+  <button class="back" data-back><svg class="i"><use href="#back"/></svg>Outils</button>
+  <div class="card"><h3 class="h">Capital pour la retraite</h3><div id="rFields"></div></div>
+  <div class="res" id="rRes"></div>
+  <div class="row"><button class="btn" id="shR">Partager le résultat</button></div>
+  <div class="tiny">Simulation indicative et non contractuelle, hors inflation, fiscalité et frais. Les performances passées ne préjugent pas des performances futures.</div>
+ </div>
+ <div id="tCap" class="stack" hidden>
+  <button class="back" data-back><svg class="i"><use href="#back"/></svg>Outils</button>
+  <div class="card"><h3 class="h">Capacité d’emprunt</h3><div id="kFields"></div></div>
+  <div class="res" id="kRes"></div>
+  <div class="row"><button class="btn" id="shK">Partager le résultat</button></div>
+  <div class="tiny">Simulation indicative et non contractuelle. Le plafond d’endettement de 35 % est un repère, pas une garantie d’accord bancaire.</div>
+ </div>
+</section>
+
+<!-- ÉQUIPE -->
+<section id="defis" class="stack" hidden></section>
+<section id="team" class="stack" hidden></section>
+</div>
+</div>
+
+<div class="modal" id="md" hidden role="dialog" aria-modal="true" aria-labelledby="mdt">
+ <div class="mbox"><div class="bd" id="mdb"></div><h2 id="mdt"></h2><div id="mdx"></div><div class="mbtn" id="mdbt"></div></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+ <symbol id="cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></symbol>
+ <symbol id="tools" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M8.5 7.5h7M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01"/></symbol>
+ <symbol id="chat" viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V16A2.5 2.5 0 0 1 4 13.5z"/></symbol>
+ <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3.2 2.7-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="8" r="2.4"/><path d="M16 13.2c2.4-.3 4.1 1 4.7 4"/></symbol>
+ <symbol id="doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M9 12h6M9 15.5h6"/></symbol>
+ <symbol id="star" viewBox="0 0 24 24"><path d="m12 3.8 2.5 5.1 5.6.8-4 4 1 5.6L12 16.6 6.9 19.3l1-5.6-4-4 5.6-.8z"/></symbol>
+ <symbol id="handshake" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3.3 2.6-5 5.5-5 1.1 0 2.1.3 2.9.9"/><path d="m14 16.5 2.2 2.2 4.3-4.6"/></symbol>
+ <symbol id="brief" viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2.5"/><path d="M9 7.5V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v1.5M3.5 13h17"/></symbol>
+ <symbol id="flag" viewBox="0 0 24 24"><path d="M6 20.5V4M6 5h11l-2 4 2 4H6"/></symbol>
+ <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+ <symbol id="back" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></symbol>
+ <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+ <symbol id="home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8.5a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></symbol>
+ <symbol id="chart" viewBox="0 0 24 24"><path d="M4 19.5h16M6.5 16v-4M11 16V8M15.5 16v-6M20 16V5"/></symbol>
+ <symbol id="piggy" viewBox="0 0 24 24"><path d="M5 11.5C5 8.5 8 6.5 12 6.5s7 2 7 5c0 1.8-.9 3.2-2.3 4.1V19h-3v-1.5h-3.4V19h-3v-3.1C6.2 15 5 13.4 5 11.5z"/><path d="M19 10.5h1.5M9.5 10h.01"/></symbol>
+ <symbol id="ret" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.5V12l3.5 2"/></symbol>
+</svg>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ====== À MODIFIER ====== */
+var SB_URL='https://edmxxdtxjrvjwrepuxbm.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbXh4ZHR4anJ2andyZXB1eGJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMTg3NzMsImV4cCI6MjEwODY5NDc3M30.Z0e6sjg3jZTXjUKnw34z-07k7xMJqKUlXqIlMzDoct0';
+/* ======================== */
+
+/* Barème : le calcul du classement est dans la base (fonction pts). Garder les deux identiques. */
+/* [clé, code, nom, description, points, icône] */
+var C=[['c1','C1','Conversations','SMS et appels passés',5,'chat'],['c2','C2','Invitations','Invitations envoyées',10,'users'],
+['c3','C3','Propositions','Présentations R0 ou solutions proposées',15,'doc'],['c6','C6','Relances','Relances et suivi',15,'star'],
+['r1','R1','Rendez-vous R1','Premiers rendez-vous réalisés',50,'handshake'],['r2','R2','Rendez-vous R2','Deuxièmes rendez-vous réalisés',75,'brief'],
+['r3','R3','Mise en place','Dossiers mis en place (R3)',100,'flag']];
+/* Objectifs de l'exercice : volume d'affaires depuis le début de l'exercice. Un seul endroit à modifier. */
+var OBJ=[['Pas d’objectif – Dommage',0],['Senior',500000],['Major',1000000],['Expert',1500000],['Double Expert',3000000],['Triple Expert',4500000]];
+var PALIERS=[3,7,14,21,28,35];
+var MOTTOS=['Ton avenir se construit avec tes actions d’aujourd’hui','Une conversation de plus aujourd’hui, c’est un rendez-vous de plus demain',
+'Chaque action compte, surtout les petites que tu répètes','Ce que tu fais aujourd’hui décide de ta semaine','Passe à l’action massivement AUJOURD’HUI, les résultats suivront demain',
+'La régularité bat l’intensité, jour après jour','Tu n’as pas besoin d’être parfait, tu as besoin de commencer','Un appel de plus, un client de plus',
+'Ta meilleure vie se prépare dès ce matin','Fais aujourd’hui ce que les autres remettent à demain','Chaque rendez-vous est une chance de changer une vie, la tienne aussi',
+'L’élan vient de l’action, pas l’inverse','Aujourd’hui est le bon jour pour avancer','Sois fier de ce que tu fais, pas seulement de ce que tu obtiens',
+'Les grands résultats naissent de petites actions quotidiennes','Ton objectif t’attend de l’autre côté de l’action','Commence là où tu es, avec ce que tu as',
+'Un jour actif de plus, une série qui grandit','Ose proposer, tu seras surpris de la réponse','La discipline d’aujourd’hui est la liberté de demain',
+'Tes clients ont besoin que tu agisses','Fais le premier pas, le deuxième sera plus facile','Plus tu relances, plus tu construis la confiance',
+'Chaque non te rapproche d’un oui','Ton énergie d’aujourd’hui est l’investissement de ton avenir','Vise juste, agis souvent, ajuste vite',
+'La constance transforme les efforts en résultats','Tu es à une conversation de ta prochaine belle opportunité','Avance un peu chaque jour, tu iras loin',
+'Fais-en assez aujourd’hui pour te remercier demain'];
+
+/* Messages de fin de semaine pour les 3 premiers (semaine 1 à 5, par place) */
+var TOP={
+1:['Tu prends la tête dès la première semaine, et toute l’équipe regarde ta place. Garde ce rythme : la semaine 2 décide qui s’installe au sommet.',
+   'Deux semaines, et tu es toujours devant. Ce n’est plus un hasard, c’est une méthode. Cette semaine, on creuse l’écart.',
+   'Mi-parcours : c’est toi qui mènes la danse. Les autres te collent, et c’est ce qui donne de la valeur à ta place. Ne lâche rien, accélère.',
+   'Plus qu’une semaine après celle-ci. La première place se défend chaque jour. Montre à l’équipe ce que c’est de finir en patron.',
+   'Tu termines au sommet du focus. Bravo : cinq semaines de constance, et personne n’a pu te rattraper. Garde cette énergie pour la suite.'],
+2:['Deuxième place dès la première semaine : tu es à un souffle du sommet. Une grosse semaine suffit pour basculer. Vise la première place.',
+   'Toujours sur le podium, juste derrière le leader, et il sent ton souffle. Accélère : cette place-là est à prendre.',
+   'À mi-parcours, tu es dans le coup pour la victoire. Chaque action de plus compte. Passe la seconde.',
+   'Le podium est à toi, et la première place aussi est à portée. Une semaine très forte et tout peut changer.',
+   'Une superbe deuxième place sur ce focus. Tu as prouvé que tu joues dans la cour des grands. Au prochain, vise le sommet.'],
+3:['Tu es sur le podium dès la semaine 1. Bien joué. Mais derrière, ça pousse : continue à pousser aussi.',
+   'Troisième place conservée. Tu as la régularité, il te faut maintenant le petit supplément pour grimper.',
+   'Mi-parcours, et tu es toujours dans les trois meilleurs. Garde un œil sur ceux qui te suivent, et monte d’un cran.',
+   'Le podium se joue à peu de chose. Ne te contente pas de défendre ta place : va chercher celle du dessus.',
+   'Une place sur le podium au bout de cinq semaines : bravo, tu as tenu. Au prochain focus, vise plus haut.']
+};
+var CLOSE=['La semaine 2 est ouverte : une bonne série d’actions dès lundi et tu changes de décor.',
+ 'Tout se joue à la régularité. Quelques actions de plus chaque jour, et l’écart fond.',
+ 'Mi-parcours : il reste encore largement le temps de monter. Garde le cap.',
+ 'Plus qu’une semaine après celle-ci. Mets le paquet, le classement peut encore bouger.',
+ 'Le focus est terminé, bravo d’avoir tenu cinq semaines. Garde ce rythme pour le suivant.'];
+
+var sb=supabase.createClient(SB_URL,SB_KEY),$=function(i){return document.getElementById(i)};
+var me,tg,start,ratesDate,prefs={},data={},mine={},mode='day',day,wk=0,q=Promise.resolve(),timer,TODAY;
+var agenda=[],exoW={},vaHist=[],goals={c1:0,c2:0,c3:0,skipped:false},exi=null,curTab='focus',exoReady=false;
+
+/* ===== Utilitaires ===== */
+function pad(n){return String(n).padStart(2,'0')}
+function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function add(s,n){var d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d)}
+function span(a,n){var o=[];for(var i=0;i<n;i++)o.push(add(a,i));return o}
+function dow(d){return new Date(d+'T00:00:00').getDay()}
+function mondayOf(d){return add(d,-((dow(d)+6)%7))}
+function isoWeek(d){var t=new Date(d+'T00:00:00');t.setDate(t.getDate()+3-((t.getDay()+6)%7));var w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7)}
+function z(){var o={};C.forEach(function(c){o[c[0]]=0});return o}
+function pts(r){return C.reduce(function(a,c){return a+(r[c[0]]||0)*c[4]},0)}
+function fmt(n){return Number(n).toLocaleString('fr-FR')}
+function eur(n){return Math.round(n).toLocaleString('fr-FR')+' €'}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function sum(days,src){src=src||data;var o=z();days.forEach(function(d){var r=src[d];if(r)C.forEach(function(c){o[c[0]]+=r[c[0]]||0})});return o}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
+function ico(id){return '<svg class="i"><use href="#'+id+'"/></svg>'}
+function lastDay(){return add(start,34)}
+function inFocus(d){return d>=start&&d<=lastDay()}
+function capd(d){var m=TODAY<lastDay()?TODAY:lastDay();return d<start?start:d>m?m:d}
+function long(d){return new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}
+function dm(d){return new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}
+function exoRange(){var y=+TODAY.slice(0,4);if(TODAY<y+'-08-01')y--;return{s:y+'-08-01',e:(y+1)+'-07-31'}}
+function toast(t){var e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){e.classList.remove('on')},2800)}
+function err(e,msg){if(e&&e.error){toast((msg||'Enregistrement impossible')+' : '+e.error.message);return true}return false}
+function queue(fn){q=q.then(fn).catch(function(){})}
+
+/* Fenêtre générique : renvoie la valeur du bouton cliqué */
+function ask(o){return new Promise(function(res){
+ $('mdb').textContent=o.badge||'';$('mdt').textContent=o.title;
+ var x=$('mdx');x.innerHTML='';(o.paras||[]).forEach(function(t){x.appendChild(el('p',t&&t.length<60&&o.small?'mut':0,t))});
+ if(o.node)x.appendChild(o.node);
+ var bs=$('mdbt');bs.innerHTML='';
+ o.buttons.forEach(function(b){var e=el('button','btn '+(b.cls||''),b.t);e.onclick=function(){$('md').hidden=true;res(b.v)};bs.appendChild(e)});
+ $('md').hidden=false;var f=bs.querySelector('.p')||bs.firstChild;if(f)f.focus();
+})}
+
+/* ===== Connexion ===== */
+function showAuth(){$('auth').hidden=false;$('app').hidden=true;$('motto').textContent=''}
+async function boot(){
+ TODAY=iso(new Date());
+ var s=(await sb.auth.getSession()).data.session;
+ if(!s){showAuth();return}
+ var p=await sb.from('profiles').select('id,name,role').eq('id',s.user.id).single(),st=await sb.from('settings').select('start_date,rates_date').single();
+ if(p.error||st.error){await sb.auth.signOut();showAuth();$('msg').textContent='Profil introuvable. Réessaie.';return}
+ me=p.data;start=st.data.start_date;ratesDate=st.data.rates_date;
+ await loadPrefs();
+ $('auth').hidden=true;$('app').hidden=false;$('appname').hidden=true;
+ var n=Math.floor((Date.parse(TODAY)-Date.parse('2026-01-01'))/864e5);$('motto').textContent=MOTTOS[((n%MOTTOS.length)+MOTTOS.length)%MOTTOS.length];
+ $('who').textContent=me.name;
+ await loadDefis();setupTabs();
+ await sb.rpc('r1_sync');
+ await openP(me);
+ loadAgenda();loadRates();if(me.role==='admin')alertDot();
+ clearInterval(timer);timer=setInterval(loadTop,15000);
+ await routines();
+}
+async function routines(){
+ if(prefs.seen_focus!==start&&TODAY<=lastDay())await focusIntro(true);
+ await congrats();
+ await askTodayR1();
+ await vaPrompt();
+ if(me.role!=='admin'&&((!dst&&!prefs.defi_no)||(defiRecent()&&!dst.choice)))await defiQuestion();
+}
+async function loadPrefs(){
+ var r=await sb.from('prefs').select('*').eq('user_id',me.id).maybeSingle();prefs=r.data||{user_id:me.id};
+}
+function savePrefs(patch){Object.assign(prefs,patch);prefs.user_id=me.id;var row=Object.assign({},prefs);
+ return sb.from('prefs').upsert(row,{onConflict:'user_id'}).then(function(e){err(e,'Préférence non enregistrée')})}
+async function loadCounts(uid){var r=await sb.from('counts').select('*').eq('user_id',uid),o={};(r.data||[]).forEach(function(x){o[x.day]=x});return o}
+async function openP(p){
+ tg=p;data=await loadCounts(p.id);if(p.id===me.id)mine=data;
+ day=capd(TODAY);wk=Math.max(0,Math.min(4,Math.floor((Date.parse(day)-Date.parse(start))/864e5/7)));
+ if(p.id===me.id)await loadGoals();
+ showTab('focus');renderFocus();loadTop();
+}
+async function reloadMine(){mine=await loadCounts(me.id);if(tg&&tg.id===me.id)data=mine}
+
+/* ===== Onglets ===== */
+function setupTabs(){var isA=me.role==='admin',sd=!isA&&defiEligible();$('tabTeam').hidden=!isA;$('tabRun').hidden=!isA;$('tabDefis').hidden=!sd;$('defiDot').hidden=true;$('defiBack').hidden=isA||!((prefs.defi_no&&!dst)||(defiRecent()&&dst.choice==='no'));
+ $('tabs').style.gridTemplateColumns='repeat('+(3+(isA?2:0)+(sd?1:0))+',1fr)'}
+function showTab(t){
+ curTab=t;
+ $$('.tab').forEach(function(b){b.setAttribute('aria-selected',b.dataset.tab===t)});
+ ['focus','exo','outils','defis','team','run'].forEach(function(id){$(id).hidden=id!==t});
+ document.body.classList.toggle('tools',t==='outils');
+ window.scrollTo({top:0});
+ if(t==='exo')exoOpen();
+ if(t==='team')renderTeam();
+ if(t==='defis')renderDefis();
+ if(t==='run')renderRun();
+ if(t==='focus'&&tg&&me&&tg.id===me.id&&typeof renderFocus==='function')renderFocus();
+}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+$$('.tab').forEach(function(b){b.onclick=function(){if(b.dataset.tab==='focus'&&tg&&tg.id!==me.id){openP(me);return}showTab(b.dataset.tab)}});
+
+/* ===== FOCUS ===== */
+function renderFocus(){
+ var own=tg.id===me.id;
+ $('ro').hidden=own;if(!own)$('roTxt').textContent='Suivi de '+tg.name+' (lecture seule).';
+ heroR();goalR();viewR();streakR();renderAgendas();
+ ['m-day','m-week','m-all'].forEach(function(id){$(id).setAttribute('aria-pressed',id==='m-'+mode)});
+}
+$('roBack').onclick=function(){openP(me)};
+function heroR(){
+ var h=$('hero');h.innerHTML='';
+ var i=Math.round((Date.parse(TODAY)-Date.parse(start))/864e5)+1,over=i>35,before=i<1,w=before?0:Math.min(5,Math.ceil(i/7)),left=35-i;
+ var top=el('div','row sp'),l=el('div');
+ l.appendChild(el('div','mut',before?'Départ dans '+(1-i)+(1-i>1?' jours':' jour'):over?'Focus terminé 🎉':'Semaine '+w+' sur 5'));
+ l.appendChild(el('div','big',fmt(pts(sum(span(start,35))))));
+ l.appendChild(el('div','mut','points depuis le début du focus'));
+ var ib=el('button','btn');ib.innerHTML=ico('info');ib.setAttribute('aria-label','Comprendre le Focus 5 semaines');ib.onclick=function(){focusIntro(false)};
+ top.appendChild(l);top.appendChild(ib);h.appendChild(top);
+ var pl=el('div','pills');pl.setAttribute('aria-label','Avancement des 5 semaines');
+ for(var k=1;k<=5;k++)pl.appendChild(el('span','pill'+(over||(!before&&k<w)?' d':(!before&&k===w?' n':'')),k));
+ h.appendChild(pl);
+ var bar=el('div','pbar'),f=el('i');f.style.width=(Math.max(0,Math.min(i,35))/35*100)+'%';bar.appendChild(f);h.appendChild(bar);
+ h.appendChild(el('div','mut',before?'Le focus commence le '+long(start):over?'Bravo pour ces 5 semaines.':'Jour '+i+' sur 35, il reste '+left+(left>1?' jours':' jour')));
+ h.lastChild.style.marginTop='8px';
+}
+/* Objectif du jour (C1, C2, C3), facultatif, pas le dimanche */
+async function loadGoals(){
+ var r=await sb.from('day_goals').select('*').eq('user_id',me.id).eq('day',TODAY).maybeSingle();
+ goals=r.data||{c1:0,c2:0,c3:0,skipped:false};
+}
+function saveGoals(){var row={user_id:me.id,day:TODAY,c1:goals.c1,c2:goals.c2,c3:goals.c3,skipped:!!goals.skipped};
+ queue(function(){return sb.from('day_goals').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e,'Objectif non enregistré')})})}
+function goalR(){
+ var g=$('goalCard'),own=tg.id===me.id;
+ g.hidden=!(own&&inFocus(TODAY)&&dow(TODAY)!==0&&!goals.skipped);if(g.hidden)return;
+ g.innerHTML='';g.appendChild(el('h2','h','Ton objectif du jour'));
+ g.appendChild(el('div','mut','Se fixer un objectif te donne beaucoup plus de chances de passer à l’action. C’est facultatif.'));
+ ['c1','c2','c3'].forEach(function(k){
+  var c=C.filter(function(x){return x[0]===k})[0],n=(mine[TODAY]||{})[k]||0,t=goals[k]||0;
+  var row=el('div','goal'),lab=el('div');lab.innerHTML='<b>'+c[1]+'</b> <span class="mut">'+esc(c[2])+'</span>';
+  var mid=el('div'),bar=el('div','gbar'+(t&&n>=t?' full':'')),f=el('i');f.style.width=t?Math.min(100,n/t*100)+'%':'0%';bar.appendChild(f);
+  mid.appendChild(bar);mid.appendChild(el('div','tiny',t?n+' / '+t:'Pas d’objectif'));
+  var st=el('div','gst'),m=el('button',0,'−'),p=el('button',0,'+');
+  m.setAttribute('aria-label','Baisser l’objectif '+c[1]);p.setAttribute('aria-label','Monter l’objectif '+c[1]);
+  m.disabled=!t;
+  m.onclick=function(){goals[k]=Math.max(0,t-1);saveGoals();goalR()};p.onclick=function(){goals[k]=t+1;saveGoals();goalR()};
+  st.appendChild(m);st.appendChild(el('b',0,t||'–'));st.appendChild(p);
+  var wrap=el('div','goal');wrap.style.gridTemplateColumns='86px 1fr auto';wrap.appendChild(lab);wrap.appendChild(mid);wrap.appendChild(st);g.appendChild(wrap)});
+ var sk=el('button','btn g','Passer aujourd’hui');sk.onclick=function(){goals.skipped=true;saveGoals();goalR();toast('Objectif passé pour aujourd’hui')};g.appendChild(sk);
+}
+function viewR(){
+ var b=$('view'),own=tg.id===me.id;b.innerHTML='';
+ if(TODAY<start)b.appendChild(el('p','mut','Le focus commence le '+long(start)+'.'));
+ if(mode==='day')vDay(b,own);
+ else if(mode==='week')vTab(b,span(add(start,wk*7),7).map(function(d){return{h:new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}),days:[d],go:function(){day=d;mode='day';renderFocus()}}}),navBar(function(){wk=Math.max(0,wk-1);renderFocus()},'Semaine '+(wk+1)+' sur 5',function(){wk=Math.min(4,wk+1);renderFocus()}));
+ else vTab(b,[0,1,2,3,4].map(function(i){return{h:'Sem. '+(i+1),days:span(add(start,i*7),7),go:function(){wk=i;mode='week';renderFocus()}}}));
+}
+function navBar(left,label,right){
+ var n=el('div','nav'),l=el('button','btn','◀'),r=el('button','btn','▶');l.onclick=left;r.onclick=right;
+ l.setAttribute('aria-label','Précédent');r.setAttribute('aria-label','Suivant');
+ n.appendChild(l);n.appendChild(el('b',0,label));n.appendChild(r);return n;
+}
+function vDay(b,own){
+ var r=data[day]||z(),ok=own&&day>=start&&day<=TODAY&&day<=lastDay();
+ b.appendChild(navBar(function(){day=capd(add(day,-1));renderFocus()},long(day),function(){day=capd(add(day,1));renderFocus()}));
+ var list=el('div','stack');list.style.gap='8px';
+ C.forEach(function(c,i){
+  var row=el('div','crow'),ic=el('span','cic');ic.innerHTML=ico(c[5]);
+  var tx=el('div','ctx');tx.innerHTML='<b>'+c[1]+' · '+esc(c[2])+'</b><span>'+esc(c[3])+'</span><small>'+c[4]+' points l’unité</small>';
+  var st=el('div','cstep'),m=el('button',0,'−'),p=el('button','cp','+'),v=el('output',0,r[c[0]]||0);
+  m.disabled=!ok||!r[c[0]];p.disabled=!ok;m.setAttribute('aria-label','Retirer un '+c[1]);p.setAttribute('aria-label','Ajouter un '+c[1]);
+  m.onclick=function(){tap(c[0],-1)};p.onclick=function(){tap(c[0],1)};
+  st.appendChild(m);st.appendChild(v);st.appendChild(p);row.appendChild(ic);row.appendChild(tx);row.appendChild(st);list.appendChild(row)});
+ b.appendChild(list);b.appendChild(el('p','mut','Points du jour : '+fmt(pts(r))));
+}
+function vTab(b,cols,nav){
+ if(nav)b.appendChild(nav);
+ var w=el('div','sc'),t=el('table'),h=el('tr');h.appendChild(el('th',0,''));
+ cols.forEach(function(c){var th=el('th'),x=el('button','hb',c.h);x.onclick=c.go;th.appendChild(x);h.appendChild(th)});
+ h.appendChild(el('th',0,'Total'));t.appendChild(h);
+ C.forEach(function(k){var tr=el('tr'),s=0;tr.appendChild(el('td','rl',k[1]));
+  cols.forEach(function(c){var v=sum(c.days)[k[0]];s+=v;tr.appendChild(el('td',0,v))});tr.appendChild(el('td','tt',s));t.appendChild(tr)});
+ var tp=el('tr','pt'),s2=0;tp.appendChild(el('td','rl','Points'));
+ cols.forEach(function(c){var v=pts(sum(c.days));s2+=v;tp.appendChild(el('td',0,fmt(v)))});tp.appendChild(el('td','tt',fmt(s2)));t.appendChild(tp);
+ w.appendChild(t);b.appendChild(w);
+}
+function tap(k,d){
+ var r=data[day]||(data[day]=Object.assign(z(),{user_id:me.id,day:day}));
+ r[k]=Math.max(0,r[k]+d);if(tg.id===me.id)mine=data;renderFocus();if(curTab==='exo')renderExo();
+ var row=Object.assign({},r);
+ queue(function(){return sb.from('counts').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e);loadTop()})});
+}
+$('m-day').onclick=function(){mode='day';renderFocus()};$('m-week').onclick=function(){mode='week';renderFocus()};$('m-all').onclick=function(){mode='all';renderFocus()};
+
+/* Série de jours actifs : lundi-vendredi au moins 3 C1, samedi au moins 1 C1, dimanche ignoré */
+function dayActive(d){var r=data[d];if(!r)return false;return dow(d)===6?(r.c1||0)>=1:(r.c1||0)>=3}
+function streakR(){
+ var s=$('streak');s.hidden=TODAY<start;if(s.hidden)return;s.innerHTML='';
+ var n=0,d=TODAY;
+ if(dow(d)!==0&&dayActive(d))n++;
+ d=add(d,-1);
+ while(d>=start){if(dow(d)!==0){if(dayActive(d))n++;else break}d=add(d,-1)}
+ var reached=PALIERS.filter(function(p){return p<=n}).pop(),nx=PALIERS.filter(function(p){return p>n})[0];
+ var top=el('div','row sp');top.appendChild(el('h2','h','Ta série'));top.appendChild(el('span','tag',n+(n>1?' jours':' jour')+' d’affilée'));s.appendChild(top);
+ s.appendChild(el('div','mut',n===0?'Ta série démarre avec ta première journée active : 3 C1 en semaine, 1 C1 le samedi.':
+  (reached?'Palier des '+reached+' jours atteint. ':'')+(nx?'Encore '+(nx-n)+' jour'+(nx-n>1?'s':'')+' actif'+(nx-n>1?'s':'')+' pour le palier des '+nx+' jours. ':'Tu as atteint le dernier palier, bravo. ')+'Le dimanche ne casse pas ta série.'));
+ var cal=el('div','cal');'LMMJVSD'.split('').forEach(function(x){cal.appendChild(el('div','dw',x))});
+ for(var i=0;i<35;i++){var dd=add(start,i),st=dow(dd)===0?'s':dd>TODAY?'':dd===TODAY?(dayActive(dd)?'a':'t'):(dayActive(dd)?'a':'m');
+  cal.appendChild(el('div','dd '+st,st==='m'?'×':+dd.slice(8)))}
+ s.appendChild(cal);
+ var lg=el('div','leg');lg.innerHTML='<span><i style="background:var(--acc)"></i>jour actif</span><span><i style="background:var(--warn)"></i>jour manqué</span><span>dimanche : repos</span>';s.appendChild(lg);
+}
+async function loadTop(){
+ if(!me)return;var r=await sb.rpc('top5'),l=$('top');l.innerHTML='';var rows=r.data||[];
+ if(!rows.length)l.appendChild(el('li',0,'Personne n’a encore marqué de points.'));
+ rows.forEach(function(x,i){var li=el('li',x.name===me.name?'me':''),n=el('span','n',['🥇','🥈','🥉'][i]||(i+1));
+  li.appendChild(n);li.appendChild(el('span',0,x.name));li.appendChild(el('span','pt',fmt(x.points)+' pts'));l.appendChild(li)});
+ var p=await sb.rpc('progress_rank'),pr=p.data||[],pl=$('prog');pl.innerHTML='';$('progBox').hidden=!pr.length;
+ pr.forEach(function(x,i){var li=el('li',x.name===me.name?'me':''),n=el('span','n',i+1);li.appendChild(n);li.appendChild(el('span',0,x.name));li.appendChild(el('span','pt','+'+fmt(x.gain)+' pts'));pl.appendChild(li)});
+}
+
+/* ===== Fenêtres d'accueil ===== */
+async function focusIntro(save){
+ await ask({badge:'🎯',title:'Bienvenue dans le Focus 5 semaines',paras:[
+  'Le Focus 5 semaines, ce sont 5 semaines pour passer à l’action massivement : chaque jour, tu notes tes conversations, invitations, propositions, relances et rendez-vous, et tu gagnes des points.',
+  'Il dure du '+long(start)+' au '+long(lastDay())+'.',
+  'Tu ne vois que tes propres chiffres et le top 5 des consultants. Ton objectif du jour est facultatif, mais il t’aide à agir.'],
+  buttons:[{t:'C’est parti',cls:'p',v:1}]});
+ if(save)await savePrefs({seen_focus:start});
+}
+async function exoOpen(){
+ if(!prefs.seen_exo){
+  var v=await ask({badge:'📅',title:'Mon exercice',paras:[
+   'Cet onglet est personnel : il te suit toute l’année, du 1er août au 31 juillet. Il n’y a pas de classement, seuls tes chiffres comptent.',
+   'Tu y notes tes R1 par semaine (avec le numéro de semaine et les dates), ton volume d’affaires et ton encours, et tu choisis ton objectif : Senior, Major, Expert, Double Expert ou Triple Expert.',
+   'Les R1 du Focus 5 semaines sont repris automatiquement : tu notes seulement ceux réalisés en dehors.',
+   'Ces données ne sont visibles que par toi et ne sont partagées avec personne. C’est facultatif.'],
+   buttons:[{t:'Activer',cls:'p',v:true},{t:'Pas maintenant',v:false}]});
+  await savePrefs({seen_exo:true,exo_active:v});
+ }
+ renderExo();
+}
+async function vaForm(){
+ var last=vaHist[0]||{},node=el('div','fl');
+ node.innerHTML='<label for="fv">Volume d’affaires depuis le début de l’exercice (€)</label><input type="text" inputmode="decimal" id="fv" value="'+(last.volume!==undefined?last.volume:'')+'"><label for="fe">Encours (€)</label><input type="text" inputmode="decimal" id="fe" value="'+(last.encours!==undefined?last.encours:'')+'">';
+ var paras=['Visible par toi seul. Partagé avec personne.'];
+ while(true){
+  var v=await ask({title:'Mon volume d’affaires',paras:paras,node:node,buttons:[{t:'Valider',cls:'p',v:'ok'},{t:'Annuler',v:'no'}]});
+  if(v!=='ok')return false;
+  var n=function(id){return parseFloat(node.querySelector(id).value.replace(/\s/g,'').replace(',','.'))},vol=n('#fv'),enc=n('#fe');
+  if(isNaN(vol)||isNaN(enc)||vol<0||enc<0){paras=['Renseigne deux montants valides, ou annule.'];continue}
+  var mon=mondayOf(TODAY),e=await sb.from('va_updates').insert({user_id:me.id,week:mon,volume:vol,encours:enc});
+  if(err(e))return false;
+  vaHist.unshift({week:mon,volume:vol,encours:enc,created_at:new Date().toISOString()});await savePrefs({va_week:mon});toast('Mise à jour enregistrée');return true;
+ }
+}
+async function loadVa(){var r=await sb.from('va_updates').select('week,volume,encours,created_at').eq('user_id',me.id).order('created_at',{ascending:false}).limit(20);vaHist=r.data||[]}
+async function vaPrompt(){
+ var mon=mondayOf(TODAY);
+ if(prefs.va_off||(prefs.va_week&&prefs.va_week>=mon))return;
+ if(!(inFocus(TODAY)||prefs.exo_active))return;
+ await loadVa();
+ var v=await ask({badge:'📈',title:'Ta mise à jour de la semaine',paras:[
+  'Renseigner ton volume d’affaires et ton encours t’aide à voir ta progression et te pousse à avancer.',
+  'Ces données ne sont visibles que par toi et ne sont partagées avec personne. Ce n’est pas obligatoire.'],
+  buttons:[{t:'Je renseigne',cls:'p',v:'ok'},{t:'Pas de changement',v:'same'},{t:'Ne plus me le demander',cls:'g',v:'off'}]});
+ if(v==='ok'){var d=await vaForm();if(!d)await savePrefs({va_week:mon})}
+ else if(v==='same')await savePrefs({va_week:mon});
+ else if(v==='off'){await savePrefs({va_off:true,va_week:mon});toast('Compris, on ne te le redemandera plus. Tu peux le réactiver dans Mon exercice.')}
+}
+
+/* Messages de fin de semaine */
+function msgFor(s,w){
+ var p=Number(s.place),gap=Number(s.gap),wp=Number(s.week_pts),pp=Number(s.prev_pts);
+ if(p>=1&&p<=3)return{badge:['🥇','🥈','🥉'][p-1],title:['N°1 de l’équipe','N°2 de l’équipe','N°3 de l’équipe'][p-1],parts:[TOP[p][w]]};
+ if(p===4||p===5){
+  var parts=[p===4?'Tu es 4e : tu frappes à la porte du podium.':'Tu es 5e : tu es dans la course, et la marche vers le podium n’est pas haute.'];
+  if(w>0&&wp>pp)parts.push('Tu as fait mieux que la semaine précédente : '+fmt(wp)+' points contre '+fmt(pp)+'.');
+  else if(w>0&&wp<pp)parts.push('Cette semaine est un peu en retrait ('+fmt(wp)+' points contre '+fmt(pp)+'). Un petit sursaut te remet sur la bonne pente.');
+  else parts.push('Tu as marqué '+fmt(wp)+' points cette semaine.');
+  var need=gap+1;
+  if(w===4)parts.push('Tu termines à '+fmt(gap)+' points du podium.');
+  else if(gap===0)parts.push('Tu es à égalité avec le podium : un seul point de plus et tu y es.');
+  else parts.push('Il te faut '+fmt(need)+' points de plus pour passer sur le podium, soit environ '+Math.ceil(need/50)+' R1 ou '+Math.ceil(need/15)+' relances (C6).');
+  parts.push(CLOSE[w]);
+  return{badge:p===4?'🔥':'💪',title:p===4?'Tu es 4e':'Tu es 5e',parts:parts};
+ }
+ return null;
+}
+async function congrats(){
+ var w=Math.floor((Date.parse(TODAY)-Date.parse(start))/864e5/7)-1;
+ if(w<0)return;w=Math.min(w,4);
+ var k='f5s_'+start+'_'+w+'_'+me.id;
+ try{if(localStorage.getItem(k))return}catch(e){}
+ var r=await sb.rpc('my_week_summary',{wk:w}),s=r.data&&r.data[0];
+ if(!s)return;var m=msgFor(s,w);if(!m)return;
+ try{localStorage.setItem(k,'1')}catch(e){}
+ await ask({badge:m.badge,title:m.title,paras:m.parts.concat(['Semaine '+(w+1)+' terminée · '+fmt(s.total)+' points au cumul']),small:true,buttons:[{t:'C’est parti',cls:'p',v:1}]});
+}
+
+/* ===== Agenda des R1 (Focus et exercice) ===== */
+async function loadAgenda(){
+ var r=await sb.from('r1_agenda').select('*').eq('user_id',me.id).eq('status','planned').order('day');agenda=r.data||[];renderAgendas();
+}
+function renderAgendas(){
+ var own=tg&&tg.id===me.id;$('agendaF').hidden=!own;
+ if(own)agendaR($('agendaF'));
+ var b=$('agendaE');if(b)agendaR(b);
+}
+function agendaR(box){
+ box.innerHTML='';box.appendChild(el('h2','h','R1 planifiés'));
+ var ul=el('ul','rank');
+ agenda.forEach(function(a){
+  var li=el('li'),n=el('span','n');li.style.flexWrap='wrap';n.innerHTML=ico('cal');li.appendChild(n);li.appendChild(el('span',0,long(a.day)));
+  var ac=el('span','pt');ac.style.cssText='display:flex;gap:6px;margin-left:auto';
+  if(a.day<=TODAY){
+   [['Réalisé','p',function(){r1Done(a)}],['Non',0,function(){r1Drop(a)}],['Reporter',0,function(){r1Move(a)}]].forEach(function(x){var b=el('button','btn sm '+(x[1]||''),x[0]);b.onclick=x[2];ac.appendChild(b)});
+  }else{var x=el('button','btn sm','Retirer');x.onclick=function(){r1Drop(a)};ac.appendChild(x)}
+  li.appendChild(ac);ul.appendChild(li)});
+ box.appendChild(ul);
+ if(!agenda.length)box.appendChild(el('div','mut','Aucun R1 planifié.'));
+ var f=el('div','row');f.style.marginTop='10px';
+ var inp=el('input');inp.type='date';inp.min=TODAY;inp.value=add(TODAY,1);inp.setAttribute('aria-label','Date du R1');
+ var bt=el('button','btn p','Planifier un R1');
+ bt.onclick=async function(){if(!inp.value||inp.value<TODAY){toast('Choisis une date à partir d’aujourd’hui');return}
+  var e=await sb.rpc('r1_plan',{d:inp.value});if(err(e,'Planification impossible'))return;await loadAgenda();toast('R1 planifié')};
+ f.appendChild(inp);f.appendChild(bt);box.appendChild(f);
+ box.appendChild(el('div','tiny','Un R1 planifié ne compte qu’une fois réalisé. À minuit, s’il est toujours noté, il est compté automatiquement.')).style.marginTop='8px';
+}
+async function r1Done(a){var e=await sb.rpc('r1_done',{aid:a.id});if(err(e))return;await reloadMine();await loadAgenda();renderFocus();if(curTab==='exo')renderExo();loadTop();toast('R1 réalisé : +50 points')}
+async function r1Drop(a){var e=await sb.rpc('r1_drop',{aid:a.id});if(err(e))return;await loadAgenda();toast('R1 retiré de l’agenda')}
+async function r1Move(a){
+ var node=el('div','fl'),i=el('input');i.type='date';i.min=TODAY;i.value=add(TODAY,1);node.appendChild(el('label',0,'Nouvelle date'));node.appendChild(i);
+ var v=await ask({title:'Reporter ce R1',node:node,buttons:[{t:'Valider',cls:'p',v:1},{t:'Annuler',v:0}]});
+ if(!v||i.value<TODAY)return;var e=await sb.rpc('r1_move',{aid:a.id,nd:i.value});if(err(e))return;await loadAgenda();toast('R1 reporté')}
+async function askTodayR1(){
+ var due=agenda.filter(function(a){return a.day===TODAY});
+ for(var k=0;k<due.length;k++){
+  var a=due[k],v=await ask({badge:'🤝',title:'Tu avais un R1 prévu aujourd’hui : réalisé ?',paras:[],buttons:[{t:'Oui',cls:'p',v:'y'},{t:'Non',v:'n'},{t:'Reporter',v:'r'}]});
+  if(v==='y')await r1Done(a);else if(v==='n')await r1Drop(a);else await r1Move(a);
+ }
+}
+
+/* ===== MON EXERCICE ===== */
+function exoWeeks(){var r=exoRange(),a=mondayOf(r.s),b=mondayOf(TODAY<r.e?TODAY:r.e),o=[];for(var m=a;m<=b;m=add(m,7))o.push(m);return o}
+function weekAuto(m){var r=exoRange(),n=0;span(m,7).forEach(function(d){if(d>=r.s&&d<=r.e&&mine[d])n+=mine[d].r1||0});return n}
+function weekLocked(m){return (m>=start&&add(m,6)<=lastDay())||runLocked(m)}
+
+function gaugeEl(vol,enc,thr){
+ var on=thr>0,max=thr||1,vv=vol||0,has=on&&vol!==null,v=has?Math.min(1,vv/max):0,t=has?Math.min(1,(vv+enc)/max):0,A0=-120,SW=240;
+ function P(f,r){var a=(A0+SW*f)*Math.PI/180;return[(100+r*Math.sin(a)).toFixed(2),(100-r*Math.cos(a)).toFixed(2)]}
+ function arc(f0,f1,r,cls,w){if(f1-f0<=0.0005)return '';var p0=P(f0,r),p1=P(f1,r);return '<path class="'+cls+'" d="M'+p0[0]+' '+p0[1]+' A'+r+' '+r+' 0 '+(((f1-f0)*SW>180)?1:0)+' 1 '+p1[0]+' '+p1[1]+'" fill="none" stroke-width="'+w+'"/>'}
+ function cp(n){return n>=1e6?(n/1e6).toLocaleString('fr-FR',{maximumFractionDigits:2})+' M€':Math.round(n/1e3)+' k€'}
+ var tk='';for(var i=0;i<=20;i++){var f=i/20,mj=i%5===0,a1=P(f,mj?66:72),b1=P(f,80);tk+='<line x1="'+a1[0]+'" y1="'+a1[1]+'" x2="'+b1[0]+'" y2="'+b1[1]+'" class="'+(mj?'gtm':'gt')+'"/>';
+  if(mj&&on){var q=P(f,52);tk+='<text x="'+q[0]+'" y="'+(+q[1]+3)+'" text-anchor="middle" class="gl">'+cp(thr*f)+'</text>'}}
+ var d=el('div','gauge');
+ d.innerHTML='<svg viewBox="0 0 200 150" role="img" aria-label="'+(on?'Compteur de progression vers l’objectif '+cp(thr):'Compteur : choisis un objectif')+'">'+arc(0,1,88,'gtr',9)+arc(0,v,88,'gvol',9)+arc(v,t,88,'genc',9)+tk+
+  '<text x="100" y="128" text-anchor="middle" class="gp">'+(has?Math.round(vv/max*100)+' %':'–')+'</text><text x="100" y="141" text-anchor="middle" class="gs">'+(on?'de l’objectif':'')+'</text>'+
+  '<g class="needle" style="transform-origin:100px 100px;transform:rotate('+A0+'deg)"><polygon points="97.5,104 100,30 102.5,104"/><circle cx="100" cy="100" r="8"/><circle cx="100" cy="100" r="3" class="hub"/></g></svg>'+
+  (on?'':'<div class="gnone">Choisis ton objectif pour activer le compteur</div>');
+ function odo(label,cls,val){var w=el('div','odo '+cls),lb=el('div','olb');lb.innerHTML='<i></i>'+label;w.appendChild(lb);
+  var row=el('div','odr'),n=Math.max(7,String(Math.round(val)).length),cells=[];for(var k=0;k<n;k++){var c=el('b','',0);if((n-k)%3===0&&k>0)c.style.marginLeft='6px';row.appendChild(c);cells.push(c)}
+  var u=el('span','odu','€');row.appendChild(u);w.appendChild(row);
+  function show(x){var str=String(Math.round(x)).padStart(n,'0');cells.forEach(function(c,k){c.textContent=str[k]})}
+  show(0);var t0=null;function step(ts){if(t0===null)t0=ts;var p=Math.min(1,(ts-t0)/1100);show(val*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step);return w}
+ if(vol!==null){d.appendChild(odo('Volume acté','ov',vv));d.appendChild(odo('Encours','oe',enc))}
+ var nd=d.querySelector('.needle');requestAnimationFrame(function(){requestAnimationFrame(function(){nd.style.transform='rotate('+(A0+SW*t)+'deg)'})});
+ return d;
+}
+async function renderExo(){
+ var b=$('exo');
+ if(prefs.exo_active===false){
+  b.innerHTML='';var c=el('div','card');c.appendChild(el('h2','h','Mon exercice'));
+  c.appendChild(el('p','mut','Cet onglet est désactivé. Active-le pour suivre tes R1, ton volume d’affaires et ton objectif sur toute l’année. Tes données restent visibles par toi seul.'));
+  var bt=el('button','btn p','Activer Mon exercice');bt.onclick=async function(){await savePrefs({exo_active:true});renderExo()};c.appendChild(bt);b.appendChild(c);return}
+ if(!exoReady){var r1=await sb.from('exo_weeks').select('*').eq('user_id',me.id);exoW={};(r1.data||[]).forEach(function(x){exoW[x.week]=x.r1});await loadVa();exoReady=true}
+ var ws=exoWeeks();if(exi===null||exi>=ws.length)exi=ws.length-1;
+ var m=ws[exi],locked=weekLocked(m),auto=weekAuto(m),man=exoW[m]||0,rg=exoRange();
+ var tot=0;ws.forEach(function(x){tot+=weekAuto(x)+(exoW[x]||0)});
+ var foc=0;span(start,35).forEach(function(d){if(d>=rg.s&&d<=rg.e&&mine[d])foc+=mine[d].r1||0});
+ b.innerHTML='';
+ var c1=el('div','card'),nav=el('div','nav'),pv=el('button','btn',''),nx=el('button','btn','');
+ pv.innerHTML=ico('back');nx.innerHTML=ico('chev');pv.setAttribute('aria-label','Semaine précédente');nx.setAttribute('aria-label','Semaine suivante');
+ pv.disabled=exi<=0;nx.disabled=exi>=ws.length-1;pv.onclick=function(){exi--;renderExo()};nx.onclick=function(){exi++;renderExo()};
+ var lb=el('div');lb.style.textAlign='center';lb.style.flex='1';lb.style.minWidth='0';lb.appendChild(el('div','h','S'+isoWeek(m)+' · du '+dm(m)+' au '+dm(add(m,6))+' '+add(m,6).slice(0,4)));lb.lastChild.style.margin='0';
+ lb.appendChild(el('div','mut',exi===ws.length-1?'Semaine en cours':'Semaine passée'));
+ nav.appendChild(pv);nav.appendChild(lb);nav.appendChild(nx);c1.appendChild(nav);
+ var stp=el('div','row');stp.style.justifyContent='center';stp.style.marginTop='14px';
+ var sd=el('div','step'),mi=el('button',0,'−'),pl=el('button',0,'+'),ov=el('output',0,auto+man);
+ mi.disabled=locked||man<=0;pl.disabled=locked;mi.setAttribute('aria-label','Moins un R1');pl.setAttribute('aria-label','Plus un R1');
+ var setMan=function(v){exoW[m]=Math.max(0,v);var row={user_id:me.id,week:m,r1:exoW[m]};queue(function(){return sb.from('exo_weeks').upsert(row,{onConflict:'user_id,week'}).then(function(e){err(e)})});renderExo()};
+ mi.onclick=function(){setMan(man-1)};pl.onclick=function(){setMan(man+1)};
+ sd.appendChild(mi);sd.appendChild(ov);sd.appendChild(pl);stp.appendChild(sd);c1.appendChild(stp);
+ var cap=el('div','mut','R1 réalisés cette semaine'+(auto?' (dont '+auto+' du Focus, repris automatiquement)':''));cap.style.textAlign='center';cap.style.marginTop='4px';c1.appendChild(cap);
+ var nt=el('div','tiny',locked?'Pendant le Focus et le 90j, tes R1 sont repris automatiquement depuis les onglets Focus et 90j. Ils ne se cumulent pas avec une saisie ici.':'Ne note ici que les R1 réalisés hors de la période du Focus : ceux du Focus sont déjà repris automatiquement.');
+ nt.style.textAlign='center';nt.style.marginTop='6px';c1.appendChild(nt);b.appendChild(c1);
+ var s3=el('div','sum3');s3.innerHTML='<div><b>'+tot+'</b><span>R1 depuis le 1<sup>er</sup> août</span></div><div><b>'+(tot/ws.length).toFixed(1).replace('.',',')+'</b><span>moyenne par semaine</span></div><div><b>'+foc+'</b><span>dont dans le Focus</span></div>';
+ b.appendChild(s3);
+ /* Objectif */
+ var vol=vaHist[0]?Number(vaHist[0].volume):null,enc=vaHist[0]?Number(vaHist[0].encours):0,oi=prefs.objective,thr=oi!=null?OBJ[oi][1]:0;
+ var c2=el('div','card');c2.appendChild(el('h2','h','Mon objectif'));
+ var sel=el('select');sel.style.cssText='width:100%;margin-top:10px';sel.setAttribute('aria-label','Objectif de l’exercice');
+ sel.innerHTML='<option value="">Choisis ton objectif…</option>'+OBJ.map(function(o,i){return '<option value="'+i+'"'+(oi===i?' selected':'')+'>'+esc(o[0])+(o[1]?' · '+eur(o[1]):'')+'</option>'}).join('');
+ sel.onchange=async function(){await savePrefs({objective:sel.value===''?null:+sel.value});renderExo()};
+ c2.appendChild(sel);
+ c2.appendChild(gaugeEl(vol,enc,thr));
+ if(vol===null){var nv=el('p','mut','Aucun volume d’affaires renseigné.');nv.style.textAlign='center';c2.appendChild(nv)}
+ if(thr&&vol!==null){var fin=vol>=thr?'Objectif atteint, bravo !':(vol+enc>=thr?'Avec ton encours, le compteur est plein : il te reste du volume acté à construire.':'');if(fin){var fm=el('p','mut',fin);fm.style.cssText='text-align:center;margin:8px 0 0';c2.appendChild(fm)}}
+ var ub=el('button','btn p','Mettre à jour mon volume d’affaires');ub.style.marginTop='12px';ub.onclick=async function(){await vaForm();renderExo()};c2.appendChild(ub);
+ c2.appendChild(el('div','tiny','Ces données ne sont visibles que par toi, elles ne sont partagées avec personne. Les renseigner n’est pas obligatoire, mais cela t’aide à progresser.')).style.marginTop='10px';
+ var wk2=el('div','row sp');wk2.style.marginTop='10px';wk2.appendChild(el('span','mut','Question hebdomadaire : '+(prefs.va_off?'désactivée':'activée')));
+ var tb=el('button','btn sm',prefs.va_off?'Réactiver':'Désactiver');tb.onclick=async function(){await savePrefs({va_off:!prefs.va_off,va_week:null});renderExo()};wk2.appendChild(tb);c2.appendChild(wk2);
+ if(vaHist.length>1){var hs=el('details');hs.style.marginTop='10px';hs.innerHTML='<summary class="mut" style="cursor:pointer">Historique de mes mises à jour</summary>';
+  var ul=el('ul','rank');vaHist.slice(0,8).forEach(function(h){var li=el('li');li.appendChild(el('span',0,'Semaine du '+dm(h.week)));li.appendChild(el('span','pt',eur(h.volume)+' · '+eur(h.encours)));ul.appendChild(li)});hs.appendChild(ul);c2.appendChild(hs)}
+ b.appendChild(c2);
+ var c3=el('div','card');c3.id='agendaE';b.appendChild(c3);agendaR(c3);
+}
+
+/* ===== ÉQUIPE (administrateur) ===== */
+async function alertDot(){var r=await sb.rpc('team_totals2');$('teamDot').hidden=!(r.data||[]).some(function(p){return p.alert})}
+function loadX(){return window.XLSX?Promise.resolve():new Promise(function(ok,ko){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
+async function renderTeam(){await renderTeam0();await defisTeam($('team'))}
+async function renderTeam0(){
+ var b=$('team');b.innerHTML='';
+ var r=await sb.rpc('team_totals2'),rows=r.data||[],al=rows.filter(function(p){return p.alert});
+ $('teamDot').hidden=!al.length;
+ if(al.length){var a=el('div','alertbar','⚠ '+al.length+' consultant'+(al.length>1?'s':'')+' sans saisie depuis 2 jours : '+al.map(function(p){return p.name}).join(', '));b.appendChild(a)}
+ var avg=el('div','card');avg.appendChild(el('h2','h','Moyenne de l’équipe'));
+ var n=rows.length||1,t={},pt=0;C.forEach(function(c){t[c[0]]=rows.reduce(function(s,p){return s+Number(p[c[0]])},0)});rows.forEach(function(p){pt+=Number(p.points)});
+ var g=el('div','sum3');g.innerHTML='<div><b>'+fmt(Math.round(pt/n))+'</b><span>points</span></div><div><b>'+(t.c1/n).toFixed(1).replace('.',',')+'</b><span>C1</span></div><div><b>'+(t.r1/n).toFixed(1).replace('.',',')+'</b><span>R1</span></div>';
+ avg.appendChild(g);
+ var g2=el('div','sum3');g2.style.marginTop='8px';g2.innerHTML='<div><b>'+(t.c2/n).toFixed(1).replace('.',',')+'</b><span>C2</span></div><div><b>'+(t.c3/n).toFixed(1).replace('.',',')+'</b><span>C3</span></div><div><b>'+(t.c6/n).toFixed(1).replace('.',',')+'</b><span>C6</span></div>';avg.appendChild(g2);
+ var ex=el('button','btn');ex.style.marginTop='12px';ex.textContent='Exporter en Excel';
+ ex.onclick=async function(){try{await loadX()}catch(e){toast('Export impossible : bibliothèque non chargée');return}
+  var data=[['Nom','Points','C1','C2','C3','C6','R1','R2','R3','Dernière saisie']].concat(rows.map(function(p){return[p.name,Number(p.points),Number(p.c1),Number(p.c2),Number(p.c3),Number(p.c6),Number(p.r1),Number(p.r2),Number(p.r3),p.last_day||'']}));
+  var ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Focus');XLSX.writeFile(wb,'focus-5-semaines-'+TODAY+'.xlsx')};
+ avg.appendChild(ex);b.appendChild(avg);
+ var c=el('div','card');c.appendChild(el('h2','h','Classement général'));var ul=el('ul','rank');
+ rows.forEach(function(p,i){var mineP=p.id===me.id,li=el('li',p.alert?'al':mineP?'me':'');li.style.flexWrap='wrap';
+  li.appendChild(el('span','n',i+1));
+  var nm=el('span',0,p.name+(mineP?' (toi)':''));nm.style.cssText='font-weight:700;cursor:pointer;flex:1;min-width:0';nm.onclick=function(){openP(mineP?me:{id:p.id,name:p.name})};li.appendChild(nm);
+  li.appendChild(el('span','pt',fmt(p.points)+' pts'));
+  var det=el('div','tiny','R1 '+p.r1+' · R2 '+p.r2+' · R3 '+p.r3+' · '+(p.last_day?'dernière saisie le '+dm(p.last_day):'aucune saisie')+(p.alert?' · à relancer':''));det.style.cssText='width:100%;padding-left:36px';li.appendChild(det);
+  var ac=el('div','row');ac.style.cssText='width:100%;padding-left:36px;gap:6px';
+  var z0=el('button','btn sm','Remettre à zéro le focus');z0.onclick=async function(){
+   if(!confirm('Es-tu sûr de vouloir remettre à zéro les compteurs du focus de '+p.name+' ?\nSeule la période du focus est concernée : les données de l’exercice sont conservées. Cette action est définitive.'))return;
+   var e=await sb.rpc('reset_member',{uid:p.id});if(err(e,'Impossible'))return;renderTeam();loadTop()};
+  ac.appendChild(z0);
+  if(!mineP){var rm=el('button','btn sm dg','Retirer de l’équipe');rm.onclick=async function(){
+   if(!confirm('Es-tu sûr de vouloir retirer '+p.name+' de l’équipe ?\nSon compte et toutes ses données seront supprimés définitivement.'))return;
+   var e=await sb.rpc('remove_member',{uid:p.id});if(err(e,'Impossible'))return;renderTeam();loadTop()};ac.appendChild(rm)}
+  li.appendChild(ac);ul.appendChild(li)});
+ c.appendChild(ul);
+ var ra=el('button','btn dg','Remettre tout le monde à zéro (focus)');ra.style.marginTop='12px';ra.onclick=async function(){
+  if(!confirm('Es-tu sûr de vouloir remettre à zéro les compteurs du focus de TOUTE l’équipe, toi compris ?\nLes données de l’exercice ne sont pas touchées.'))return;
+  if(!confirm('Dernière confirmation : tous les chiffres du focus seront effacés définitivement. Continuer ?'))return;
+  var e=await sb.rpc('reset_all');if(err(e,'Impossible'))return;renderTeam();loadTop()};
+ c.appendChild(ra);b.appendChild(c);
+ var d=el('div','card');d.appendChild(el('h2','h','Date de départ du focus'));
+ d.appendChild(el('p','mut','Commune à toute l’équipe. La changer lance une nouvelle période de 5 semaines : le classement repart de zéro et chacun revoit la fenêtre d’accueil du Focus.'));
+ var sdI=el('input');sdI.type='date';sdI.value=start;sdI.setAttribute('aria-label','Date de départ');
+ sdI.onchange=async function(){var v=sdI.value;if(!v)return;
+  if(!confirm('Es-tu sûr de vouloir changer la date de départ du focus pour le '+long(v)+' ?\nLe classement et les totaux repartiront de zéro pour toute l’équipe sur la nouvelle période de 5 semaines.')){sdI.value=start;return}
+  var e=await sb.from('settings').update({start_date:v}).eq('id',1);if(e.error){toast('Modification impossible');sdI.value=start;return}start=v;renderTeam();loadTop();heroR()};
+ d.appendChild(sdI);b.appendChild(d);
+ var tx=el('div','card');tx.appendChild(el('h2','h','Taux de crédit par durée'));
+ tx.appendChild(el('p','mut','Ces taux préremplissent l’outil « Mensualités de crédit » pour toute l’équipe. Mets-les à jour chaque lundi. Laisse vide si tu n’as pas de taux.'));
+ var form=el('div');form.innerHTML=[7,10,15,20,25].map(function(y){var v=rates[y];return '<div class="fld"><div class="lb"><label for="tx'+y+'">'+y+' ans</label><span><input type="text" inputmode="decimal" id="tx'+y+'" value="'+(v!=null?String(v).replace('.',','):'')+'"> %</span></div></div>'}).join('');
+ tx.appendChild(form);
+ tx.appendChild(el('div','tiny','Dernière mise à jour : '+(ratesDate?long(ratesDate)+' '+ratesDate.slice(0,4):'jamais')));
+ var sv=el('button','btn p','Enregistrer les taux');sv.style.marginTop='10px';sv.onclick=async function(){
+  var ys=[7,10,15,20,25],vs=ys.map(function(y){var s=document.getElementById('tx'+y).value.trim().replace(',','.');return s===''?null:parseFloat(s)});
+  if(vs.some(function(v){return v!==null&&(isNaN(v)||v<0||v>20)})){toast('Un taux n’est pas valide');return}
+  var e=await sb.rpc('set_rates',{yrs:ys,rts:vs});if(err(e,'Impossible'))return;await loadRates();ratesDate=TODAY;toast('Taux enregistrés');renderTeam()};
+ tx.appendChild(sv);b.appendChild(tx);
+}
+async function loadRates(){var r=await sb.from('credit_rates').select('*'),o={};(r.data||[]).forEach(function(x){o[x.years]=x.rate===null?null:Number(x.rate)});rates=o;var s=await sb.from('settings').select('rates_date').single();if(s.data)ratesDate=s.data.rates_date}
+var rates={};
+
+/* ===== Connexion / inscription ===== */
+$('out').onclick=function(){sb.auth.signOut().then(function(){location.reload()})};
+$('login').onclick=async function(){
+ var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+ if(r.error)$('msg').textContent='Connexion impossible. Vérifie ton e-mail et ton mot de passe.';else boot();
+};
+$('signup').onclick=async function(){
+ var r=await sb.auth.signUp({email:$('em').value.trim(),password:$('pw').value,options:{data:{name:$('nm').value,code:$('cd').value.trim()}}});
+ if(r.error){$('msg').textContent='Inscription refusée. Vérifie le code d’invitation et le mot de passe (8 caractères minimum).';return}
+ if(r.data.session)boot();else $('msg').textContent='Compte créé. Confirme ton e-mail, puis connecte-toi.';
+};
+/* ===== 5 DÉFIS (consultants de moins d'un an) ===== */
+var DEFIS=[
+ ['D','Démarrer à 2','Démarrer avec un proche. Les débriefs de rendez-vous se font toujours avec ton filleul : vous étudiez plus de cas, donc ta progression technique est beaucoup plus rapide. À deux, on s’encourage et on tient dans la durée.','Validé quand ton proche a décidé de démarrer avec toi.'],
+ ['E','Événements de grande ampleur','Forum du patrimoine, Convention nationale, gros événement d’équipe type Mindmaster : c’est là qu’on travaille ta vision, que les décisions se prennent et qu’on rencontre ceux qui ont réussi.','Validé quand tu es inscrit ou que tu as participé à un événement de grande ampleur.'],
+ ['F','Formation Prodemial Business School','Ta première habilitation : elle te donne les moyens d’accompagner tes clients en confiance.','Validé quand tu as acheté ta première habilitation, même si tu ne l’as pas encore obtenue. Tu indiques alors la date de ton QCM.'],
+ ['I','Investisseurs','Obtenir 10 investisseurs le plus vite possible : c’est ce qui lance vraiment ton activité.','Validé à 10 investisseurs. Monte le compteur à chaque nouvel investisseur.'],
+ ['S','Séminaire Défi Pro','Le séminaire qui te met en mouvement et t’entoure d’une équipe qui avance.','Validé dès que tu es inscrit au séminaire Défi Pro : c’est l’inscription qui compte.']
+];
+var dst=null,dsteps={};
+function minus1y(d){return(+d.slice(0,4)-1)+d.slice(4)}
+function plus6m(d){var x=new Date(d+'T00:00:00');x.setMonth(x.getMonth()+6);return iso(x)}
+function defiRecent(){return !!dst&&dst.signed_on>=minus1y(TODAY)}
+function defiEligible(){return defiRecent()&&dst.choice==='yes'}
+async function loadDefis(){
+ var a=await sb.from('defi_start').select('*').eq('user_id',me.id).maybeSingle();dst=a.data||null;
+ var b=await sb.from('defi_steps').select('*').eq('user_id',me.id);dsteps={};(b.data||[]).forEach(function(r){dsteps[r.code]=r});
+}
+function defiDone(c){return !!(dsteps[c]&&dsteps[c].done_on)}
+function defiCount(){return DEFIS.filter(function(d){return defiDone(d[0])}).length}
+async function defiSet(c,patch){
+ var r=Object.assign({user_id:me.id,code:c,investors:(dsteps[c]&&dsteps[c].investors)||0,done_on:(dsteps[c]&&dsteps[c].done_on)||null,qcm_on:(dsteps[c]&&dsteps[c].qcm_on)||null},patch);
+ dsteps[c]=r;
+ var e=await sb.from('defi_steps').upsert(r,{onConflict:'user_id,code'});err(e,'Défi non enregistré');
+}
+async function defiQcm(cur){
+ var i=el('input');i.type='date';i.setAttribute('aria-label','Date de passage du QCM');if(cur)i.value=cur;
+ var w=el('div');w.appendChild(i);
+ for(;;){
+  var v=await ask({badge:'Les 5 DÉFIS',title:'À quelle date passes-tu ton QCM ?',paras:['Indique la date de passage de ton QCM, qu’elle soit passée ou à venir.'],node:w,buttons:[{t:'Annuler',v:0},{t:'Valider',cls:'p',v:1}]});
+  if(!v)return null;
+  if(!i.value){toast('Choisis une date');continue}
+  if(i.value<'2000-01-01'){toast('Date invalide');continue}
+  return i.value}
+}
+async function defiDate(first){
+ var i=el('input');i.type='date';i.max=TODAY;i.setAttribute('aria-label','Date de signature de la convention');if(dst)i.value=dst.signed_on;
+ var w=el('div');w.appendChild(i);
+ for(;;){
+  var v=await ask({badge:'Les 5 DÉFIS',title:first?'Nouveau : le challenge des 5 DÉFIS':'Quelle est la date de signature de ta convention ?',paras:first?['Un parcours de 5 défis pour bien démarrer : Démarrer à 2, Événements, Formation, Investisseurs, Séminaire. Si tu réalises les 5 défis en moins de 6 mois, tu as 2 fois plus de chances de devenir manager.','Il est réservé aux consultants dont la convention a moins d’un an. Quelle est la date de signature de ta convention ?']:[],node:w,buttons:[{t:first?'Plus d’un an':'Annuler',v:0},{t:'Valider',cls:'p',v:1}]});
+  if(!v){if(first){await savePrefs({defi_no:true});setupTabs();if(curTab==='defis')showTab('focus')}return false}
+  var x=i.value;if(!x){toast('Choisis une date');continue}
+  if(x>TODAY){toast('La date ne peut pas être dans le futur');continue}
+  if(x<minus1y(TODAY)){
+   await ask({badge:'Les 5 DÉFIS',title:'Plus d’un an',paras:['Ta convention date de plus d’un an : le parcours des 5 DÉFIS est réservé à ceux qui démarrent. L’onglet ne te sera pas proposé.'],buttons:[{t:'Compris',cls:'p',v:1}]});
+   await savePrefs({defi_no:true});if(dst){await sb.from('defi_start').delete().eq('user_id',me.id);dst=null}setupTabs();showTab('focus');return false}
+  var e=await sb.from('defi_start').upsert({user_id:me.id,signed_on:x},{onConflict:'user_id'});if(err(e,'Date non enregistrée'))return false;
+  await savePrefs({defi_no:false});await loadDefis();setupTabs();return true}
+}
+async function defiPropose(){
+ var a=await ask({badge:'Les 5 DÉFIS',title:'Veux-tu relever le challenge des 5 DÉFIS ?',paras:[
+  'C’est un parcours de 5 défis pour bien démarrer : D comme Démarrer à 2, É comme Événements de grande ampleur, F comme Formation Prodemial Business School, I comme 10 Investisseurs, S comme Séminaire Défi Pro.',
+  'Ce que ça t’apporte : un cap clair pour tes premiers mois, un suivi de ta progression, et des étapes qui lancent vraiment ton activité. Si tu réalises les 5 défis en moins de 6 mois, tu as 2 fois plus de chances de devenir manager.',
+  'Si tu participes, tu as désormais accès à un nouvel onglet « 5 DÉFIS » pour suivre ta progression, défi par défi.',
+  'C’est un choix, sans obligation. Tu peux changer d’avis plus tard.'],
+  buttons:[{t:'Non merci, je mettrai plus de temps',v:0},{t:'Oui, je participe',cls:'p',v:1}]});
+ var e=await sb.from('defi_start').update({choice:a?'yes':'no',choice_on:TODAY}).eq('user_id',me.id);if(err(e,'Réponse non enregistrée'))return false;
+ await loadDefis();setupTabs();
+ if(a){showTab('defis');toast('C’est parti ! Tu as désormais accès à l’onglet 5 DÉFIS')}else if(curTab==='defis')showTab('focus');
+ return !!a;
+}
+async function defiQuestion(){
+ if(dst&&defiRecent())return defiPropose();
+ var ok=await defiDate(true);
+ if(ok)await defiPropose();
+}
+async function renderDefis(){
+ var b=$('defis');b.innerHTML='';
+ if(!dst||dst.choice!=='yes'){await defiQuestion();return}
+ var n=defiCount(),end=plus6m(dst.signed_on),left=Math.round((Date.parse(end)-Date.parse(TODAY))/864e5);
+ var h=el('div','card');h.appendChild(el('h2','h','Les 5 DÉFIS'));
+ h.appendChild(el('p','mut','Le challenge : 5 défis à relever pour bien démarrer, repérés par les lettres D É F I S. Si tu réalises les 5 défis en moins de 6 mois, tu as 2 fois plus de chances de devenir manager. Coche chaque défi quand tu l’as relevé, ton compteur et les jours restants se mettent à jour.'));
+ var bar=el('div','dfbar');bar.innerHTML='<i style="width:'+(n*20)+'%"></i>';bar.style.margin='10px 0 6px';h.appendChild(bar);
+ var row=el('div','row sp');row.appendChild(el('b',0,n+' / 5 défis relevés'));
+ row.appendChild(el('span','mut',left>=0?(left===0?'Dernier jour des 6 mois':'Encore '+left+' jour'+(left>1?'s':'')+' (jusqu’au '+dm(end)+')'):'Les 6 mois sont passés : continue, chaque défi compte'));
+ h.appendChild(row);
+ var pl=el('div','pills');DEFIS.forEach(function(d){pl.appendChild(el('span','pill'+(defiDone(d[0])?' n':''),d[0]))});h.appendChild(pl);
+ b.appendChild(h);
+ DEFIS.forEach(function(d){
+  var code=d[0],ok=defiDone(code),c=el('div','card dfc'+(ok?' ok':''));
+  c.appendChild(el('div','dfl',code));
+  var bx=el('div');bx.style.minWidth='0';
+  bx.appendChild(el('div','dfh',d[1]));bx.appendChild(el('p','mut',d[2]));
+  bx.appendChild(el('p','tiny',d[3]));
+  if(code==='I'){
+   var inv=(dsteps.I&&dsteps.I.investors)||0,dots=el('div','dfdots');for(var k=0;k<10;k++)dots.appendChild(el('i',k<inv?'on':''));bx.appendChild(dots);
+   var st=el('div','cstep');st.style.cssText='margin-top:10px;justify-content:flex-start';
+   var mi=el('button','',''),pl2=el('button','',''),out=el('output',0,inv+' / 10');mi.textContent='−';pl2.textContent='+';mi.setAttribute('aria-label','Un investisseur de moins');pl2.setAttribute('aria-label','Un investisseur de plus');
+   mi.disabled=inv<=0;pl2.disabled=inv>=10;
+   var chg=async function(dv){var v=Math.max(0,Math.min(10,inv+dv));await defiSet('I',{investors:v,done_on:v>=10?(dsteps.I&&dsteps.I.done_on)||TODAY:null});renderDefis();defiCheck()};
+   mi.onclick=function(){chg(-1)};pl2.onclick=function(){chg(1)};
+   st.appendChild(mi);st.appendChild(out);st.appendChild(pl2);bx.appendChild(st);
+  }else{
+   var bt2=el('button','btn'+(ok?'':' p'),ok?'✓ Relevé le '+dm(dsteps[code].done_on)+' · annuler':'Je l’ai fait');bt2.style.marginTop='10px';
+   bt2.onclick=async function(){
+    if(ok){var y=await ask({title:'Annuler ce défi ?',paras:['Il repassera à « à relever ».'],buttons:[{t:'Non',v:0},{t:'Oui, annuler',cls:'p',v:1}]});if(!y)return;await defiSet(code,{done_on:null,qcm_on:null})}
+    else{var q=null;if(code==='F'){q=await defiQcm(null);if(!q)return}
+     await defiSet(code,{done_on:TODAY,qcm_on:q});toast('Défi '+code+' relevé, bravo !')}
+    renderDefis();defiCheck()};
+   bx.appendChild(bt2);
+   if(code==='F'&&ok){
+    var qd=dsteps.F.qcm_on;
+    var ql=el('p','tiny',qd?'QCM : '+(qd>TODAY?'prévu le ':'passé le ')+dm(qd):'Date du QCM non renseignée');ql.style.marginTop='8px';bx.appendChild(ql);
+    var qb=el('button','btn sm',qd?'Modifier la date du QCM':'Renseigner la date du QCM');qb.style.marginTop='6px';
+    qb.onclick=async function(){var q=await defiQcm(qd);if(!q)return;await defiSet('F',{qcm_on:q});renderDefis()};bx.appendChild(qb);
+   }
+  }
+  c.appendChild(bx);b.appendChild(c);
+ });
+ var f=el('div','card');f.appendChild(el('p','tiny','Convention signée le '+long(dst.signed_on)+'. Seuls toi et l’administrateur voyez l’avancement de tes défis.'));
+ var md=el('button','btn sm','Modifier ma date de signature');md.style.marginTop='8px';md.onclick=async function(){if(await defiDate(false))renderDefis()};f.appendChild(md);b.appendChild(f);
+}
+async function defiCheck(){
+ if(defiCount()===5&&dst&&!dst.celebrated){
+  dst.celebrated=true;await sb.from('defi_start').update({celebrated:true}).eq('user_id',me.id);
+  await ask({badge:'Bravo',title:'Les 5 DÉFIS sont relevés !',paras:['D, É, F, I, S : tu as relevé tous les défis. Tu fais partie de ceux qui ont le plus de chances de devenir manager.','Continue, ton avenir se construit avec tes actions d’aujourd’hui.'],buttons:[{t:'Merci',cls:'p',v:1}]});
+ }
+}
+async function defisTeam(b){
+ var s=await sb.from('defi_start').select('*'),t=await sb.from('defi_steps').select('*'),p=await sb.from('profiles').select('id,name');
+ var names={};(p.data||[]).forEach(function(x){names[x.id]=x.name});
+ var steps={};(t.data||[]).forEach(function(x){(steps[x.user_id]=steps[x.user_id]||{})[x.code]=x});
+ var rows=(s.data||[]).filter(function(r){return r.user_id!==me.id&&names[r.user_id]}).map(function(r){var st=steps[r.user_id]||{},n=DEFIS.filter(function(d){return st[d[0]]&&st[d[0]].done_on}).length;return{r:r,st:st,n:n,name:names[r.user_id]}});
+ var ord={yes:0,'':1,no:2};rows.forEach(function(x){x.ch=x.r.choice||''});
+ rows.sort(function(a,b){return ord[a.ch]-ord[b.ch]||b.n-a.n||a.name.localeCompare(b.name)});
+ var c=el('div','card');c.appendChild(el('h2','h','5 DÉFIS · nouveaux consultants'));
+ if(!rows.length){c.appendChild(el('p','mut','Le challenge n’a encore été proposé à personne (aucune date de signature saisie).'));b.appendChild(c);return}
+ var cy=rows.filter(function(x){return x.ch==='yes'}).length,cn=rows.filter(function(x){return x.ch==='no'}).length,cw=rows.length-cy-cn;
+ c.appendChild(el('p','mut','Proposé à '+rows.length+' · accepté '+cy+' · refusé '+cn+' · sans réponse '+cw+' · '+rows.filter(function(x){return x.n===5}).length+' ont relevé les 5 défis'));
+ var ul=el('ul','rank');
+ rows.forEach(function(x){
+  var li=el('li');li.style.flexWrap='wrap';
+  var nm=el('span',0,x.name);nm.style.cssText='font-weight:700;flex:1;min-width:0';li.appendChild(nm);
+  var lab={yes:'A accepté',no:'A refusé','':'Proposé, sans réponse'}[x.ch];
+  var bd=el('span','tiny',lab+(x.r.choice_on?' le '+dm(x.r.choice_on):''));bd.style.cssText='font-weight:700;margin-right:8px';li.appendChild(bd);
+  if(x.ch==='yes')li.appendChild(el('span','pt',x.n+' / 5'));
+  if(x.ch==='yes'){var ph=el('div','pills');ph.style.cssText='width:100%;margin:6px 0 0';
+  DEFIS.forEach(function(d){var o=x.st[d[0]]&&x.st[d[0]].done_on,e=el('span','pill'+(o?' n':''),d[0]);e.style.cssText='width:30px;height:30px;font-size:.85rem';ph.appendChild(e)});
+  li.appendChild(ph);}
+  var left=Math.round((Date.parse(plus6m(x.r.signed_on))-Date.parse(TODAY))/864e5);
+  var det=el('div','tiny','Signé le '+dm(x.r.signed_on)+(x.ch==='yes'?' · investisseurs '+((x.st.I&&x.st.I.investors)||0)+'/10'+(x.st.F&&x.st.F.done_on?' · habilitation achetée, QCM '+(x.st.F.qcm_on?(x.st.F.qcm_on>TODAY?'prévu le ':'passé le ')+dm(x.st.F.qcm_on):'sans date'):''):'')+' · '+(left>=0?'encore '+left+' j sur les 6 mois':'6 mois dépassés'));det.style.cssText='width:100%;margin-top:6px';li.appendChild(det);
+  var rs=el('button','btn sm','Réinitialiser');rs.style.marginTop='8px';rs.onclick=async function(){
+   if(!confirm('Réinitialiser les 5 DÉFIS de '+x.name+' ?\nSa date de signature et ses défis seront effacés ; elle/il devra la ressaisir. Cette action est définitive.'))return;
+   var e1=await sb.from('defi_steps').delete().eq('user_id',x.r.user_id);var e2=await sb.from('defi_start').delete().eq('user_id',x.r.user_id);if(err(e1,'Impossible')||err(e2,'Impossible'))return;renderTeam()};
+  li.appendChild(rs);ul.appendChild(li)});
+ c.appendChild(ul);b.appendChild(c);
+}
+document.getElementById('defiBack').onclick=function(){defiQuestion()};
+/* ===== 90j (administrateur) : mêmes saisies que le Focus, sur 90 jours à partir d'une date personnelle ===== */
+var runMode='day',runDay=null,runWk=0;
+function runStart(){return prefs.run_start||null}
+function runEnd(){return add(runStart(),89)}
+function nextMonday(){var m=mondayOf(TODAY);return m<TODAY?add(m,7):m}
+function runLocked(m){return !!prefs.run_start&&m>=prefs.run_start&&add(m,6)<=add(prefs.run_start,89)}
+async function runAskDate(cur,title){
+ var i=el('input');i.type='date';i.value=cur;i.setAttribute('aria-label','Date de départ du 90j');
+ var w=el('div');w.appendChild(i);
+ for(;;){
+  var v=await ask({badge:'90j',title:title,paras:['Le jour 1 est la date que tu choisis. Tu peux la modifier quand tu veux pour lancer un nouveau 90j : tout ce que tu as saisi reste enregistré, et compte toujours dans le Focus et Mon exercice.'],node:w,buttons:[{t:'Annuler',v:0},{t:'Valider',cls:'p',v:1}]});
+  if(!v)return null;
+  if(!i.value||i.value<'2000-01-01'){toast('Choisis une date valide');continue}
+  return i.value}
+}
+async function runSetDate(title){
+ var d=await runAskDate(runStart()||nextMonday(),title);if(!d)return;
+ await savePrefs({run_start:d});runDay=null;runWk=0;runMode='day';renderRun();
+}
+function runCap(d){var m=TODAY<runEnd()?TODAY:runEnd();return d<runStart()?runStart():d>m?m:d}
+function renderRun(){
+ var b=$('run');b.innerHTML='';
+ if(!runStart()){
+  var c=el('div','card');c.appendChild(el('h2','h','90j'));
+  c.appendChild(el('p','mut','90 jours d’action intense, sur le principe du 90 Day Run. Tu saisis chaque jour comme dans le Focus : ce que tu notes compte aussi dans le Focus et dans Mon exercice, sans rien ressaisir.'));
+  var bt=el('button','btn p','Choisir ma date de départ');bt.style.marginTop='10px';bt.onclick=function(){runSetDate('Quand démarre ton 90j ?')};c.appendChild(bt);b.appendChild(c);return}
+ var rs=runStart(),re=runEnd(),i=Math.round((Date.parse(TODAY)-Date.parse(rs))/864e5)+1,before=i<1,over=i>90,left=90-i;
+ if(!runDay)runDay=runCap(TODAY);
+ if(runWk===null||runWk===undefined)runWk=0;
+ var h=el('div','card'),top=el('div','row sp'),l=el('div');
+ l.appendChild(el('div','mut',before?'Départ dans '+(1-i)+(1-i>1?' jours':' jour'):over?'90j terminés 🎉':'Jour '+i+' sur 90'));
+ l.appendChild(el('div','big',fmt(pts(sum(span(rs,90),mine)))));
+ l.appendChild(el('div','mut','points depuis le début du 90j'));
+ top.appendChild(l);h.appendChild(top);
+ var pl=el('div','pills');pl.setAttribute('aria-label','Avancement des 90 jours');
+ for(var k=1;k<=3;k++){var done=over||(!before&&i>k*30),now=!before&&!over&&i>(k-1)*30&&i<=k*30;pl.appendChild(el('span','pill'+(done?' d':now?' n':''),k))}
+ h.appendChild(pl);
+ var bar=el('div','pbar'),f=el('i');f.style.width=(Math.max(0,Math.min(i,90))/90*100)+'%';bar.appendChild(f);h.appendChild(bar);
+ var tx=el('div','mut',before?'Le 90j commence le '+long(rs):over?'Bravo pour ces 90 jours.':'Il reste '+left+(left>1?' jours':' jour')+' · fin le '+long(re));tx.style.marginTop='8px';h.appendChild(tx);
+ var all=sum(span(rs,90),mine),s3=el('div','sum3');s3.style.marginTop='12px';
+ s3.innerHTML='<div><b>'+all.c1+'</b><span>C1</span></div><div><b>'+all.r1+'</b><span>R1</span></div><div><b>'+all.r2+'</b><span>R2</span></div>';h.appendChild(s3);
+ var ed=el('button','btn sm','Modifier la date de départ');ed.style.marginTop='10px';ed.onclick=function(){runSetDate('Nouvelle date de départ')};h.appendChild(ed);
+ b.appendChild(h);
+ var sg=el('div','seg');[['day','Jour'],['week','Semaine'],['all','90j']].forEach(function(x){var bb=el('button',0,x[1]);bb.setAttribute('aria-pressed',runMode===x[0]);bb.onclick=function(){runMode=x[0];renderRun()};sg.appendChild(bb)});b.appendChild(sg);
+ var v=el('div','card');b.appendChild(v);
+ if(runMode==='day')runDayView(v);else if(runMode==='week')runWeekView(v);else runAllView(v);
+}
+function runTable(v,cols){
+ var w=el('div','sc'),t=el('table'),h=el('tr');h.appendChild(el('th',0,''));
+ cols.forEach(function(c){var th=el('th'),x=el('button','hb',c.h);x.onclick=c.go;th.appendChild(x);h.appendChild(th)});
+ h.appendChild(el('th',0,'Total'));t.appendChild(h);
+ C.forEach(function(k){var tr=el('tr'),s=0;tr.appendChild(el('td','rl',k[1]));
+  cols.forEach(function(c){var x=sum(c.days,mine)[k[0]];s+=x;tr.appendChild(el('td',0,x))});tr.appendChild(el('td','tt',s));t.appendChild(tr)});
+ var tp=el('tr','pt'),s2=0;tp.appendChild(el('td','rl','Points'));
+ cols.forEach(function(c){var x=pts(sum(c.days,mine));s2+=x;tp.appendChild(el('td',0,fmt(x)))});tp.appendChild(el('td','tt',fmt(s2)));t.appendChild(tp);
+ w.appendChild(t);v.appendChild(w);
+}
+function runDayView(v){
+ var rs=runStart(),r=mine[runDay]||z(),ok=runDay>=rs&&runDay<=TODAY&&runDay<=runEnd();
+ v.appendChild(navBar(function(){runDay=runCap(add(runDay,-1));renderRun()},long(runDay),function(){runDay=runCap(add(runDay,1));renderRun()}));
+ if(TODAY<rs)v.appendChild(el('p','mut','Le 90j commence le '+long(rs)+'.'));
+ var list=el('div','stack');list.style.gap='8px';
+ C.forEach(function(c){
+  var row=el('div','crow'),ic=el('span','cic');ic.innerHTML=ico(c[5]);
+  var tx=el('div','ctx');tx.innerHTML='<b>'+c[1]+' · '+esc(c[2])+'</b><span>'+esc(c[3])+'</span><small>'+c[4]+' points l’unité</small>';
+  var st=el('div','cstep'),m=el('button',0,'−'),p=el('button','cp','+'),o=el('output',0,r[c[0]]||0);
+  m.disabled=!ok||!r[c[0]];p.disabled=!ok;m.setAttribute('aria-label','Retirer un '+c[1]);p.setAttribute('aria-label','Ajouter un '+c[1]);
+  m.onclick=function(){runTap(c[0],-1)};p.onclick=function(){runTap(c[0],1)};
+  st.appendChild(m);st.appendChild(o);st.appendChild(p);row.appendChild(ic);row.appendChild(tx);row.appendChild(st);list.appendChild(row)});
+ v.appendChild(list);v.appendChild(el('p','mut','Points du jour : '+fmt(pts(r))));
+ if(inFocus(runDay))v.appendChild(el('p','tiny','Ce jour fait aussi partie de ton Focus 5 semaines : ce que tu notes ici y est compté.'));
+}
+function runWeekView(v){
+ var rs=runStart(),n=13,first=add(rs,runWk*7);
+ runTable(v,span(first,7).filter(function(d){return d<=runEnd()}).map(function(d){return{h:new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}),days:[d],go:function(){runDay=runCap(d);runMode='day';renderRun()}}}));
+ v.insertBefore(navBar(function(){runWk=Math.max(0,runWk-1);renderRun()},'Semaine '+(runWk+1)+' sur '+n,function(){runWk=Math.min(n-1,runWk+1);renderRun()}),v.firstChild);
+}
+function runAllView(v){
+ var rs=runStart();
+ runTable(v,[0,1,2,3,4,5,6,7,8,9,10,11,12].map(function(i){return{h:'S'+(i+1),days:span(add(rs,i*7),i===12?7:7).filter(function(d){return d<=runEnd()}),go:function(){runWk=i;runMode='week';renderRun()}}}));
+}
+function runTap(k,d){
+ var r=mine[runDay]||(mine[runDay]=Object.assign(z(),{user_id:me.id,day:runDay}));
+ r[k]=Math.max(0,r[k]+d);if(tg&&tg.id===me.id)data=mine;renderRun();
+ var row=Object.assign({},r);
+ queue(function(){return sb.from('counts').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e);loadTop()})});
+}
+
+/* ===== OUTILS ===== */
+var TOOLS=['toolList','tEpargne','tCredit','tPlan','tRet','tCap'];
+function showTool(id){TOOLS.forEach(function(x){$(x).hidden=x!==id});window.scrollTo({top:0});
+ if(id==='tEpargne')renderE();if(id==='tCredit')renderK();if(id==='tPlan')renderP();if(id==='tRet')renderR();if(id==='tCap')renderCap()}
+$$('[data-tool]').forEach(function(b){b.onclick=function(){showTool(b.dataset.tool)}});
+$$('[data-back]').forEach(function(b){b.onclick=function(){showTool('toolList')}});
+
+function field(pf,id,label,val,min,max,step,unit,out){
+ return '<div class="fld'+(out?' out':'')+'"><div class="lb"><label for="'+pf+'n_'+id+'">'+label+'</label><span><input type="text" inputmode="decimal" id="'+pf+'n_'+id+'" value="'+String(val).replace('.',',')+'"'+(out?' readonly':'')+'> '+unit+'</span></div>'+
+ (out?'':'<input type="range" id="'+pf+'r_'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" aria-label="'+label+'">')+'</div>'}
+function nv(s){var v=parseFloat(String(s).replace(/\s/g,'').replace(',','.'));return isNaN(v)?0:v}
+function bind(st,pf,ids,fn){ids.forEach(function(id){var n=$(pf+'n_'+id),r=$(pf+'r_'+id);
+ if(n&&!n.readOnly)n.oninput=function(){st[id]=nv(n.value);if(r)r.value=st[id];fn()};
+ if(r)r.oninput=function(){st[id]=+r.value;n.value=String(st[id]).replace('.',',');fn()}})}
+function annuity(r,n){return r?r/(1-Math.pow(1+r,-n)):1/n}
+function shareCard(title,lines,file){
+ var cv=document.createElement('canvas');cv.width=900;cv.height=200+lines.length*92+110;var x=cv.getContext('2d');
+ x.fillStyle='#1f2124';x.fillRect(0,0,cv.width,cv.height);
+ x.fillStyle='#9ad9bb';x.font='700 46px Georgia, serif';x.fillText(title,50,95);
+ x.fillStyle='#3a3e43';x.fillRect(50,125,800,2);
+ lines.forEach(function(l,i){var y=195+i*92;x.fillStyle='#9a9fa6';x.font='400 26px sans-serif';x.fillText(l[0],50,y);x.fillStyle='#eeeeea';x.font='700 40px sans-serif';x.fillText(l[1],50,y+46)});
+ x.fillStyle='#9a9fa6';x.font='400 22px sans-serif';x.fillText('Simulation indicative et non contractuelle.',50,cv.height-48);
+ cv.toBlob(function(b){var f=new File([b],file,{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:title}).catch(function(){})}
+  else{var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=file;document.body.appendChild(a);a.click();a.remove();toast('Image téléchargée')}})}
+
+/* --- Calculatrice d'épargne --- */
+var E={mode:'final',pmt:300,rate:3,init:10000,years:20,target:116359,fee:0,mgmt:0,infl:0,wait:false,delay:1,cmp:false};
+var B={pmt:400,rate:3};
+var MODES=[['final','Capital final'],['pmt','Épargne mensuelle'],['rate','Rendement'],['years','Durée']];
+function fv(pmt,a,init,months,fee,mgmt){
+ var net=(1+a)*(1-mgmt)-1,r=Math.pow(1+net,1/12)-1,p=pmt*(1-fee),i0=init*(1-fee);
+ if(Math.abs(r)<1e-12)return i0+p*months;
+ var g=Math.pow(1+r,months);return i0*g+p*(1+r)*(g-1)/r}
+function bis(f,lo,hi){for(var k=0;k<80;k++){var m=(lo+hi)/2;if(f(m)<0)lo=m;else hi=m}return(lo+hi)/2}
+function solveE(){
+ var fee=E.fee/100,mg=E.mgmt/100,a=E.rate/100,n=E.years*12,o={pmt:E.pmt,rate:E.rate,years:E.years,final:0};
+ if(E.mode==='final')o.final=fv(E.pmt,a,E.init,n,fee,mg);
+ else{o.final=E.target;
+  if(E.mode==='pmt'){var z0=fv(0,a,E.init,n,fee,mg),u=fv(1,a,0,n,fee,mg);o.pmt=u?Math.max(0,(E.target-z0)/u):0}
+  if(E.mode==='rate')o.rate=bis(function(x){return fv(E.pmt,x,E.init,n,fee,mg)-E.target},-.5,1.5)*100;
+  if(E.mode==='years')o.years=bis(function(x){return fv(E.pmt,a,E.init,x*12,fee,mg)-E.target},0,80)}
+ return o}
+var FEES=[0,4.5,4.8,5,10];
+function renderE(){
+ $('modeSeg').innerHTML=MODES.map(function(m){return '<button aria-pressed="'+(E.mode===m[0])+'" data-m="'+m[0]+'">'+m[1]+'</button>'}).join('');
+ var o=solveE(),h='';
+ h+=E.mode==='final'?'<div class="fld out"><div class="lb"><label>Capital final</label><span><b id="eFinal">'+eur(o.final)+'</b></span></div></div>':field('e','target','Capital final visé',E.target,0,2000000,1000,'€');
+ h+=field('e','pmt','Épargne mensuelle',E.mode==='pmt'?o.pmt.toFixed(0):E.pmt,0,5000,10,'€',E.mode==='pmt');
+ h+=field('e','rate','Rendement annuel',E.mode==='rate'?o.rate.toFixed(2):E.rate,-5,15,.1,'%',E.mode==='rate');
+ h+=field('e','init','Capital initial',E.init,0,1000000,500,'€');
+ h+=field('e','years','Durée',E.mode==='years'?o.years.toFixed(1):E.years,1,50,1,'ans',E.mode==='years');
+ $('fields').innerHTML=h;
+ $('advF').innerHTML='<div class="fld"><div class="lb"><label for="e_fee">Droits d’entrée</label><select id="e_fee">'+FEES.map(function(v){return '<option value="'+v+'"'+(!E.feeCustom&&E.fee===v?' selected':'')+'>'+String(v).replace('.',',')+' %</option>'}).join('')+'<option value="x"'+(E.feeCustom?' selected':'')+'>Autre montant…</option></select></div><div class="lb" id="feeX" style="margin-top:8px"'+(E.feeCustom?'':' hidden')+'><label for="e_feex">Montant libre</label><span><input type="text" inputmode="decimal" id="e_feex" value="'+String(E.fee).replace('.',',')+'" style="width:90px;text-align:right"> %</span></div></div>'+
+  field('e','mgmt','Frais de gestion annuels',E.mgmt,0,3,.1,'%')+field('e','infl','Inflation annuelle (comparaison)',E.infl,0,10,.1,'%');
+ bind(E,'e',['target','pmt','rate','init','years','mgmt','infl'],updE);
+ $('e_fee').onchange=function(){if(this.value==='x'){E.feeCustom=true;$('feeX').hidden=false;$('e_feex').focus()}else{E.feeCustom=false;$('feeX').hidden=true;E.fee=+this.value;updE()}};
+ $('e_feex').oninput=function(){var v=parseFloat(this.value.replace(',','.'));if(!isNaN(v)&&v>=0&&v<=100){E.fee=v;updE()}};
+ $$('#modeSeg button').forEach(function(b){b.onclick=function(){E.mode=b.dataset.m;renderE()}});
+ cmpR();drawE(o)}
+function updE(){var o=solveE();
+ function st(id,v){var n=$('en_'+id);if(n&&n.readOnly)n.value=String(v).replace('.',',')}
+ st('pmt',o.pmt.toFixed(0));st('rate',o.rate.toFixed(2));st('years',o.years.toFixed(1));
+ var f=$('eFinal');if(f)f.textContent=eur(o.final);drawE(o)}
+function cmpR(){var b=$('cmpBox');b.hidden=!E.cmp;$('cmpBtn').textContent=E.cmp?'Masquer la comparaison':'Comparer 2 scénarios';if(!E.cmp)return;
+ b.innerHTML='<div class="tiny">Scénario B (le scénario A est celui ci-dessus)</div>'+field('b','pmt','Épargne mensuelle B',B.pmt,0,5000,10,'€')+field('b','rate','Rendement B',B.rate,-5,15,.1,'%')+'<div id="cmpRes" style="font-weight:600"></div>';
+ bind(B,'b',['pmt','rate'],function(){drawE(solveE())})}
+function drawE(o){
+ var years=o.years,pmt=o.pmt,a=o.rate/100,fee=E.fee/100,mg=E.mgmt/100,inv=E.init+pmt*12*years;
+ $('res').innerHTML='<div class="b main"><span>Capital final</span><b>'+eur(o.final)+'</b></div><div class="b"><span>Capital investi</span><b>'+eur(inv)+'</b></div><div class="b"><span>Intérêts générés</span><b>'+eur(o.final-inv)+'</b></div>';
+ $('chartTag').textContent=(Math.round(years*10)/10).toString().replace('.',',')+' ans';
+ var N=Math.max(1,Math.ceil(years)),pts=[],ptsI=[],ptsF=[],ptsB=[];
+ for(var yy=0;yy<=N;yy++){var m=Math.min(yy,years)*12;pts.push(E.init+pmt*m);ptsI.push(fv(pmt,a,E.init,m,fee,mg));ptsF.push(fv(pmt,E.infl/100,E.init,m,0,0));ptsB.push(fv(B.pmt,B.rate/100,E.init,m,fee,mg))}
+ var all=ptsI.concat(ptsF);if(E.cmp)all=all.concat(ptsB);
+ var max=Math.max.apply(null,all.concat([1]))*1.08,W=320,H=190,L=44,R=8,T=10,Bt=24;
+ function x(i){return L+(W-L-R)*i/N}function y(v){return T+(H-T-Bt)*(1-v/max)}
+ function path(arr){return arr.map(function(v,i){return(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)}).join(' ')}
+ var g='';for(var k=0;k<=4;k++){var v=max*k/4;g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="9" fill="var(--mut)">'+(v>=1e6?(v/1e6).toFixed(1).replace('.',',')+' M':Math.round(v/1000)+' k')+'</text>'}
+ var step=Math.max(1,Math.round(N/5));for(var i=0;i<=N;i+=step)g+='<text x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="var(--mut)">'+i+'</text>';
+ var s=g+'<path d="'+path(ptsI)+' L'+x(N)+' '+y(0)+' L'+x(0)+' '+y(0)+' Z" fill="var(--acc)" opacity=".13"/><path d="'+path(pts)+'" fill="none" stroke="var(--mut)" stroke-width="1.6" stroke-dasharray="4 3"/><path d="'+path(ptsI)+'" fill="none" stroke="var(--acc)" stroke-width="2.4"/><circle cx="'+x(N)+'" cy="'+y(ptsI[N])+'" r="4" fill="var(--acc)"/>';
+ var leg='<span><i style="background:var(--acc)"></i>Capital</span><span><i style="background:var(--mut)"></i>Capital investi</span>';
+ if(E.infl>0){s+='<path d="'+path(ptsF)+'" fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="2 3"/>';leg+='<span><i style="background:var(--gold)"></i>Au rythme de l’inflation</span>'}
+ if(E.cmp){s+='<path d="'+path(ptsB)+'" fill="none" stroke="var(--ink)" stroke-width="2" opacity=".75"/>';leg+='<span><i style="background:var(--ink)"></i>Scénario B</span>';
+  var fb=ptsB[N],cr=$('cmpRes');if(cr)cr.textContent='Scénario B : '+eur(fb)+' ('+(fb-o.final>=0?'+':'−')+eur(Math.abs(fb-o.final))+' par rapport à A)'}
+ $('chart').innerHTML=s;$('chartLeg').className='leg';$('chartLeg').innerHTML=leg;
+ var d=E.delay,late=fv(pmt,a,E.init,Math.max(0,years-d)*12,fee,mg);
+ $('wV').textContent=d;
+ $('waitTxt').textContent=E.wait?'En partant dans '+d+' an'+(d>1?'s':'')+' : '+eur(late)+', soit '+eur(o.final-late)+' de moins.':'Compare avec un départ plus tard.';
+ $('waitBtn').textContent=E.wait?'Masquer':'Afficher';
+ E.last=[['Capital final',eur(o.final)],['Épargne mensuelle',eur(pmt)],['Rendement annuel',o.rate.toFixed(2).replace('.',',')+' %'],['Capital initial',eur(E.init)],['Durée',(Math.round(years*10)/10).toString().replace('.',',')+' ans'],['Intérêts générés',eur(o.final-inv)]]}
+$('waitBtn').onclick=function(){E.wait=!E.wait;drawE(solveE())};
+$('wP').onclick=function(){E.delay=Math.min(20,E.delay+1);E.wait=true;drawE(solveE())};
+$('wM').onclick=function(){E.delay=Math.max(1,E.delay-1);E.wait=true;drawE(solveE())};
+$('cmpBtn').onclick=function(){E.cmp=!E.cmp;cmpR();drawE(solveE())};
+$('shE').onclick=function(){drawE(solveE());shareCard('Simulation d’épargne',E.last,'simulation-epargne.png')};
+
+/* --- Mensualités de crédit --- */
+var K={amt:250000,years:20,rate:3.4,ins:.34};
+function renderK(){
+ if(rates[K.years]!=null&&!K.touched)K.rate=rates[K.years];
+ $('cDur').innerHTML=[7,10,15,20,25].map(function(y){return '<button aria-pressed="'+(K.years===y)+'" data-y="'+y+'">'+y+' ans</button>'}).join('');
+ $('cFields').innerHTML=field('k','amt','Montant emprunté',K.amt,20000,1500000,1000,'€')+field('k','rate','Taux d’intérêt',K.rate,0,10,.01,'%')+field('k','ins','Assurance (TAEA)',K.ins,0,2,.01,'%');
+ bind(K,'k',['amt','rate','ins'],function(){K.touched=true;drawK()});
+ $$('#cDur button').forEach(function(b){b.onclick=function(){K.years=+b.dataset.y;K.touched=false;if(rates[K.years]!=null)K.rate=rates[K.years];renderK()}});
+ $('cRatesInfo').innerHTML=rates[K.years]!=null?'Taux indicatif pour '+K.years+' ans, au '+(ratesDate?long(ratesDate)+' '+ratesDate.slice(0,4):'—')+'. Modifiable.':'Pas de taux indicatif pour '+K.years+' ans : saisis le tien.';
+ drawK()}
+function amort(){var n=K.years*12,r=K.rate/1200,m=r?K.amt*r/(1-Math.pow(1+r,-n)):K.amt/n,ins=K.amt*K.ins/1200;return{n:n,r:r,m:m,ins:ins,tot:m+ins,cost:(m*n-K.amt)+ins*n}}
+function drawK(){var a=amort();
+ $('cRes').innerHTML='<div class="b main"><span>Ta mensualité sera de</span><b>'+eur(a.tot)+'</b></div><div class="b"><span>dont assurance</span><b>'+a.ins.toFixed(2).replace('.',',')+' €/mois</b></div><div class="b"><span>Montant du prêt</span><b>'+eur(K.amt)+'</b></div><div class="b"><span>Coût total du crédit</span><b>'+eur(a.cost)+'</b></div><div class="b"><span>dont assurance</span><b>'+eur(a.ins*a.n)+'</b></div>';
+ K.last=[['Montant emprunté',eur(K.amt)],['Durée',K.years+' ans'],['Taux d’intérêt',K.rate.toFixed(2).replace('.',',')+' %'],['Mensualité (assurance incluse)',eur(a.tot)],['Coût total du crédit',eur(a.cost)]]}
+$('shC').onclick=function(){drawK();shareCard('Mensualités de crédit',K.last,'simulation-credit.png')};
+$('dlAmort').onclick=async function(){
+ try{await loadX()}catch(e){toast('Téléchargement impossible : bibliothèque non chargée');return}
+ var a=amort(),bal=K.amt,rows=[['N°','Date','Mensualité hors assurance','Intérêts','Capital remboursé','Assurance','Mensualité totale','Capital restant dû']];
+ var d=new Date();d.setDate(1);d.setMonth(d.getMonth()+1);
+ for(var i=1;i<=a.n;i++){var it=bal*a.r,cap=a.m-it;bal=Math.max(0,bal-cap);
+  rows.push([i,new Date(d.getFullYear(),d.getMonth()+i-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'}),+a.m.toFixed(2),+it.toFixed(2),+cap.toFixed(2),+a.ins.toFixed(2),+a.tot.toFixed(2),+bal.toFixed(2)])}
+ var head=[['Tableau d’amortissement'],['Montant emprunté (€)',K.amt],['Durée (ans)',K.years],['Taux d’intérêt (%)',K.rate],['Assurance TAEA (%)',K.ins],['Mensualité hors assurance (€)',+a.m.toFixed(2)],['Mensualité totale (€)',+a.tot.toFixed(2)],['Coût total du crédit (€)',+a.cost.toFixed(2)],['Simulation indicative et non contractuelle'],[]];
+ var ws=XLSX.utils.aoa_to_sheet(head.concat(rows)),wb=XLSX.utils.book_new();ws['!cols']=[{wch:30},{wch:16},{wch:22},{wch:12},{wch:18},{wch:12},{wch:16},{wch:18}];
+ XLSX.utils.book_append_sheet(wb,ws,'Amortissement');XLSX.writeFile(wb,'tableau-amortissement.xlsx')};
+
+/* --- Planificateur d'objectif --- */
+var P={goal:500000,weeks:40,taux:30,panier:12000};
+function renderP(){
+ $('pFields').innerHTML=field('p','goal','Objectif de volume d’affaires',P.goal,50000,4500000,10000,'€')+field('p','weeks','Semaines restantes',P.weeks,1,52,1,'sem.')+field('p','taux','Taux de transformation',P.taux,1,100,1,'%')+field('p','panier','Panier moyen',P.panier,1000,100000,500,'€');
+ bind(P,'p',['goal','weeks','taux','panier'],drawP);drawP()}
+function drawP(){var den=(P.taux/100)*P.panier,r1=den?P.goal/den:0,w=P.weeks?r1/P.weeks:0;
+ $('pRes').innerHTML='<div class="b main"><span>R1 à réaliser</span><b>'+Math.ceil(r1)+'</b></div><div class="b"><span>par semaine</span><b>'+w.toFixed(1).replace('.',',')+'</b></div><div class="b"><span>par jour ouvré</span><b>'+(w/5).toFixed(1).replace('.',',')+'</b></div>'}
+
+/* --- Capital pour la retraite --- */
+var R={now:35,ret:64,inc:1500,dur:25,rr:2,ra:3,cap:0};
+function renderR(){
+ $('rFields').innerHTML=field('r','now','Âge actuel',R.now,18,70,1,'ans')+field('r','ret','Âge de départ à la retraite',R.ret,40,75,1,'ans')+field('r','inc','Complément de revenu mensuel souhaité',R.inc,100,10000,50,'€')+
+  field('r','dur','Durée de la retraite',R.dur,5,45,1,'ans')+field('r','rr','Rendement pendant la retraite',R.rr,0,8,.1,'%')+field('r','ra','Rendement de l’épargne',R.ra,0,10,.1,'%')+field('r','cap','Capital déjà constitué',R.cap,0,1000000,1000,'€');
+ bind(R,'r',['now','ret','inc','dur','rr','ra','cap'],drawR);drawR()}
+function drawR(){
+ var rm=Math.pow(1+R.rr/100,1/12)-1,N=R.dur*12,capNeed=rm?R.inc*(1+rm)*(1-Math.pow(1+rm,-N))/rm:R.inc*N;
+ var n=(R.ret-R.now)*12,ra=R.ra/100,pm=null;
+ if(n>0){var r=Math.pow(1+ra,1/12)-1,g=Math.pow(1+r,n),u=r?(1+r)*(g-1)/r:n;pm=Math.max(0,(capNeed-R.cap*g)/u)}
+ $('rRes').innerHTML='<div class="b main"><span>Capital à constituer à '+R.ret+' ans</span><b>'+eur(capNeed)+'</b></div><div class="b"><span>Épargne mensuelle nécessaire</span><b>'+(pm===null?'–':eur(pm))+'</b></div><div class="b"><span>Durée d’épargne</span><b>'+Math.max(0,R.ret-R.now)+' ans</b></div>';
+ R.last=[['Complément de revenu mensuel',eur(R.inc)],['Capital à constituer',eur(capNeed)],['Épargne mensuelle nécessaire',pm===null?'–':eur(pm)],['Durée d’épargne',Math.max(0,R.ret-R.now)+' ans']]}
+$('shR').onclick=function(){drawR();shareCard('Capital pour la retraite',R.last,'simulation-retraite.png')};
+
+/* --- Capacité d'emprunt --- */
+var Kp={rev:3500,chg:0,years:20,rate:3.4,ins:.34,hdr:35};
+function renderCap(){
+ if(rates[Kp.years]!=null&&!Kp.touched)Kp.rate=rates[Kp.years];
+ $('kFields').innerHTML=field('c','rev','Revenus nets mensuels du foyer',Kp.rev,500,30000,50,'€')+field('c','chg','Mensualités de crédits en cours',Kp.chg,0,5000,10,'€')+field('c','years','Durée du prêt',Kp.years,5,30,1,'ans')+field('c','rate','Taux d’intérêt',Kp.rate,0,10,.01,'%')+field('c','ins','Assurance (TAEA)',Kp.ins,0,2,.01,'%')+field('c','hdr','Taux d’endettement maximum',Kp.hdr,20,45,1,'%');
+ bind(Kp,'c',['rev','chg','years','rate','ins','hdr'],function(){Kp.touched=true;drawCap()});drawCap()}
+function drawCap(){
+ var mmax=Math.max(0,Kp.rev*Kp.hdr/100-Kp.chg),n=Kp.years*12,r=Kp.rate/1200,f=annuity(r,n)+Kp.ins/1200/1,P0=f?mmax/f:0,now=Kp.rev?Kp.chg/Kp.rev*100:0;
+ $('kRes').innerHTML='<div class="b main"><span>Montant empruntable</span><b>'+eur(P0)+'</b></div><div class="b"><span>Mensualité maximale</span><b>'+eur(mmax)+'</b></div><div class="b"><span>Endettement actuel</span><b>'+now.toFixed(1).replace('.',',')+' %</b></div>';
+ Kp.last=[['Revenus nets mensuels',eur(Kp.rev)],['Mensualité maximale',eur(mmax)],['Montant empruntable',eur(P0)],['Durée',Kp.years+' ans']]}
+$('shK').onclick=function(){drawCap();shareCard('Capacité d’emprunt',Kp.last,'simulation-capacite.png')};
+
+boot();
+</script>
+</body>
+</html>
