@@ -142,6 +142,35 @@ input[type=range]{width:100%;accent-color:var(--acc);padding:0}
 .mbox .fl label{font-size:.8rem;color:var(--mut)}.mbox .fl input{width:100%}
 .mbtn{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.85rem;max-width:min(92vw,420px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}.toast.on{opacity:1}
+
+/* ===== Mise en page adaptative : téléphone (par défaut), tablette, ordinateur ===== */
+#auth{max-width:440px;margin-left:auto;margin-right:auto;width:100%}
+.cl,.cr{display:contents}
+@media (min-width:720px){
+ body{font-size:16px}
+ .app{max-width:760px}
+ #exo,#defis,#team,#run{display:block;column-count:2;column-gap:16px}
+ #exo>*,#defis>*,#team>*,#run>*{break-inside:avoid;margin:0 0 14px;width:100%}
+ #outils{max-width:640px;margin-left:auto;margin-right:auto;width:100%}
+ #focus{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+ #focus>#ro{grid-column:1/-1}
+ .cl,.cr{display:flex;flex-direction:column;gap:14px;min-width:0}
+}
+@media (min-width:1024px){
+ body{padding-top:20px}
+ .app{max-width:1180px}
+ #app{display:grid;grid-template-columns:240px minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:28px;row-gap:12px;align-items:start}
+ #app>.motto{grid-column:1;grid-row:1;padding:0 4px;text-align:left}
+ #app>.bar{grid-column:1;grid-row:2}
+ #app>.tabs{grid-column:1;grid-row:3;position:sticky;top:16px;display:flex!important;flex-direction:column;align-items:stretch;gap:4px;padding:8px;align-self:start}
+ #app>.tabs .tab{flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;font-size:.95rem;text-align:left}
+ #app>.tabs .dot{top:50%;right:14px;transform:translateY(-50%)}
+ #app>section{grid-column:2;grid-row:1/4}
+ #focus{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+ #exo,#defis,#team,#run{column-count:2}
+ #outils{max-width:760px;margin-left:0}
+ .appname{margin-top:8px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -174,15 +203,19 @@ input[type=range]{width:100%;accent-color:var(--acc);padding:0}
 <!-- FOCUS -->
 <section id="focus" class="stack">
  <div class="card" id="ro" hidden><div class="row sp"><span class="mut" id="roTxt"></span><button class="btn sm" id="roBack">Revenir à mon Focus</button></div></div>
+ <div class="cl">
  <div class="card" id="hero"></div>
  <div class="card" id="goalCard" hidden></div>
  <div class="seg" id="modes"><button id="m-day">Jour</button><button id="m-week">Semaine</button><button id="m-all">Focus</button></div>
  <div class="card" id="view"></div>
+ </div>
+ <div class="cr">
  <div class="card" id="streak"></div>
  <div class="card" id="agendaF"></div>
  <button class="btn sm" id="defiBack" hidden>Découvrir le challenge des 5 DÉFIS</button>
  <div class="card" id="topCard"><h2 class="h">Top 5 des consultants</h2><ul class="rank" id="top"></ul>
   <div id="progBox" hidden><div class="mut" style="margin-top:14px">Meilleure progression de la semaine</div><ul class="rank" id="prog"></ul></div></div>
+ </div>
 </section>
 
 <!-- MON EXERCICE -->
