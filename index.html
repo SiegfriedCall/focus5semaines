@@ -143,6 +143,7 @@ input[type=range]{width:100%;accent-color:var(--acc);padding:0}
 .mbtn{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.85rem;max-width:min(92vw,420px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}.toast.on{opacity:1}
 
+table.rg{width:100%;border-collapse:collapse}.rg th,.rg td{padding:7px 2px;font-size:.78rem;text-align:center;white-space:nowrap}.rg td.rl,.rg th:first-child{text-align:left;padding-left:4px;white-space:normal;min-width:88px}.rg td.rl .tiny{font-size:.68rem;white-space:nowrap}.rg td.tt{font-weight:800}
 /* ===== Mise en page adaptative : téléphone (par défaut), tablette, ordinateur ===== */
 #auth{max-width:440px;margin-left:auto;margin-right:auto;width:100%}
 .cl,.cr{display:contents}
@@ -1048,7 +1049,7 @@ function renderRun(){
  s3.innerHTML='<div><b>'+all.c1+'</b><span>C1</span></div><div><b>'+all.r1+'</b><span>R1</span></div><div><b>'+all.r2+'</b><span>R2</span></div>';h.appendChild(s3);
  var ed=el('button','btn sm','Modifier la date de départ');ed.style.marginTop='10px';ed.onclick=function(){runSetDate('Nouvelle date de départ')};h.appendChild(ed);
  b.appendChild(h);
- var sg=el('div','seg');[['day','Jour'],['week','Semaine'],['all','90j']].forEach(function(x){var bb=el('button',0,x[1]);bb.setAttribute('aria-pressed',runMode===x[0]);bb.onclick=function(){runMode=x[0];renderRun()};sg.appendChild(bb)});b.appendChild(sg);
+ var sg=el('div','seg');[['day','Jour'],['week','Semaine'],['all','Mois et semaines']].forEach(function(x){var bb=el('button',0,x[1]);bb.setAttribute('aria-pressed',runMode===x[0]);bb.onclick=function(){runMode=x[0];renderRun()};sg.appendChild(bb)});b.appendChild(sg);
  var v=el('div','card');b.appendChild(v);
  if(runMode==='day')runDayView(v);else if(runMode==='week')runWeekView(v);else runAllView(v);
 }
@@ -1082,9 +1083,30 @@ function runWeekView(v){
  runTable(v,span(first,7).filter(function(d){return d<=runEnd()}).map(function(d){return{h:new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}),days:[d],go:function(){runDay=runCap(d);runMode='day';renderRun()}}}));
  v.insertBefore(navBar(function(){runWk=Math.max(0,runWk-1);renderRun()},'Semaine '+(runWk+1)+' sur '+n,function(){runWk=Math.min(n-1,runWk+1);renderRun()}),v.firstChild);
 }
+function runGrid(v,title,rows,activeIdx){
+ v.appendChild(el('h2','h',title));
+ var w=el('div','sc'),t=el('table','rg'),h=el('tr');h.appendChild(el('th',0,''));
+ C.forEach(function(k){h.appendChild(el('th',0,k[1]))});h.appendChild(el('th',0,'Pts'));t.appendChild(h);
+ var tot=z();
+ rows.forEach(function(r,i){
+  var tr=el('tr',i===activeIdx?'pt':''),th=el('td','rl');th.innerHTML='<b>'+esc(r.h)+'</b><br><span class="tiny">'+esc(r.sub)+'</span>';
+  if(r.go){th.style.cursor='pointer';th.onclick=r.go}tr.appendChild(th);
+  var s=sum(r.days,mine);C.forEach(function(k){tot[k[0]]+=s[k[0]];tr.appendChild(el('td',0,s[k[0]]))});
+  tr.appendChild(el('td','tt',fmt(pts(s))));t.appendChild(tr)});
+ var tr=el('tr','pt'),th=el('td','rl');th.innerHTML='<b>Total</b>';tr.appendChild(th);
+ C.forEach(function(k){tr.appendChild(el('td','tt',tot[k[0]]))});tr.appendChild(el('td','tt',fmt(pts(tot))));t.appendChild(tr);
+ w.appendChild(t);v.appendChild(w);
+}
+function dms(d){return new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}
 function runAllView(v){
- var rs=runStart();
- runTable(v,[0,1,2,3,4,5,6,7,8,9,10,11,12].map(function(i){return{h:'S'+(i+1),days:span(add(rs,i*7),i===12?7:7).filter(function(d){return d<=runEnd()}),go:function(){runWk=i;runMode='week';renderRun()}}}));
+ var rs=runStart(),re=runEnd();
+ var cur=Math.floor((Date.parse(TODAY)-Date.parse(rs))/864e5);
+ var months=[0,1,2].map(function(i){var a=add(rs,i*30),b=add(rs,i*30+29);return{h:'Mois '+(i+1),sub:dms(a)+' → '+dms(b),days:span(a,30)}});
+ runGrid(v,'Par mois',months,cur>=0&&cur<90?Math.floor(cur/30):-1);
+ var gap=el('div');gap.style.height='18px';v.appendChild(gap);
+ var weeks=[];for(var i=0;i<13;i++){(function(i){var a=add(rs,i*7),b=add(a,6)>re?re:add(a,6);weeks.push({h:'S'+(i+1),sub:dms(a)+' → '+dms(b),days:span(a,7).filter(function(d){return d<=re}),go:function(){runWk=i;runMode='week';renderRun()}})})(i)}
+ runGrid(v,'Par semaine (13 semaines)',weeks,cur>=0&&cur<90?Math.floor(cur/7):-1);
+ v.appendChild(el('p','tiny','Un mois = 30 jours à partir de ta date de départ. Touche une semaine pour voir le détail jour par jour.'));
 }
 function runTap(k,d){
  var r=mine[runDay]||(mine[runDay]=Object.assign(z(),{user_id:me.id,day:runDay}));
