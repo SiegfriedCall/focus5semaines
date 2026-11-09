@@ -417,7 +417,7 @@ async function boot(){
  TODAY=iso(new Date());
  var s=(await sb.auth.getSession()).data.session;
  if(!s){showAuth();return}
- var p=await sb.from('profiles').select('id,name,role').eq('id',s.user.id).single(),st=await sb.from('settings').select('start_date,rates_date').single();
+ var p=await sb.from('profiles').select('id,name,role,run90').eq('id',s.user.id).single(),st=await sb.from('settings').select('start_date,rates_date').single();
  if(p.error||st.error){await sb.auth.signOut();showAuth();$('msg').textContent='Profil introuvable. Réessaie.';return}
  me=p.data;start=st.data.start_date;ratesDate=st.data.rates_date;
  await loadPrefs();
@@ -453,7 +453,7 @@ async function openP(p){
 async function reloadMine(){mine=await loadCounts(me.id);if(tg&&tg.id===me.id)data=mine}
 
 /* ===== Onglets ===== */
-function setupTabs(){var isA=me.role==='admin',sd=!isA&&defiEligible();$('tabTeam').hidden=!isA;$('tabRun').hidden=!isA;$('tabDefis').hidden=!sd;$('defiDot').hidden=true;$('defiBack').hidden=isA||!((prefs.defi_no&&!dst)||(defiRecent()&&dst.choice==='no'));
+function setupTabs(){var isA=me.role==='admin',sd=!isA&&defiEligible();$('tabTeam').hidden=!isA;$('tabRun').hidden=!(isA||me.run90);$('tabDefis').hidden=!sd;$('defiDot').hidden=true;$('defiBack').hidden=isA||!((prefs.defi_no&&!dst)||(defiRecent()&&dst.choice==='no'));
  $('tabs').style.gridTemplateColumns='repeat('+(3+(isA?2:0)+(sd?1:0))+',1fr)'}
 function showTab(t){
  curTab=t;
@@ -464,7 +464,7 @@ function showTab(t){
  if(t==='exo')exoOpen();
  if(t==='team')renderTeam();
  if(t==='defis')renderDefis();
- if(t==='run')renderRun();
+ if(t==='run'){renderRun();runWelcome()}
  if(t==='focus'&&tg&&me&&tg.id===me.id&&typeof renderFocus==='function')renderFocus();
 }
 function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
@@ -827,6 +827,7 @@ async function renderTeam0(){
   if(!confirm('Dernière confirmation : tous les chiffres du focus seront effacés définitivement. Continuer ?'))return;
   var e=await sb.rpc('reset_all');if(err(e,'Impossible'))return;renderTeam();loadTop()};
  c.appendChild(ra);b.appendChild(c);
+ b.appendChild(await run90Card());
  var d=el('div','card');d.appendChild(el('h2','h','Date de départ du focus'));
  d.appendChild(el('p','mut','Commune à toute l’équipe. La changer lance une nouvelle période de 5 semaines : le classement repart de zéro et chacun revoit la fenêtre d’accueil du Focus.'));
  var sdI=el('input');sdI.type='date';sdI.value=start;sdI.setAttribute('aria-label','Date de départ');
@@ -1006,6 +1007,46 @@ async function defisTeam(b){
  c.appendChild(ul);b.appendChild(c);
 }
 document.getElementById('defiBack').onclick=function(){defiQuestion()};
+/* ===== 90j partagé : ouvert par l'administrateur à certains membres ===== */
+var runTopTok=0;
+async function runWelcome(){
+ if(prefs.seen_run90||me.role==='admin')return;
+ await ask({badge:'90j',title:'Bienvenue dans ton 90j',paras:[
+  'Le 90j s’inspire du 90 Day Run d’Eric Worre : pendant 90 jours, tu t’engages dans une activité intense et régulière, chaque jour, sans attendre l’envie.',
+  'Pourquoi 90 jours ? C’est assez long pour transformer tes habitudes et voir de vrais résultats, et assez court pour garder le feu jusqu’au bout.',
+  'Tu saisis chaque jour comme dans le Focus : ce que tu notes ici compte aussi dans le Focus et dans Mon exercice, sans rien ressaisir.',
+  runStart()?('Ton 90j a démarré le '+long(runStart())+' et se termine le '+long(runEnd())+'. Tu peux changer ta date de départ quand tu veux.'):'Choisis ta date de départ pour lancer ton 90j.',
+  'Tes chiffres ne sont visibles que par toi et l’administrateur. Après le Focus de 5 semaines, le top 5 du 90j apparaîtra ici.'],
+  buttons:[{t:'C’est parti',cls:'p',v:1}]});
+ await savePrefs({seen_run90:true});
+}
+async function runTop(b){
+ var tok=++runTopTok,r=await sb.rpc('top5_run90');if(tok!==runTopTok||r.error)return;
+ var rows=r.data||[];if(!rows.length)return;
+ var c=el('div','card');c.appendChild(el('h2','h','Top 5 du 90j'));var ul=el('ul','rank');
+ rows.forEach(function(p,i){var li=el('li',p.name===me.name?'me':'');li.appendChild(el('span','n',i+1));
+  var nm=el('span',0,p.name);nm.style.cssText='font-weight:700;flex:1;min-width:0';li.appendChild(nm);
+  li.appendChild(el('span','pt',fmt(p.points)+' pts'));ul.appendChild(li)});
+ c.appendChild(ul);b.appendChild(c);
+}
+async function run90Card(){
+ var c=el('div','card');c.appendChild(el('h2','h','90j de l’équipe'));
+ c.appendChild(el('p','mut','Coche un membre pour lui ouvrir l’onglet 90j : il le verra à sa prochaine ouverture, avec un départ le jour de l’activation (modifiable par lui ensuite). Décocher masque l’onglet sans effacer ses données.'));
+ var r=await sb.rpc('team_run90');if(r.error){c.appendChild(el('p','tiny','Liste indisponible pour le moment.'));return c}
+ var ul=el('ul','rank');
+ (r.data||[]).forEach(function(p){var li=el('li');li.style.flexWrap='wrap';
+  var nm=el('span',0,p.name);nm.style.cssText='font-weight:700;flex:1;min-width:0';li.appendChild(nm);
+  var lb=el('label');lb.style.cssText='display:flex;align-items:center;gap:6px;cursor:pointer';
+  var cb=el('input');cb.type='checkbox';cb.checked=!!p.run90;cb.setAttribute('aria-label','90j pour '+p.name);cb.style.cssText='width:20px;height:20px';
+  cb.onchange=async function(){var on=cb.checked;
+   if(!confirm((on?'Activer':'Désactiver')+' le 90j pour '+p.name+' ?'+(on?'\nDépart aujourd’hui, modifiable ensuite par '+p.name+'.':'\nL’onglet sera masqué, ses données sont conservées.'))){cb.checked=!on;return}
+   var e=await sb.rpc('set_run90',{uid:p.id,active:on});if(err(e,'Impossible')){cb.checked=!on;return}renderTeam()};
+  lb.appendChild(cb);lb.appendChild(el('span','tiny','90j'));li.appendChild(lb);
+  if(p.run90&&p.run_start){var i=Math.round((Date.parse(TODAY)-Date.parse(p.run_start))/864e5)+1;
+   var det=el('div','tiny',(i<1?'Départ le '+dm(p.run_start):i>90?'90j terminé':'Jour '+i+' sur 90')+' · '+fmt(p.points)+' pts · C1 '+p.c1+' · R1 '+p.r1+' · R2 '+p.r2+' · R3 '+p.r3);det.style.width='100%';li.appendChild(det)}
+  ul.appendChild(li)});
+ c.appendChild(ul);return c;
+}
 /* ===== 90j (administrateur) : mêmes saisies que le Focus, sur 90 jours à partir d'une date personnelle ===== */
 var runMode='day',runDay=null,runWk=0;
 function runStart(){return prefs.run_start||null}
@@ -1027,7 +1068,7 @@ async function runSetDate(title){
 }
 function runCap(d){var m=TODAY<runEnd()?TODAY:runEnd();return d<runStart()?runStart():d>m?m:d}
 function renderRun(){
- var b=$('run');b.innerHTML='';
+ var b=$('run');b.innerHTML='';runTop(b);
  if(!runStart()){
   var c=el('div','card');c.appendChild(el('h2','h','90j'));
   c.appendChild(el('p','mut','90 jours d’action intense, sur le principe du 90 Day Run. Tu saisis chaque jour comme dans le Focus : ce que tu notes compte aussi dans le Focus et dans Mon exercice, sans rien ressaisir.'));
