@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Le drive de l'équipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pine:#1E4D40; --pine-2:#2C6B59; --ink:#16231F; --mist:#EEF2EF; --paper:#FFFFFF;
+  --brass:#B8892B; --brass-soft:#F3E7CC; --line:#D5DDD8; --mute:#5B6B65; --alert:#9A3B1E;
+  --r-lg:18px; --r-sm:10px;
+  --f-head:"Bricolage Grotesque",system-ui,sans-serif; --f-body:"Atkinson Hyperlegible",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--mist);color:var(--ink);font:17px/1.55 var(--f-body)}
+a{color:var(--pine)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--brass);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+h1,h2,h3{font-family:var(--f-head);line-height:1.15;margin:0}
+
+/* Accès */
+#gate{position:fixed;inset:0;background:var(--pine);display:grid;place-items:center;z-index:50;padding:24px}
+#gate form{background:var(--paper);border-radius:var(--r-lg);padding:40px;max-width:420px;width:100%}
+#gate h1{font-size:30px;margin-bottom:8px}
+#gate p{color:var(--mute);margin:0 0 20px}
+#gate input{width:100%;padding:14px 16px;font-size:18px;border:2px solid var(--line);border-radius:var(--r-sm)}
+#gate input:focus{border-color:var(--pine);outline:none}
+#gate .err{color:var(--alert);min-height:24px;margin-top:8px;font-size:15px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font-weight:700;text-decoration:none}
+.btn-pine{background:var(--pine);color:#fff}
+.btn-pine:hover{background:var(--pine-2)}
+.btn-ghost{background:transparent;color:var(--pine);border:2px solid var(--line)}
+.btn-ghost:hover{border-color:var(--pine)}
+.btn-sm{padding:7px 14px;font-size:15px}
+
+/* Structure */
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+aside{background:var(--paper);border-right:1px solid var(--line);padding:28px 18px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;margin:0 8px 26px;text-decoration:none;color:var(--ink)}
+.brand-mark{width:42px;height:42px;border-radius:12px;background:var(--pine);color:#fff;display:grid;place-items:center;font:800 18px var(--f-head)}
+.brand b{font:700 18px/1.1 var(--f-head);display:block}
+.brand small{color:var(--mute);font-size:13px}
+nav a{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:var(--r-sm);text-decoration:none;color:var(--ink);font-size:15.5px;line-height:1.3}
+nav a .n{font:700 13px var(--f-head);color:var(--mute);width:16px;flex:none;padding-top:2px}
+nav a:hover{background:var(--mist)}
+nav a[aria-current="page"]{background:var(--pine);color:#fff}
+nav a[aria-current="page"] .n{color:var(--brass-soft)}
+.side-foot{margin:24px 8px 0;padding-top:18px;border-top:1px solid var(--line);font-size:14px;color:var(--mute)}
+.side-foot a{display:block;margin-top:6px}
+main{padding:40px 56px 80px;max-width:1180px;width:100%}
+
+/* Recherche */
+.hero{background:var(--pine);color:#fff;border-radius:28px;padding:44px 48px 40px;position:relative;overflow:hidden}
+.hero h1{font-size:46px;font-weight:800;letter-spacing:-.02em;max-width:16ch}
+.hero p{margin:10px 0 26px;color:#D4E3DC;max-width:56ch}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:280px;height:280px;border-radius:50%;border:40px solid rgba(184,137,43,.25)}
+.search{position:relative;z-index:2}
+.search input{width:100%;padding:20px 22px 20px 58px;font-size:20px;border:0;border-radius:16px;background:#fff;color:var(--ink)}
+.search input:focus{outline:4px solid var(--brass)}
+.search svg{position:absolute;left:20px;top:50%;transform:translateY(-50%);width:24px;height:24px;color:var(--mute)}
+.hint{margin-top:12px;font-size:14.5px;color:#C5D8CF}
+.hint button{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:999px;padding:4px 12px;margin:4px 6px 0 0;font-size:14px}
+.hint button:hover{background:rgba(255,255,255,.22)}
+.results{margin-top:22px;background:#fff;color:var(--ink);border-radius:16px;padding:8px;max-height:60vh;overflow:auto;position:relative;z-index:2}
+.res{display:flex;gap:14px;align-items:flex-start;padding:14px;border-radius:12px;text-decoration:none;color:var(--ink)}
+.res:hover,.res:focus-visible{background:var(--mist)}
+.res .ic{font-size:22px;width:30px;flex:none;text-align:center}
+.res b{display:block;font-weight:700}
+.res small{color:var(--mute);display:block}
+.res .tag{font-size:12.5px;background:var(--brass-soft);color:#6A4D12;border-radius:999px;padding:2px 9px;margin-left:6px;font-weight:700}
+.empty{padding:18px;color:var(--mute)}
+.empty a{font-weight:700}
+
+/* Accueil */
+.doors{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:30px 0}
+.door{background:var(--paper);border:2px solid transparent;border-radius:var(--r-lg);padding:24px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:8px;min-height:170px}
+.door:hover{border-color:var(--pine)}
+.door .em{font-size:32px}
+.door h3{font-size:22px}
+.door p{margin:0;color:var(--mute);font-size:15.5px}
+.cols{display:grid;grid-template-columns:1.2fr 1fr;gap:18px}
+.panel{background:var(--paper);border-radius:var(--r-lg);padding:26px}
+.panel h2{font-size:22px;margin-bottom:14px}
+.news li{margin:0 0 12px;list-style:none}
+.news{padding:0;margin:0}
+.news time{display:block;font-size:13.5px;color:var(--mute)}
+.all{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
+.all a{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:var(--r-sm);background:var(--mist);text-decoration:none;color:var(--ink);font-size:15.5px}
+.all a:hover{background:#E1E9E4}
+
+/* Section */
+.crumb{font-size:15px;color:var(--mute);margin-bottom:14px}
+.crumb a{color:var(--mute)}
+.sec-head{display:flex;gap:20px;align-items:flex-start;margin-bottom:8px}
+.sec-head .em{font-size:44px;line-height:1}
+.sec-head h1{font-size:40px;font-weight:800;letter-spacing:-.015em}
+.who{display:inline-block;margin:10px 0 6px;font-size:14px;font-weight:700;color:#6A4D12;background:var(--brass-soft);border-radius:999px;padding:3px 12px}
+.lead{font-size:19px;color:#2E3D38;max-width:62ch;margin:6px 0 26px}
+.sub{background:var(--paper);border-radius:var(--r-lg);padding:22px 24px;margin-bottom:14px}
+.sub h2{font-size:22px}
+.sub>p{color:var(--mute);margin:6px 0 12px;max-width:70ch}
+.old{border-top:1px solid var(--line);padding:12px 0}
+.old:first-of-type{border-top:0}
+.old-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.old-row span{font-weight:700}
+.old-row .acts{display:flex;gap:8px}
+.frame{margin-top:12px;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:#fff}
+.frame iframe{width:100%;height:420px;border:0;display:block}
+.access{display:flex;gap:12px;align-items:flex-start;background:#FBF4E4;border-top:1px solid #EAD9B0;padding:12px 16px;font-size:15px}
+.access b{color:#6A4D12}
+.soon{color:var(--mute);font-style:italic;margin:0}
+.vids{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.vid{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:var(--r-sm);background:var(--mist);text-decoration:none;color:var(--ink);font-size:15.5px}
+.vid:hover{background:#E1E9E4}
+
+/* Parcours */
+.steps{list-style:none;padding:0;margin:0;position:relative}
+.steps>li{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:18px 0;border-top:1px solid var(--line)}
+.steps>li:first-child{border-top:0}
+.steps h3{font-size:18px}
+.steps .defi{display:inline-block;margin-top:6px;font-size:13px;font-weight:700;color:var(--pine);background:#DCE9E3;border-radius:999px;padding:2px 10px}
+.steps ul{margin:0;padding-left:20px}
+.defis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0 4px}
+.defis div{background:var(--pine);color:#fff;border-radius:var(--r-sm);padding:14px}
+.defis b{font:800 30px/1 var(--f-head);color:var(--brass-soft);display:block;margin-bottom:6px}
+.defis span{font-size:14.5px;line-height:1.35;display:block}
+
+/* Besoins */
+.needs{display:grid;gap:10px}
+.need{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:center;padding:14px 16px;border-radius:var(--r-sm);background:var(--mist)}
+.need b{font-family:var(--f-head);font-size:17px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:14.5px}
+.draft{font-size:14px;color:var(--mute);margin-top:10px}
+
+/* Lexique */
+dl.lex{display:grid;grid-template-columns:150px 1fr;gap:10px 18px;margin:0}
+dl.lex dt{font:700 17px var(--f-head);color:var(--pine)}
+dl.lex dd{margin:0}
+
+/* Fenêtre */
+dialog{border:0;border-radius:var(--r-lg);padding:32px;max-width:520px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(22,35,31,.55)}
+dialog h2{font-size:26px;margin-bottom:10px}
+dialog ol{padding-left:22px}
+.help-steps li{margin-bottom:8px}
+
+@media (max-width:960px){
+  .app{grid-template-columns:1fr}
+  aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+  nav a{flex:none;white-space:nowrap}
+  nav a .n{display:none}
+  .side-foot{display:none}
+  .brand{margin-bottom:12px}
+  main{padding:20px 16px 60px}
+  .hero{padding:28px 22px;border-radius:20px}
+  .hero h1{font-size:32px}
+  .doors,.cols,.all,.vids{grid-template-columns:1fr}
+  .defis{grid-template-columns:1fr 1fr}
+  .steps>li,.need{grid-template-columns:1fr;gap:6px}
+  dl.lex{grid-template-columns:1fr;gap:2px 0}
+  dl.lex dd{margin-bottom:10px}
+  .sec-head h1{font-size:30px}
+  .frame iframe{height:360px}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<div id="gate" hidden>
+  <form id="gateForm">
+    <h1>Le drive de l'équipe</h1>
+    <p>Entre le code d'équipe que ton parrain t'a donné.</p>
+    <label for="code" class="sr">Code d'équipe</label>
+    <input id="code" type="password" autocomplete="off" required>
+    <div class="err" id="gateErr" role="alert"></div>
+    <button class="btn btn-pine" type="submit">Entrer</button>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
+  <aside>
+    <a class="brand" href="#/"><span class="brand-mark">SE</span><span><b>Le drive de l'équipe</b><small>Tout ce qu'il te faut, au même endroit</small></span></a>
+    <nav id="nav" aria-label="Rubriques"></nav>
+    <div class="side-foot">
+      <button class="btn btn-ghost btn-sm" type="button" id="helpBtn">Accès refusé ?</button>
+      <a id="inboxLink" target="_blank" rel="noopener">📥 Déposer un document</a>
+      <span>Mis à jour le <span id="upd"></span></span>
+    </div>
+  </aside>
+  <main id="view" tabindex="-1"></main>
+</div>
+
+<dialog id="help">
+  <h2>Un document ne s'ouvre pas ?</h2>
+  <p>Si tu vois « Accès refusé », « Demander l'accès » ou une page vide, tu n'es pas connecté à Google avec <b>l'adresse enregistrée sur le drive</b> (celle que ton parrain a invitée).</p>
+  <ol class="help-steps">
+    <li>Clique sur <b>Changer de compte Google</b> ci-dessous.</li>
+    <li>Choisis ton adresse pro, celle invitée sur le drive. Si elle n'apparaît pas, ajoute-la.</li>
+    <li>Reviens ici et recharge la page.</li>
+  </ol>
+  <p>Toujours bloqué ? Demande à ton parrain quelle adresse il a invitée.</p>
+  <p style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+    <a class="btn btn-pine" href="https://accounts.google.com/AccountChooser?continue=https://drive.google.com/" target="_blank" rel="noopener">Changer de compte Google</a>
+    <button class="btn btn-ghost" type="button" data-close>J'ai compris</button>
+  </p>
+</dialog>
+
+<dialog id="welcome">
+  <h2>Bienvenue</h2>
+  <p>Ici, tu trouves tout le drive de l'équipe : cherche un mot, ou clique sur une rubrique.</p>
+  <p><b>Important :</b> pour ouvrir les documents, connecte-toi à Google avec <b>l'adresse que ton parrain a enregistrée sur le drive</b>. Sinon, Google affichera « Accès refusé ».</p>
+  <p style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+    <button class="btn btn-pine" type="button" data-close>C'est parti</button>
+    <a class="btn btn-ghost" href="https://accounts.google.com/AccountChooser?continue=https://drive.google.com/" target="_blank" rel="noopener">Vérifier mon compte Google</a>
+  </p>
+</dialog>
+
+<script src="data.js"></script>
+<script>
+(function(){
+const S = window.SITE;
+const CODE_HASH = "3da26b050fae2ae80a0704dba0a72168343e9648dca9c2540b9b82676f10a600";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
+const driveFolder = id => "https://drive.google.com/drive/folders/" + id;
+const embed = id => "https://drive.google.com/embeddedfolderview?id=" + id + "#list";
+const bySec = id => S.sections.find(s => s.id === id);
+
+async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+
+// Accès
+async function start(){
+  if (store.get("se-ok") === CODE_HASH) return open();
+  $("#gate").hidden = false; $("#code").focus();
+  $("#gateForm").onsubmit = async e => {
+    e.preventDefault();
+    const h = await sha($("#code").value.trim().toUpperCase());
+    if (h === CODE_HASH){ store.set("se-ok", h); $("#gate").hidden = true; open(); }
+    else { $("#gateErr").textContent = "Ce code ne correspond pas. Demande le code d'équipe à ton parrain."; }
+  };
+}
+function open(){
+  $("#app").hidden = false;
+  $("#upd").textContent = S.updated;
+  $("#inboxLink").href = driveFolder(S.inbox);
+  $("#nav").innerHTML = '<a href="#/"><span class="n"></span><span>🏠 Accueil</span></a>' + S.sections.map(s =>
+    `<a href="#/r/${s.id}"><span class="n">${s.num}</span><span>${s.icon} ${esc(s.title)}</span></a>`).join("");
+  document.querySelectorAll("dialog [data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
+  $("#helpBtn").onclick = () => $("#help").showModal();
+  window.addEventListener("hashchange", route); route();
+  if (!store.get("se-welcome")){ store.set("se-welcome","1"); $("#welcome").showModal(); }
+}
+
+// Index de recherche
+const IDX = [];
+S.sections.forEach(s => {
+  IDX.push({ ic: s.icon, t: s.title, p: "Rubrique", href: "#/r/" + s.id, k: s.title + " " + (s.keys||"") + " " + s.desc, w: 3 });
+  (s.subs||[]).forEach(u => {
+    IDX.push({ ic: "📁", t: u.title, p: s.title, href: "#/r/" + (u.link || s.id) + "/" + encodeURIComponent(u.title), k: u.title + " " + (u.keys||"") + " " + (u.desc||""), w: 2 });
+    (u.olds||[]).forEach(o => IDX.push({ ic: "🗂️", t: o.t, p: s.title + " › " + u.title, href: driveFolder(o.id), ext: true, k: o.t + " " + (u.keys||""), w: 1 }));
+  });
+});
+S.videos.forEach(v => IDX.push({ ic: "🎥", t: v[0], p: "Vidéo, " + bySec(v[2]).title, href: vurl(v), ext: true, k: v[0], w: 1, tag: "Vidéo" }));
+S.lexique.forEach(l => IDX.push({ ic: "📖", t: l[0] + " : " + l[1], p: "Lexique", href: "#/r/commence/lexique", k: l[0] + " " + l[1], w: 2 }));
+S.redirects.forEach(r => IDX.push({ ic: "💡", t: r.note, p: "Bon à savoir", href: r.to === "help" ? "#help" : "#/r/" + r.to, k: r.q, w: 4 }));
+IDX.forEach(i => { i.n = norm(i.k); i.nt = norm(i.t); });
+
+function vurl(v){ return (v[1] === "LOOM" || v[1] === "NOTION") ? "https://docs.google.com/spreadsheets/d/" + S.playlistSheet : v[1]; }
+
+function lev(a,b){ if (Math.abs(a.length-b.length) > 2) return 9; const m=[...Array(b.length+1).keys()]; for(let i=1;i<=a.length;i++){ let p=m[0]; m[0]=i; for(let j=1;j<=b.length;j++){ const t=m[j]; m[j]=Math.min(m[j]+1,m[j-1]+1,p+(a[i-1]===b[j-1]?0:1)); p=t; } } return m[b.length]; }
+function search(q){
+  const words = norm(q).split(" ").filter(w => w.length > 1);
+  if (!words.length) return [];
+  const out = [];
+  IDX.forEach(i => {
+    let score = 0, ok = true;
+    const toks = i.n.split(" ");
+    for (const w of words){
+      if (i.nt.includes(w)) score += 6;
+      else if (i.n.includes(w)) score += 3;
+      else if (w.length > 3 && toks.some(t => t.length > 3 && lev(w, t.slice(0, w.length + 1)) <= 1)) score += 1;
+      else { ok = false; break; }
+    }
+    if (ok) out.push([score * i.w, i]);
+  });
+  return out.sort((a,b) => b[0]-a[0]).slice(0, 14).map(x => x[1]);
+}
+
+function resultsHTML(q){
+  const r = search(q);
+  if (!r.length) return `<div class="empty">Rien trouvé pour « ${esc(q)} ». Essaie un autre mot (par exemple « client », « retraite », « filleul »), parcours les rubriques, ou <a href="mailto:contact@seconseil.pro?subject=${encodeURIComponent("Drive : je n'ai pas trouvé « " + q + " »")}">signale-le</a> pour qu'on l'ajoute.</div>`;
+  return r.map(i => `<a class="res" href="${esc(i.href)}" ${i.ext ? 'target="_blank" rel="noopener"' : ""}><span class="ic">${i.ic}</span><span><b>${esc(i.t)}${i.tag ? `<span class="tag">${i.tag}</span>` : ""}</b><small>${esc(i.p)}${i.ext ? ", s'ouvre dans un nouvel onglet" : ""}</small></span></a>`).join("")
+    + `<div class="empty">Pas ce que tu cherches ? <a href="mailto:contact@seconseil.pro?subject=${encodeURIComponent("Drive : je n'ai pas trouvé « " + q + " »")}">Signale-le</a>.</div>`;
+}
+
+// Vues
+function route(){
+  const h = location.hash;
+  if (h === "#help"){ history.replaceState(null, "", "#/"); $("#help").showModal(); }
+  const m = location.hash.match(/^#\/r\/([^/]+)(?:\/(.+))?/);
+  document.querySelectorAll("#nav a").forEach(a => a.removeAttribute("aria-current"));
+  if (m && bySec(m[1])) { renderSection(bySec(m[1]), m[2] ? decodeURIComponent(m[2]) : null); document.querySelector(`#nav a[href="#/r/${m[1]}"]`).setAttribute("aria-current","page"); }
+  else { renderHome(); document.querySelector('#nav a[href="#/"]').setAttribute("aria-current","page"); }
+}
+
+function renderHome(){
+  const tips = ["assurance vie", "trouver un client", "filleul", "retraite", "URSSAF", "R1"];
+  $("#view").innerHTML = `
+  <section class="hero">
+    <h1>Qu'est-ce que tu cherches ?</h1>
+    <p>Tape un mot comme tu le dirais à ton parrain. On te montre où le trouver.</p>
+    <div class="search" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Ex. : souscrire une assurance-vie, prendre des RDV, PER…" aria-label="Rechercher dans le drive" autocomplete="off">
+    </div>
+    <div class="hint">Idées : ${tips.map(t => `<button type="button" data-q="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+    <div class="results" id="res" hidden aria-live="polite"></div>
+  </section>
+
+  <div class="doors">
+    <a class="door" href="#/r/debute"><span class="em">🐣</span><h3>Je débute</h3><p>Ton parcours des 90 premiers jours, étape par étape.</p></a>
+    <a class="door" href="#/r/comment"><span class="em">🧭</span><h3>Comment faire ?</h3><p>Les process : trouver un client, recruter, prendre des RDV, souscrire.</p></a>
+    <a class="door" href="#/r/propose"><span class="em">💼</span><h3>Ce qu'on propose</h3><p>Toutes les solutions, en partant du besoin de ton client.</p></a>
+  </div>
+
+  <div class="cols">
+    <div class="panel"><h2>Toutes les rubriques</h2><div class="all">${S.sections.map(s => `<a href="#/r/${s.id}"><span>${s.icon}</span>${esc(s.title)}</a>`).join("")}</div></div>
+    <div class="panel"><h2>🆕 Nouveautés</h2><ul class="news">${S.nouveautes.map(n => `<li><time>${n.d}</time>${esc(n.t)}</li>`).join("")}</ul>
+      <h2 style="margin-top:20px">📅 Prochains événements</h2><p class="soon">L'agenda de l'équipe arrive ici.</p></div>
+  </div>`;
+  const q = $("#q"), res = $("#res");
+  const run = () => { const v = q.value.trim(); res.hidden = !v; if (v) res.innerHTML = resultsHTML(v); };
+  q.addEventListener("input", run);
+  document.querySelectorAll("[data-q]").forEach(b => b.onclick = () => { q.value = b.dataset.q; run(); q.focus(); });
+  q.focus();
+}
+
+function oldHTML(o){
+  return `<div class="old"><div class="old-row"><span>🗂️ ${esc(o.t)}</span><span class="acts">
+    <button class="btn btn-ghost btn-sm" type="button" data-peek="${o.id}" aria-expanded="false">Voir le contenu</button>
+    <a class="btn btn-pine btn-sm" href="${driveFolder(o.id)}" target="_blank" rel="noopener">Ouvrir dans Drive</a></span></div>
+    <div class="frame" id="f-${o.id}" hidden></div></div>`;
+}
+
+function renderSection(s, focus){
+  let body = "";
+  if (s.id === "commence") body = commenceHTML(focus);
+  if (s.id === "debute") body = debuteHTML();
+  if (s.id === "propose") body = besoinsHTML();
+  body += (s.subs||[]).map(u => `<section class="sub" id="${esc(u.title)}"><h2>${esc(u.title)}</h2>${u.desc ? `<p>${esc(u.desc)}</p>` : ""}
+    ${u.link ? `<p><a class="btn btn-pine btn-sm" href="#/r/${u.link}">Ouvrir « ${esc(bySec(u.link).title)} »</a></p>` : ""}
+    ${(u.olds||[]).map(oldHTML).join("")}
+    ${!u.link && !(u.olds||[]).length ? `<p class="soon">En préparation.</p>` : ""}</section>`).join("");
+  const vids = S.videos.filter(v => v[2] === s.id);
+  if (vids.length && s.id !== "commence") body += `<section class="sub"><h2>🎥 Vidéos de cette rubrique</h2><p>Le mot de passe Vimeo est celui de l'équipe.</p><div class="vids">${vids.map(vidHTML).join("")}</div></section>`;
+  $("#view").innerHTML = `<div class="crumb"><a href="#/">Accueil</a> › ${esc(s.title)}</div>
+    <div class="sec-head"><span class="em">${s.icon}</span><div><h1>${esc(s.title)}</h1><span class="who">Pour : ${esc(s.who)}</span></div></div>
+    <p class="lead">${esc(s.desc)}</p>${body}`;
+  document.querySelectorAll("[data-peek]").forEach(b => b.onclick = () => {
+    const f = $("#f-" + b.dataset.peek), on = f.hidden;
+    if (on && !f.innerHTML) f.innerHTML = `<iframe src="${embed(b.dataset.peek)}" title="Contenu du dossier" loading="lazy"></iframe>
+      <div class="access"><span>🔐</span><span><b>Rien ne s'affiche, ou « Accès refusé » ?</b> Connecte-toi à Google avec l'adresse enregistrée sur le drive. <a href="#help">Voir comment</a></span></div>`;
+    f.hidden = !on; b.setAttribute("aria-expanded", on); b.textContent = on ? "Masquer" : "Voir le contenu";
+  });
+  $("#view").focus({preventScroll:true});
+  if (focus){ const el = document.getElementById(focus); if (el) el.scrollIntoView({block:"start"}); else window.scrollTo(0,0); } else window.scrollTo(0,0);
+}
+
+function vidHTML(v){ const special = v[1] === "LOOM" || v[1] === "NOTION";
+  return `<a class="vid" href="${esc(vurl(v))}" target="_blank" rel="noopener"><span>🎥</span><span>${esc(v[0])}${special ? " <small>(lien dans le tableau des vidéos)</small>" : ""}</span></a>`; }
+
+function commenceHTML(focus){
+  const groups = S.sections.filter(s => s.id !== "commence").map(s => {
+    const v = S.videos.filter(x => x[2] === s.id); return v.length ? `<h3 style="margin:16px 0 8px">${s.icon} ${esc(s.title)}</h3><div class="vids">${v.map(vidHTML).join("")}</div>` : ""; }).join("");
+  return `<section class="sub"><h2>📍 Sommaire</h2><p>Chaque rubrique en une phrase.</p>
+    ${S.sections.filter(s => s.id !== "commence").map(s => `<div class="old"><div class="old-row"><span>${s.icon} <a href="#/r/${s.id}">${esc(s.title)}</a></span><span style="font-weight:400;color:var(--mute)">${esc(s.who)}</span></div><p style="margin:4px 0 0">${esc(s.desc)}</p></div>`).join("")}</section>
+  <section class="sub" id="lexique"><h2>📖 Lexique</h2><p>Les mots qu'on utilise tous les jours, expliqués simplement.</p><dl class="lex">${S.lexique.map(l => `<dt>${esc(l[0])}</dt><dd>${esc(l[1])}</dd>`).join("")}</dl></section>
+  <section class="sub" id="videos"><h2>🎥 Toutes les vidéos</h2><p>Classées par rubrique. Le mot de passe Vimeo est celui de l'équipe.</p>${groups}</section>
+  <section class="sub"><h2>🆕 Nouveautés</h2><ul class="news">${S.nouveautes.map(n => `<li><time>${n.d}</time>${esc(n.t)}</li>`).join("")}</ul></section>`;
+}
+
+function debuteHTML(){
+  const D = [["D","Démarrer à 2 avec un proche"],["É","Un grand événement : Forum, Convention, Mindmaster"],["F","Ta première formation habilitante PBS"],["I","10 investisseurs, le plus vite possible"],["S","Le séminaire Défi Pro"]];
+  return `<section class="sub"><h2>🎯 Les 5 DÉFIS de tes 6 premiers mois</h2><p>Ceux qui les relèvent en moins de 6 mois ont 2 fois plus de chances de devenir manager. Coche-les dans l'onglet DÉFIS de l'application Focus.</p>
+    <div class="defis">${D.map(d => `<div><b>${d[0]}</b><span>${esc(d[1])}</span></div>`).join("")}</div></section>
+  <section class="sub"><h2>🗓️ Ton parcours des 90 premiers jours</h2><p>Avance à ton rythme avec ton parrain. Les lettres indiquent le défi que chaque étape fait avancer.</p>
+    <ol class="steps">${S.parcours.map(p => `<li><div><h3>${esc(p.p)}</h3><span class="defi">${esc(p.defi)}</span></div><ul>${p.items.map(i => `<li>${esc(i)}</li>`).join("")}</ul></li>`).join("")}</ol></section>`;
+}
+
+function besoinsHTML(){
+  return `<section class="sub"><h2>🎯 Ton client veut… → les solutions possibles</h2><p>Pars du besoin de ton client, puis ouvre la famille de solution ci-dessous.</p>
+    <div class="needs">${S.besoins.map(n => `<div class="need"><b>${esc(n.b)}</b><div class="chips">${n.s.map(x => `<span>${esc(x)}</span>`).join("")}</div></div>`).join("")}</div>
+    <p class="draft">Chaque partenaire aura 3 sous-dossiers : 📄 À montrer au client, 🎓 Pour me former, ✍️ Souscrire.</p></section>`;
+}
+
+start();
+})();
+</script>
+</body>
+</html>
