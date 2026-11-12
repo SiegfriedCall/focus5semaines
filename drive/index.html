@@ -370,7 +370,7 @@ function renderSection(s, focus){
   document.querySelectorAll("[data-peek]").forEach(b => b.onclick = () => {
     const f = $("#f-" + b.dataset.peek), on = f.hidden;
     if (on && !f.innerHTML) f.innerHTML = `<iframe src="${embed(b.dataset.peek)}" title="Contenu du dossier" loading="lazy"></iframe>
-      <div class="access"><span>🔐</span><span><b>Rien ne s'affiche, ou « Accès refusé » ?</b> Connecte-toi à Google avec l'adresse enregistrée sur le drive. <a href="#help">Voir comment</a></span></div>`;
+      <div class="access"><span>🔐</span><span><b>L'aperçu te demande de te connecter ou reste vide ?</b> Clique sur « Ouvrir dans Drive » : certains navigateurs (Safari, iPhone, Brave) bloquent les aperçus. Si Drive affiche « Accès refusé », connecte-toi avec l'adresse enregistrée sur le drive. <a href="#help">Voir comment</a></span></div>`;
     f.hidden = !on; b.setAttribute("aria-expanded", on); b.textContent = on ? "Masquer" : "Voir le contenu";
   });
   $("#view").focus({preventScroll:true});
