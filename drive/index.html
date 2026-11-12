@@ -284,15 +284,14 @@ function search(q){
   if (!words.length) return [];
   const out = [];
   IDX.forEach(i => {
-    let score = 0, ok = true;
+    let score = 0, hit = 0;
     const toks = i.n.split(" ");
     for (const w of words){
-      if (i.nt.includes(w)) score += 6;
-      else if (i.n.includes(w)) score += 3;
-      else if (w.length > 3 && toks.some(t => t.length > 3 && lev(w, t.slice(0, w.length + 1)) <= 1)) score += 1;
-      else { ok = false; break; }
+      if (i.nt.includes(w)) { score += 6; hit++; }
+      else if (i.n.includes(w)) { score += 3; hit++; }
+      else if (w.length > 3 && toks.some(t => t.length > 3 && lev(w, t.slice(0, w.length + 1)) <= 1)) { score += 1; hit++; }
     }
-    if (ok) out.push([score * i.w, i]);
+    if (hit && hit >= Math.ceil(words.length / 2)) out.push([score * i.w * (hit === words.length ? 2 : 1), i]);
   });
   return out.sort((a,b) => b[0]-a[0]).slice(0, 14).map(x => x[1]);
 }
