@@ -241,7 +241,7 @@ async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextE
 
 // Accès
 async function start(){
-  if (store.get("se-ok") === CODE_HASH) return open();
+  return open(); // accès libre, sans code
   $("#gate").hidden = false; $("#code").focus();
   $("#gateForm").onsubmit = async e => {
     e.preventDefault();
