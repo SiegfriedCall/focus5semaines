@@ -308,6 +308,7 @@ table.rg{width:100%;border-collapse:collapse}.rg th,.rg td{padding:7px 2px;font-
  <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3.2 2.7-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="8" r="2.4"/><path d="M16 13.2c2.4-.3 4.1 1 4.7 4"/></symbol>
  <symbol id="doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M9 12h6M9 15.5h6"/></symbol>
  <symbol id="star" viewBox="0 0 24 24"><path d="m12 3.8 2.5 5.1 5.6.8-4 4 1 5.6L12 16.6 6.9 19.3l1-5.6-4-4 5.6-.8z"/></symbol>
+ <symbol id="r0" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><path d="M2.5 19c.6-3.3 2.6-5 5.5-5s4.9 1.7 5.5 5"/><path d="M14 4.5h7v5h-4l-2 2v-2h-1z"/></symbol>
  <symbol id="handshake" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3.3 2.6-5 5.5-5 1.1 0 2.1.3 2.9.9"/><path d="m14 16.5 2.2 2.2 4.3-4.6"/></symbol>
  <symbol id="brief" viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2.5"/><path d="M9 7.5V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v1.5M3.5 13h17"/></symbol>
  <symbol id="flag" viewBox="0 0 24 24"><path d="M6 20.5V4M6 5h11l-2 4 2 4H6"/></symbol>
@@ -329,11 +330,13 @@ var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI
 /* Barème : le calcul du classement est dans la base (fonction pts). Garder les deux identiques. */
 /* [clé, code, nom, description, points, icône] */
 var C=[['c1','C1','Conversations','SMS et appels passés',5,'chat'],['c2','C2','Invitations','Invitations envoyées',10,'users'],
-['c3','C3','Propositions','Présentations R0 ou solutions proposées',15,'doc'],['c6','C6','Relances','Relances et suivi',15,'star'],
+['c3','C3','Présentations','Présentation de l’activité ou d’une solution, en rendez-vous ou en conférence',15,'doc'],['c6','C6','Relances','Relances et suivi',15,'star'],
+['r0','R0','Rendez-vous R0','Qui tu es, ce que tu fais, comment tu es rémunéré… et proposition d’audit patrimonial',15,'r0'],
 ['r1','R1','Rendez-vous R1','Premiers rendez-vous réalisés',50,'handshake'],['r2','R2','Rendez-vous R2','Deuxièmes rendez-vous réalisés',75,'brief'],
 ['r3','R3','Mise en place','Dossiers mis en place (R3)',100,'flag']];
 /* Objectifs de l'exercice : volume d'affaires depuis le début de l'exercice. Un seul endroit à modifier. */
 var OBJ=[['Pas d’objectif – Dommage',0],['Senior',500000],['Major',1000000],['Expert',1500000],['Double Expert',3000000],['Triple Expert',4500000]];
+var C3R0='Une même action se compte en C3 ou en R0, jamais les deux.';
 var PALIERS=[3,7,14,21,28,35];
 var MOTTOS=['Ton avenir se construit avec tes actions d’aujourd’hui','Une conversation de plus aujourd’hui, c’est un rendez-vous de plus demain',
 'Chaque action compte, surtout les petites que tu répètes','Ce que tu fais aujourd’hui décide de ta semaine','Passe à l’action massivement AUJOURD’HUI, les résultats suivront demain',
@@ -542,7 +545,7 @@ function vDay(b,own){
   m.disabled=!ok||!r[c[0]];p.disabled=!ok;m.setAttribute('aria-label','Retirer un '+c[1]);p.setAttribute('aria-label','Ajouter un '+c[1]);
   m.onclick=function(){tap(c[0],-1)};p.onclick=function(){tap(c[0],1)};
   st.appendChild(m);st.appendChild(v);st.appendChild(p);row.appendChild(ic);row.appendChild(tx);row.appendChild(st);list.appendChild(row)});
- b.appendChild(list);b.appendChild(el('p','mut','Points du jour : '+fmt(pts(r))));
+ b.appendChild(list);b.appendChild(el('p','tiny','⚠️ '+C3R0));b.appendChild(el('p','mut','Points du jour : '+fmt(pts(r))));
 }
 function vTab(b,cols,nav){
  if(nav)b.appendChild(nav);
@@ -557,7 +560,7 @@ function vTab(b,cols,nav){
 }
 function tap(k,d){
  var r=data[day]||(data[day]=Object.assign(z(),{user_id:me.id,day:day}));
- r[k]=Math.max(0,r[k]+d);if(tg.id===me.id)mine=data;renderFocus();if(curTab==='exo')renderExo();
+ r[k]=Math.max(0,(r[k]||0)+d);if(tg.id===me.id)mine=data;renderFocus();if(curTab==='exo')renderExo();
  var row=Object.assign({},r);
  queue(function(){return sb.from('counts').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e);loadTop()})});
 }
@@ -593,7 +596,8 @@ async function loadTop(){
 /* ===== Fenêtres d'accueil ===== */
 async function focusIntro(save){
  await ask({badge:'🎯',title:'Bienvenue dans le Focus 5 semaines',paras:[
-  'Le Focus 5 semaines, ce sont 5 semaines pour passer à l’action massivement : chaque jour, tu notes tes conversations, invitations, propositions, relances et rendez-vous, et tu gagnes des points.',
+  'Le Focus 5 semaines, ce sont 5 semaines pour passer à l’action massivement : chaque jour, tu notes tes conversations, invitations, présentations, relances et rendez-vous (R0, R1, R2, R3), et tu gagnes des points.',
+  'R0 : tu présentes qui tu es, ce que tu fais, comment tu es rémunéré, et tu proposes un audit patrimonial. C3 : une présentation (rendez-vous, conférence). '+C3R0,
   'Il dure du '+long(start)+' au '+long(lastDay())+'.',
   'Tu ne vois que tes propres chiffres et le top 5 des consultants. Ton objectif du jour est facultatif, mais il t’aide à agir.'],
   buttons:[{t:'C’est parti',cls:'p',v:1}]});
@@ -788,12 +792,15 @@ async function renderExo(){
 }
 
 /* ===== ÉQUIPE (administrateur) ===== */
+async function r0Days(){var r=await sb.from('counts').select('user_id,day,r0').gt('r0',0);return r.error?[]:(r.data||[])}
+function r0Sum(rows,uid,a,b){return rows.reduce(function(s,x){return s+(x.user_id===uid&&x.day>=a&&x.day<=b?Number(x.r0)||0:0)},0)}
 async function alertDot(){var r=await sb.rpc('team_totals2');$('teamDot').hidden=!(r.data||[]).some(function(p){return p.alert})}
 function loadX(){return window.XLSX?Promise.resolve():new Promise(function(ok,ko){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
 async function renderTeam(){await renderTeam0();await defisTeam($('team'))}
 async function renderTeam0(){
  var b=$('team');b.innerHTML='';
  var r=await sb.rpc('team_totals2'),rows=r.data||[],al=rows.filter(function(p){return p.alert});
+ var r0d=await r0Days();rows.forEach(function(p){if(p.r0===undefined||p.r0===null)p.r0=r0Sum(r0d,p.id,start,lastDay())});
  $('teamDot').hidden=!al.length;
  if(al.length){var a=el('div','alertbar','⚠ '+al.length+' consultant'+(al.length>1?'s':'')+' sans saisie depuis 2 jours : '+al.map(function(p){return p.name}).join(', '));b.appendChild(a)}
  var avg=el('div','card');avg.appendChild(el('h2','h','Moyenne de l’équipe'));
@@ -803,7 +810,7 @@ async function renderTeam0(){
  var g2=el('div','sum3');g2.style.marginTop='8px';g2.innerHTML='<div><b>'+(t.c2/n).toFixed(1).replace('.',',')+'</b><span>C2</span></div><div><b>'+(t.c3/n).toFixed(1).replace('.',',')+'</b><span>C3</span></div><div><b>'+(t.c6/n).toFixed(1).replace('.',',')+'</b><span>C6</span></div>';avg.appendChild(g2);
  var ex=el('button','btn');ex.style.marginTop='12px';ex.textContent='Exporter en Excel';
  ex.onclick=async function(){try{await loadX()}catch(e){toast('Export impossible : bibliothèque non chargée');return}
-  var data=[['Nom','Points','C1','C2','C3','C6','R1','R2','R3','Dernière saisie']].concat(rows.map(function(p){return[p.name,Number(p.points),Number(p.c1),Number(p.c2),Number(p.c3),Number(p.c6),Number(p.r1),Number(p.r2),Number(p.r3),p.last_day||'']}));
+  var data=[['Nom','Points','C1','C2','C3','C6','R0','R1','R2','R3','Dernière saisie']].concat(rows.map(function(p){return[p.name,Number(p.points),Number(p.c1),Number(p.c2),Number(p.c3),Number(p.c6),Number(p.r0||0),Number(p.r1),Number(p.r2),Number(p.r3),p.last_day||'']}));
   var ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Focus');XLSX.writeFile(wb,'focus-5-semaines-'+TODAY+'.xlsx')};
  avg.appendChild(ex);b.appendChild(avg);
  var c=el('div','card');c.appendChild(el('h2','h','Classement général'));var ul=el('ul','rank');
@@ -811,7 +818,7 @@ async function renderTeam0(){
   li.appendChild(el('span','n',i+1));
   var nm=el('span',0,p.name+(mineP?' (toi)':''));nm.style.cssText='font-weight:700;cursor:pointer;flex:1;min-width:0';nm.onclick=function(){openP(mineP?me:{id:p.id,name:p.name})};li.appendChild(nm);
   li.appendChild(el('span','pt',fmt(p.points)+' pts'));
-  var det=el('div','tiny','R1 '+p.r1+' · R2 '+p.r2+' · R3 '+p.r3+' · '+(p.last_day?'dernière saisie le '+dm(p.last_day):'aucune saisie')+(p.alert?' · à relancer':''));det.style.cssText='width:100%;padding-left:36px';li.appendChild(det);
+  var det=el('div','tiny','R0 '+(p.r0||0)+' · R1 '+p.r1+' · R2 '+p.r2+' · R3 '+p.r3+' · '+(p.last_day?'dernière saisie le '+dm(p.last_day):'aucune saisie')+(p.alert?' · à relancer':''));det.style.cssText='width:100%;padding-left:36px';li.appendChild(det);
   var ac=el('div','row');ac.style.cssText='width:100%;padding-left:36px;gap:6px';
   var z0=el('button','btn sm','Remettre à zéro le focus');z0.onclick=async function(){
    if(!confirm('Es-tu sûr de vouloir remettre à zéro les compteurs du focus de '+p.name+' ?\nSeule la période du focus est concernée : les données de l’exercice sont conservées. Cette action est définitive.'))return;
@@ -1033,6 +1040,7 @@ async function run90Card(){
  var c=el('div','card');c.appendChild(el('h2','h','90j de l’équipe'));
  c.appendChild(el('p','mut','Coche un membre pour lui ouvrir l’onglet 90j : il le verra à sa prochaine ouverture, avec un départ le jour de l’activation (modifiable par lui ensuite). Décocher masque l’onglet sans effacer ses données.'));
  var r=await sb.rpc('team_run90');if(r.error){c.appendChild(el('p','tiny','Liste indisponible pour le moment.'));return c}
+ var r0d=await r0Days();
  var ul=el('ul','rank');
  (r.data||[]).forEach(function(p){var li=el('li');li.style.flexWrap='wrap';
   var nm=el('span',0,p.name);nm.style.cssText='font-weight:700;flex:1;min-width:0';li.appendChild(nm);
@@ -1043,7 +1051,7 @@ async function run90Card(){
    var e=await sb.rpc('set_run90',{uid:p.id,active:on});if(err(e,'Impossible')){cb.checked=!on;return}renderTeam()};
   lb.appendChild(cb);lb.appendChild(el('span','tiny','90j'));li.appendChild(lb);
   if(p.run90&&p.run_start){var i=Math.round((Date.parse(TODAY)-Date.parse(p.run_start))/864e5)+1;
-   var det=el('div','tiny',(i<1?'Départ le '+dm(p.run_start):i>90?'90j terminé':'Jour '+i+' sur 90')+' · '+fmt(p.points)+' pts · C1 '+p.c1+' · R1 '+p.r1+' · R2 '+p.r2+' · R3 '+p.r3);det.style.width='100%';li.appendChild(det)}
+   var det=el('div','tiny',(i<1?'Départ le '+dm(p.run_start):i>90?'90j terminé':'Jour '+i+' sur 90')+' · '+fmt(p.points)+' pts · C1 '+p.c1+' · R0 '+(p.r0!=null?p.r0:r0Sum(r0d,p.id,p.run_start,add(p.run_start,89)))+' · R1 '+p.r1+' · R2 '+p.r2+' · R3 '+p.r3);det.style.width='100%';li.appendChild(det)}
   ul.appendChild(li)});
  c.appendChild(ul);return c;
 }
@@ -1116,7 +1124,7 @@ function runDayView(v){
   m.disabled=!ok||!r[c[0]];p.disabled=!ok;m.setAttribute('aria-label','Retirer un '+c[1]);p.setAttribute('aria-label','Ajouter un '+c[1]);
   m.onclick=function(){runTap(c[0],-1)};p.onclick=function(){runTap(c[0],1)};
   st.appendChild(m);st.appendChild(o);st.appendChild(p);row.appendChild(ic);row.appendChild(tx);row.appendChild(st);list.appendChild(row)});
- v.appendChild(list);v.appendChild(el('p','mut','Points du jour : '+fmt(pts(r))));
+ v.appendChild(list);v.appendChild(el('p','tiny','⚠️ '+C3R0));v.appendChild(el('p','mut','Points du jour : '+fmt(pts(r))));
  if(inFocus(runDay))v.appendChild(el('p','tiny','Ce jour fait aussi partie de ton Focus 5 semaines : ce que tu notes ici y est compté.'));
 }
 function runWeekView(v){
@@ -1151,7 +1159,7 @@ function runAllView(v){
 }
 function runTap(k,d){
  var r=mine[runDay]||(mine[runDay]=Object.assign(z(),{user_id:me.id,day:runDay}));
- r[k]=Math.max(0,r[k]+d);if(tg&&tg.id===me.id)data=mine;renderRun();
+ r[k]=Math.max(0,(r[k]||0)+d);if(tg&&tg.id===me.id)data=mine;renderRun();
  var row=Object.assign({},r);
  queue(function(){return sb.from('counts').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e);loadTop()})});
 }
