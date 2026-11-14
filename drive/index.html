@@ -192,7 +192,6 @@ dialog ol{padding-left:22px}
     <nav id="nav" aria-label="Rubriques"></nav>
     <div class="side-foot">
       <button class="btn btn-ghost btn-sm" type="button" id="helpBtn">Accès refusé ?</button>
-      <a id="inboxLink" target="_blank" rel="noopener">📥 Déposer un document</a>
       <span>Mis à jour le <span id="upd"></span></span>
     </div>
   </aside>
@@ -235,6 +234,8 @@ const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""
 const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
 const driveFolder = id => "https://drive.google.com/drive/folders/" + id;
 const embed = id => "https://drive.google.com/embeddedfolderview?id=" + id + "#list";
+const driveFile = id => "https://drive.google.com/file/d/" + id + "/view";
+const oHref = o => o.f ? driveFile(o.id) : driveFolder(o.id);
 const bySec = id => S.sections.find(s => s.id === id);
 
 async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
@@ -253,7 +254,6 @@ async function start(){
 function open(){
   $("#app").hidden = false;
   $("#upd").textContent = S.updated;
-  $("#inboxLink").href = driveFolder(S.inbox);
   $("#nav").innerHTML = '<a href="#/"><span class="n"></span><span>🏠 Accueil</span></a>' + S.sections.map(s =>
     `<a href="#/r/${s.id}"><span class="n">${s.num}</span><span>${s.icon} ${esc(s.title)}</span></a>`).join("");
   document.querySelectorAll("dialog [data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
@@ -268,7 +268,7 @@ S.sections.forEach(s => {
   IDX.push({ ic: s.icon, t: s.title, p: "Rubrique", href: "#/r/" + s.id, k: s.title + " " + (s.keys||"") + " " + s.desc, w: 3 });
   (s.subs||[]).forEach(u => {
     IDX.push({ ic: "📁", t: u.title, p: s.title, href: "#/r/" + (u.link || s.id) + "/" + encodeURIComponent(u.title), k: u.title + " " + (u.keys||"") + " " + (u.desc||""), w: 2 });
-    (u.olds||[]).forEach(o => IDX.push({ ic: "🗂️", t: o.t, p: s.title + " › " + u.title, href: driveFolder(o.id), ext: true, k: o.t + " " + (u.keys||""), w: 1 }));
+    (u.olds||[]).forEach(o => IDX.push({ ic: o.f ? "📄" : "🗂️", t: o.t, p: s.title + " › " + u.title, href: oHref(o), ext: true, k: o.t + " " + (u.keys||""), w: 1 }));
   });
 });
 S.videos.forEach(v => IDX.push({ ic: "🎥", t: v[0], p: "Vidéo, " + bySec(v[2]).title, href: vurl(v), ext: true, k: v[0], w: 1, tag: "Vidéo" }));
@@ -346,9 +346,9 @@ function renderHome(){
 }
 
 function oldHTML(o){
-  return `<div class="old"><div class="old-row"><span>🗂️ ${esc(o.t)}</span><span class="acts">
-    <button class="btn btn-ghost btn-sm" type="button" data-peek="${o.id}" aria-expanded="false">Voir le contenu</button>
-    <a class="btn btn-pine btn-sm" href="${driveFolder(o.id)}" target="_blank" rel="noopener">Ouvrir dans Drive</a></span></div>
+  return `<div class="old"><div class="old-row"><span>${o.f ? "📄" : "🗂️"} ${esc(o.t)}</span><span class="acts">
+    <button class="btn btn-ghost btn-sm" type="button" data-peek="${o.id}" data-file="${o.f ? 1 : ""}" aria-expanded="false">${o.f ? "Aperçu" : "Voir le contenu"}</button>
+    <a class="btn btn-pine btn-sm" href="${oHref(o)}" target="_blank" rel="noopener">Ouvrir dans Drive</a></span></div>
     <div class="frame" id="f-${o.id}" hidden></div></div>`;
 }
 
@@ -368,9 +368,9 @@ function renderSection(s, focus){
     <p class="lead">${esc(s.desc)}</p>${body}`;
   document.querySelectorAll("[data-peek]").forEach(b => b.onclick = () => {
     const f = $("#f-" + b.dataset.peek), on = f.hidden;
-    if (on && !f.innerHTML) f.innerHTML = `<iframe src="${embed(b.dataset.peek)}" title="Contenu du dossier" loading="lazy"></iframe>
+    if (on && !f.innerHTML) f.innerHTML = `<iframe src="${b.dataset.file ? "https://drive.google.com/file/d/" + b.dataset.peek + "/preview" : embed(b.dataset.peek)}" title="Aperçu" loading="lazy"></iframe>
       <div class="access"><span>🔐</span><span><b>L'aperçu te demande de te connecter ou reste vide ?</b> Clique sur « Ouvrir dans Drive » : certains navigateurs (Safari, iPhone, Brave) bloquent les aperçus. Si Drive affiche « Accès refusé », connecte-toi avec l'adresse enregistrée sur le drive. <a href="#help">Voir comment</a></span></div>`;
-    f.hidden = !on; b.setAttribute("aria-expanded", on); b.textContent = on ? "Masquer" : "Voir le contenu";
+    f.hidden = !on; b.setAttribute("aria-expanded", on); b.textContent = on ? "Masquer" : (b.dataset.file ? "Aperçu" : "Voir le contenu");
   });
   $("#view").focus({preventScroll:true});
   if (focus){ const el = document.getElementById(focus); if (el) el.scrollIntoView({block:"start"}); else window.scrollTo(0,0); } else window.scrollTo(0,0);

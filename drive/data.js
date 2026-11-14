@@ -1,9 +1,8 @@
 // Index du DRIVE ORGANISATION SE — source unique du portail (sommaire, recherche, vidéos)
 // Mis à jour par Claude à chaque modification du drive.
 window.SITE = {
-  updated: "11 novembre 2026",
-  driveRoot: "1WokR30ZrSO9Dxmj8cYzFHsaaSaXJ56ya",
-  inbox: "1_sjbUybw5MJH8dWnXGReGbAGGfuVaRgH",
+  updated: "14 novembre 2026",
+  driveRoot: "0ABDaY8dSahgmUk9PVA",
   playlistSheet: "19Y1-Ys_xNiBv7YmAhzXFgXJb5FgV8yCCXxC4gP-f2Js",
   sections: [
     { id: "commence", num: "0", icon: "📍", title: "Commence ici", drive: "17gLoZQou6_83IMobOfGokhtMuOc54l9S",
@@ -29,60 +28,98 @@ window.SITE = {
             { t: "La liste de noms", id: "12AAmcezEcEml2D0-NaxfOZ7RYhfJGUQy" }
           ] }
       ] },
-    { id: "comment", num: "2", icon: "🧭", title: "Je veux savoir comment faire", drive: "1HlVBzMMvMuzmrn7Nwie-lxcT_bYzNizE",
-      who: "Tout le monde", desc: "Les process pas à pas : trouver un client, recruter, prendre des RDV, souscrire.",
+    { id: "comment", num: "2", icon: "⚙️", title: "Process / Systèmes – je veux savoir comment faire", drive: "1HlVBzMMvMuzmrn7Nwie-lxcT_bYzNizE",
+      who: "Tout le monde", desc: "Les Process / Systèmes pas à pas : trouver un client, recruter un filleul, prendre des RDV, souscrire une solution.",
       keys: "process comment faire etapes methode systeme",
       subs: [
-        { title: "Process / Système – Trouver et accompagner un client (R0 → suivi) (🚧 En construction)", drive: "1I2EYtHPfAW6tjqqBM9qX5wpsiRo4IHtX",
+        { title: "Process / Système – Trouver et accompagner un client (R0 → suivi)", drive: "1I2EYtHPfAW6tjqqBM9qX5wpsiRo4IHtX",
           desc: "Du premier contact à la mise en place, puis le suivi : C1 créer la relation, C2 inviter, R0, R1, R2, R3.",
           keys: "client investisseur r0 r1 r2 r3 c1 c2 c3 c4 c5 rendez-vous decouverte preconisation objections mise en place suivi pitch charges incompressibles susciter interet",
           olds: [
             { t: "Le process investisseur, du R0 au suivi", id: "1whzgMPUyMjxiJ4Rv4KV-oqq1W935ujtJ" },
             { t: "Susciter l'intérêt", id: "16NjBMELgZzzskeERGbdpuGnU1dl2OatM" }
           ] },
-        { title: "Process / Système – Recruter et faire démarrer un filleul (PO → démarrage) (🚧 En construction)", drive: "1vTd31DmPX6v4v5Aop09gbWFqsdiSJdzB",
+        { title: "Process / Système – Recruter et faire démarrer un filleul (PO → démarrage)", drive: "1vTd31DmPX6v4v5Aop09gbWFqsdiSJdzB",
           desc: "Présenter l'opportunité, accompagner la décision, parrainer et aider le filleul à démarrer.",
-          keys: "filleul recruter recrutement parrainer parrainage po opportunite c6 demarrage filleul parrainage intentionnel",
+          keys: "filleul recruter recrutement parrainer parrainage po opportunite c6 demarrage filleul parrainage intentionnel journee decouverte jd vd esp affiliation consultant junior jump primoliste",
           olds: [
+            { t: "Fiche : du premier contact au filleul qui démarre (le parcours)", id: "13NNY8WqAwnlU3RrZ-HY3QFZL0h4EHqd3", f: 1 },
             { t: "Le process filleul, de la PO au démarrage", id: "16JXaIPOjsZPNpRFF7jJoksbYPbF0BI-S" },
             { t: "Process démarrage filleul", id: "1N7Yk79SwI4dsq4wI2g4-bqOc30RkEmky" },
             { t: "Le parrainage intentionnel", id: "1jjT45zkE_9ZFHhboFi9R0MRu3jIsbXMf" }
           ] },
-        { title: "Process / Système – Prendre des RDV (🚧 En construction)", drive: "1TBLENdIQZJlY7ZoiR_lFyj2_A6mC2doZ",
+        { title: "Process / Système – Prendre des RDV", drive: "1TBLENdIQZJlY7ZoiR_lFyj2_A6mC2doZ",
           desc: "Scripts et méthode pour décrocher tes rendez-vous.", keys: "rdv rendez-vous appeler telephone script prise de rdv",
           olds: [ { t: "Comment prendre des RDV", id: "1zcLuD9f7UQfYeJaTl0hj-uDA3NzBsxMM" } ] },
-        { title: "Process / Système – Fixer son objectif (🚧 En construction)", drive: "1QPZg3lM_NZKOez_JeblwECPT0K8si_tk",
+        { title: "Process / Système – Fixer son objectif", drive: "1QPZg3lM_NZKOez_JeblwECPT0K8si_tk",
           desc: "Combien de R1 il te faut pour atteindre ton objectif.", keys: "objectif nombre de r1 calcul combien",
           olds: [ { t: "Déterminer le nombre de R1 selon mon objectif", id: "1eAlxfXAsDRdaQ_VxFKGnfHknb5Z0kV7-" } ] },
-        { title: "Process / Système – Promouvoir les événements (C7) (🚧 En construction)", drive: "1YcnLFGNyiEyuT4JOCONye4HcTx8s6_UM",
+        { title: "Process / Système – Promouvoir les événements (C7)", drive: "1YcnLFGNyiEyuT4JOCONye4HcTx8s6_UM",
           desc: "Inviter ton équipe et tes prospects aux événements.", keys: "c7 evenement evenements inviter promouvoir convention forum mindmaster",
           olds: [
             { t: "C7 – Promouvoir les événements", id: "1Q2V4WtsbVYsRl70Ma21FUS9kAWblmWqE" },
             { t: "Savoir promouvoir les événements", id: "1iXGRnp0XsFCmteDBXtokfV8M42GWvgET" }
           ] },
-        { title: "Process / Système – Souscrire une solution (🚧 En construction)", drive: "12jtUdKF2qv8wSuOMJPyGFSecftmbZLtp",
-          desc: "Les process de souscription sont rangés dans chaque solution : ouvre « Ce qu'on propose aux clients ».",
-          keys: "souscrire souscription bulletin dossier contrat signer", link: "propose" },
+        { title: "Process / Système – Souscrire une solution", drive: "12jtUdKF2qv8wSuOMJPyGFSecftmbZLtp",
+          desc: "Une fiche par solution, avec son schéma : qui peut souscrire, les étapes, les pièces, où trouver le bulletin. Commence par le parcours commun.",
+          keys: "souscrire souscription bulletin dossier contrat signer parcours commun pack stellium proxeema jump consultant junior box placement habilitation relation secondaire",
+          olds: [
+            { t: "À lire en premier : le parcours commun de toute souscription", id: "1GRjlz4GY4EoJveHW7A8lqJtyridcUUFf", f: 1 },
+            { t: "Souscrire – 🏠 Immobilier", id: "1xKucN-Wfnb8RZZXBStLK5WXbNQbrkgn7" },
+            { t: "Souscrire – 📈 Placement", id: "1iyQL6RkU9MsaxlehzpckUnTMecqaej4X" },
+            { t: "Souscrire – 🏦 Financement", id: "1e32V7nCQcB_I7_U0hqMBwqUerZX_gB6H" }
+          ] },
+        { title: "Souscrire – 🏠 Immobilier", drive: "1xKucN-Wfnb8RZZXBStLK5WXbNQbrkgn7",
+          desc: "Immobilier neuf (Immoshop), Colosseum, Finvestimmo, Malraux et monuments historiques.",
+          keys: "souscrire immobilier immoshop option intention d'option reservation contrat de reservation sru notaire vefa colosseum colocation finvestimmo malraux monuments historiques jeanbrun lmnp",
+          olds: [
+            { t: "Comment souscrire – Immobilier neuf (Immoshop)", id: "1TWbQmS8HdNjh8zxaT5X5Pl_Bd-U9t-Fb", f: 1 },
+            { t: "Comment souscrire – Colosseum Invest", id: "1qXxRJa_qf-j50_zJT6cyBHcOZyHX9omV", f: 1 },
+            { t: "Comment souscrire – Finvestimmo", id: "1luoSezRzR32_wiz1PApIg-Z7th6RTOPm", f: 1 },
+            { t: "Comment souscrire – Malraux et Monuments historiques", id: "11kRDXTAQw4XL_5k1aZgJmsokUlIMZvLj", f: 1 }
+          ] },
+        { title: "Souscrire – 📈 Placement", drive: "1iyQL6RkU9MsaxlehzpckUnTMecqaej4X",
+          desc: "Assurance vie (avec le pas à pas Oriadys en captures et la vidéo), SCPI, PER, PEE, G3F, FIP et FCPI, FPCI, prévoyance.",
+          keys: "souscrire placement assurance vie av oriadys suravenir cristalliance avenir conseil placement fiche conseil scpi per pee epargne salariale g3f fip fcpi fpci prevoyance box placement extranet placement",
+          olds: [
+            { t: "Comment souscrire – Assurance vie", id: "1ItH_ebQYKFagR-i4eCm0NWhZngwsEP5q", f: 1 },
+            { t: "Pas à pas – Souscrire Cristalliance Avenir sur Oriadys (captures)", id: "1ax7Qwph6TqXAWNOQbCuU1p2wz62CqPVy", f: 1 },
+            { t: "Vidéo – Souscrire Cristalliance Avenir sur Oriadys (démonstration Belinda)", id: "1hnSEnQu_pBRZ_ElgG1O0PwK7nRKgC17S", f: 1 },
+            { t: "Comment souscrire – SCPI", id: "1R91U63mQrholINByS38Ebs1oeTHX2Pvj", f: 1 },
+            { t: "Comment souscrire – PER", id: "1qsNtZqiSNQtydodaJu_qvtRu0TniDn2z", f: 1 },
+            { t: "Comment souscrire – PEE (épargne salariale)", id: "1HqVxQjwApx20tVFr0pwYm3lRISGy6qua", f: 1 },
+            { t: "Comment souscrire – G3F (Inter Invest)", id: "1nRERNwWWQbfSu5mjXRTIf8hccd-YqZno", f: 1 },
+            { t: "Comment souscrire – FIP et FCPI", id: "1W-GRfGcmclkJbqfOj1kYYBNmq8dSY-3s", f: 1 },
+            { t: "Comment souscrire – FPCI", id: "1bA-s4bRUk9mDhYFuLiYbo09R_ewVKY8Y", f: 1 },
+            { t: "Comment souscrire – Prévoyance individuelle", id: "10D724fZb06VmpfTzSI2ge8gZInlvG3pD", f: 1 }
+          ] },
+        { title: "Souscrire – 🏦 Financement", drive: "1e32V7nCQcB_I7_U0hqMBwqUerZX_gB6H",
+          desc: "Crédit immobilier, financement de SCPI et assurance emprunteur, via Fisy.",
+          keys: "souscrire financement credit pret fisy stellium financement pieces dossier de pret financement scpi cfcal assurance emprunteur april lemoine",
+          olds: [
+            { t: "Comment souscrire – Crédit immobilier", id: "17ik3zWtEcykFosY22ouPit96sZUGgggr", f: 1 },
+            { t: "Comment souscrire – Financement de SCPI", id: "11XhsOicieXZujwtMF05b5PDuOddTUMzd", f: 1 },
+            { t: "Comment souscrire – Assurance emprunteur", id: "1PjnG2Z7CFo8NMYsICgTff3Snmy7tl1Mu", f: 1 }
+          ] },
         { title: "Process / Système – Les 14 systèmes (🚧 En construction)", drive: "1aBPvXyYLFVsUD84R_X-0pl67ANXokMbs",
           desc: "Les systèmes d'Eric Worre adaptés à notre activité. En préparation.", keys: "systemes worre 14 systemes",
           olds: [] },
-        { title: "À trier", desc: "Contenu en cours de répartition dans les bons process.", keys: "savoir faire",
+        { title: "Savoir faire… (à trier)", desc: "Ancien dossier en cours de répartition dans les bons process.", keys: "savoir faire",
           olds: [ { t: "Savoir faire…", id: "14qnHvC6b11Oho8fHOB3PDJ0b_TUQIS59" } ] }
       ] },
     { id: "propose", num: "3", icon: "💼", title: "Ce qu'on propose aux clients", drive: "1Fj9baJZuTihFV98bvS0d45DmvEjnFGqo",
-      who: "Tout le monde", desc: "Les solutions par famille, puis par partenaire. Chaque partenaire : à montrer au client, pour me former, souscrire.",
+      who: "Tout le monde", desc: "Les solutions par famille, puis par partenaire : de quoi présenter et te former. Pour souscrire, ouvre « Process / Systèmes » › Souscrire une solution.",
       keys: "solutions produits partenaires offre",
       subs: [
         { title: "Tour d'horizon des solutions", desc: "La vue d'ensemble, à regarder en premier.", keys: "tour d'horizon vue d'ensemble",
           olds: [ { t: "Tour d'horizon des solutions", id: "18Ul-WoqPb4iEXTp0CNgZ7N_pczyXxmx4" } ] },
-        { title: "🏠 Immobilier", drive: "1hxhtUsfIrmn7kAGAKktOJ8SMM_50o4zp", desc: "Jeanbrun, Colosseum, Finvestimmo, Malraux, monuments historiques, déficit foncier, Denormandie, Novaxia, stock Immoshop.",
-          keys: "immobilier immo jeanbrun pinel colosseum colocatere coloc colocation finvestimmo malraux monuments historiques deficit foncier denormandie novaxia immoshop stock nue-propriete lmnp",
+        { title: "🏠 Immobilier", drive: "1hxhtUsfIrmn7kAGAKktOJ8SMM_50o4zp", desc: "Jeanbrun, Colosseum, Finvestimmo, Malraux, monuments historiques, déficit foncier, Denormandie, stock Immoshop.",
+          keys: "immobilier immo jeanbrun pinel colosseum colocatere coloc colocation finvestimmo malraux monuments historiques deficit foncier denormandie immoshop stock nue-propriete lmnp",
           olds: [
             { t: "Colosseum (ex-Colocatère)", id: "1GAyPyA7NUxD9uyYaGRC_tAlHF9qf7yqI" },
             { t: "Finvestimmo", id: "1WAIhVuYlqzph90d3JGW-fwyE6PVHuC7j" },
             { t: "Malraux", id: "1YJeG8j3fMs8tnz-08b-d47jmLH2vUTGN" },
-            { t: "Monuments historiques, Malraux, déficit foncier, Denormandie", id: "1-1IlVS2S1tyzSm8uhNxNt9-tMrj1gndx" },
-            { t: "Novaxia", id: "1tpk787tT8DHxqBFfWCT8GLNgkN-qPM3L" }
+            { t: "Monuments historiques, Malraux, déficit foncier, Denormandie", id: "1-1IlVS2S1tyzSm8uhNxNt9-tMrj1gndx" }
           ] },
         { title: "📈 Placement", drive: "1qIDmlJJL5qxw_cwq8gu_FstIsiO191yL", desc: "Assurance-vie (Oriadys), SCPI, PER, PEE, FIP et FCPI, FPCI, G3F, Exceltis, Top Invest, prévoyance.",
           keys: "placement assurance vie av oriadys allocation scpi per retraite pee epargne salariale fip fcpi fpci miriad elevation patria g3f exceltis produits structures top invest prevoyance",
@@ -173,14 +210,17 @@ window.SITE = {
             { t: "Supports de présentation + vidéo", id: "1tfe3e6pn19uWvlkt67b5v67EvL8zDs-Z" } ] }
       ] },
     { id: "archives", num: "8", icon: "🗄️", title: "Archives", drive: "1Xsm9cM7H5dRJrfxshnt9JKEH8s7VK6JJ",
-      who: "Pour le suivi des anciens dossiers", desc: "Ce qui a été remplacé ou n'existe plus. Pinel est remplacé par Jeanbrun.",
-      keys: "archives ancien pinel",
-      subs: [ { title: "Pinel (remplacé par Jeanbrun)", keys: "pinel", olds: [ { t: "Pinel", id: "1x-m3jQrz2DMksD4QizjxeJaExV-_4_wJ" } ] } ] }
+      who: "Pour le suivi des anciens dossiers", desc: "Ce qui a été remplacé ou n'existe plus : Pinel (remplacé par Jeanbrun), Novaxia.",
+      keys: "archives ancien pinel novaxia",
+      subs: [ { title: "Pinel (remplacé par Jeanbrun)", keys: "pinel", olds: [ { t: "Pinel", id: "1x-m3jQrz2DMksD4QizjxeJaExV-_4_wJ" } ] },
+        { title: "Novaxia", keys: "novaxia", olds: [ { t: "Novaxia", id: "1tpk787tT8DHxqBFfWCT8GLNgkN-qPM3L" } ] } ] }
   ],
   // Mots que les gens tapent → où aller
   redirects: [
     { q: "pinel", to: "propose", note: "Pinel est remplacé par Jeanbrun : regarde l'immobilier. Les anciens documents Pinel sont dans les archives." },
     { q: "colocatere coloc", to: "propose", note: "Colocatère s'appelle maintenant Colosseum : immobilier." },
+    { q: "novaxia", to: "archives", note: "Novaxia n'est plus proposé : ses documents sont dans les archives." },
+    { q: "a classer deposer un document ajouter un fichier", to: "commence", note: "Seul Siegfried ajoute des documents au drive : envoie-lui ton document." },
     { q: "acces refuse demander l'acces connexion je n'arrive pas a ouvrir compte google autorisation", to: "help", note: "Problème d'accès : vérifie ton compte Google." }
   ],
   lexique: [
@@ -221,6 +261,10 @@ window.SITE = {
     { p: "Mois 3", items: ["Mettre en place tes premiers investisseurs", "Présenter l'opportunité à un proche pour démarrer à 2", "Faire le point sur tes 5 DÉFIS"], defi: "D · I" }
   ],
   nouveautes: [
+    { d: "14/11/2026", t: "Assurance vie : un pas à pas en captures d'écran et la vidéo de Belinda pour souscrire Cristalliance Avenir sur Oriadys." },
+    { d: "13/11/2026", t: "Nouveau process : « Du premier contact au filleul qui démarre » (2.2), avec la règle Jump pour les consultants juniors." },
+    { d: "13/11/2026", t: "Nouveau process : « Souscrire une solution » (2.6), une fiche avec schéma pour chaque solution." },
+    { d: "12/11/2026", t: "Le drive est renuméroté : chaque dossier porte son numéro de rubrique (3.2.1, 3.3.1…). Novaxia passe aux archives." },
     { d: "11/11/2026", t: "Nouveau portail : cherche ou navigue dans tout le drive depuis une seule page." },
     { d: "10/11/2026", t: "Colocatère s'appelle maintenant Colosseum. Les biens se visitent en 3D." },
     { d: "10/11/2026", t: "Pinel est remplacé par Jeanbrun. Les anciens documents Pinel passent aux archives." }
