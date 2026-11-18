@@ -95,6 +95,10 @@ ol.rank,ul.rank{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direc
 .rank li.al{background:var(--warn-soft);color:var(--warn)}
 .rank .n{width:26px;height:26px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:.78rem;font-weight:700;flex:none;color:var(--ink)}
 .rank .pt{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+.rank .sc{margin-left:auto;text-align:right;line-height:1.15;font-variant-numeric:tabular-nums}
+.rank .sc b{display:block;font-weight:700}
+.rank .sc small{display:block;font-size:.72rem;font-weight:500;opacity:.72}
+.teamsum small{display:block;font-size:.72rem;opacity:.72;margin-top:6px;text-align:center}
 .sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
 th,td{padding:7px 6px;text-align:center;border-top:1px solid var(--line);white-space:nowrap}
 td.rl,th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}
@@ -376,6 +380,7 @@ var CLOSE=['La semaine 2 est ouverte : une bonne série d’actions dès lundi e
 
 var sb=supabase.createClient(SB_URL,SB_KEY),$=function(i){return document.getElementById(i)};
 var me,tg,start,ratesDate,prefs={},data={},mine={},mode='day',day,wk=0,q=Promise.resolve(),timer,TODAY;
+var r1Timer=null;document.addEventListener('visibilitychange',function(){if(!document.hidden&&me&&TODAY===iso(new Date()))askTodayR1()});
 var agenda=[],exoW={},vaHist=[],goals={c1:0,c2:0,c3:0,skipped:false},exi=null,curTab='focus',exoReady=false;
 
 /* ===== Utilitaires ===== */
@@ -429,9 +434,12 @@ async function boot(){
  $('who').textContent=me.name;
  await loadDefis();setupTabs();
  await sb.rpc('r1_sync');
+ var lastT=null;try{lastT=localStorage.getItem('f5_tab')}catch(e){}
  await openP(me);
+ if(lastT&&lastT!=='focus'){var tb=document.querySelector('.tab[data-tab="'+lastT+'"]');if(tb&&!tb.hidden)showTab(lastT)}
  loadAgenda();loadRates();if(me.role==='admin')alertDot();
  clearInterval(timer);timer=setInterval(loadTop,15000);
+ clearInterval(r1Timer);r1Timer=setInterval(function(){if(me&&!document.hidden)askTodayR1()},300000);
  await routines();
 }
 async function routines(){
@@ -459,7 +467,7 @@ async function reloadMine(){mine=await loadCounts(me.id);if(tg&&tg.id===me.id)da
 function setupTabs(){var isA=me.role==='admin',sd=!isA&&defiEligible();$('tabTeam').hidden=!isA;$('tabRun').hidden=!(isA||me.run90);$('tabDefis').hidden=!sd;$('defiDot').hidden=true;$('defiBack').hidden=isA||!((prefs.defi_no&&!dst)||(defiRecent()&&dst.choice==='no'));
  $('tabs').style.gridTemplateColumns='repeat('+(3+(isA?2:0)+(sd?1:0))+',1fr)'}
 function showTab(t){
- curTab=t;
+ curTab=t;try{localStorage.setItem('f5_tab',t)}catch(e){}
  $$('.tab').forEach(function(b){b.setAttribute('aria-selected',b.dataset.tab===t)});
  ['focus','exo','outils','defis','team','run'].forEach(function(id){$(id).hidden=id!==t});
  document.body.classList.toggle('tools',t==='outils');
@@ -584,11 +592,14 @@ function streakR(){
  s.appendChild(cal);
  var lg=el('div','leg');lg.innerHTML='<span><i style="background:var(--acc)"></i>jour actif</span><span><i style="background:var(--warn)"></i>jour manqué</span><span>dimanche : repos</span>';s.appendChild(lg);
 }
+function scoreEl(tot,w){var d=el('span','sc');d.appendChild(el('b',0,fmt(tot)+' pts'));if(w!==null&&w!==undefined)d.appendChild(el('small',0,'+'+fmt(w)+' cette semaine'));return d}
+async function weekPts(){var ws=add(start,7*Math.max(0,Math.min(4,Math.floor((Date.parse(TODAY)-Date.parse(start))/864e5/7)))),we=add(ws,6);
+ var r=await sb.from('counts').select('*').gte('day',ws).lte('day',we),o={};(r.data||[]).forEach(function(x){o[x.user_id]=(o[x.user_id]||0)+pts(x)});return o}
 async function loadTop(){
- if(!me)return;var r=await sb.rpc('top5'),l=$('top');l.innerHTML='';var rows=r.data||[];
+ if(!me)return;var r=await sb.rpc('top5_week'),wk=!r.error;if(!wk)r=await sb.rpc('top5');var l=$('top');l.innerHTML='';var rows=r.data||[];
  if(!rows.length)l.appendChild(el('li',0,'Personne n’a encore marqué de points.'));
  rows.forEach(function(x,i){var li=el('li',x.name===me.name?'me':''),n=el('span','n',['🥇','🥈','🥉'][i]||(i+1));
-  li.appendChild(n);li.appendChild(el('span',0,x.name));li.appendChild(el('span','pt',fmt(x.points)+' pts'));l.appendChild(li)});
+  li.appendChild(n);li.appendChild(el('span',0,x.name));li.appendChild(scoreEl(x.points,wk?x.week_pts:null));l.appendChild(li)});
  var p=await sb.rpc('progress_rank'),pr=p.data||[],pl=$('prog');pl.innerHTML='';$('progBox').hidden=!pr.length;
  pr.forEach(function(x,i){var li=el('li',x.name===me.name?'me':''),n=el('span','n',i+1);li.appendChild(n);li.appendChild(el('span',0,x.name));li.appendChild(el('span','pt','+'+fmt(x.gain)+' pts'));pl.appendChild(li)});
 }
@@ -708,8 +719,15 @@ async function r1Move(a){
  var node=el('div','fl'),i=el('input');i.type='date';i.min=TODAY;i.value=add(TODAY,1);node.appendChild(el('label',0,'Nouvelle date'));node.appendChild(i);
  var v=await ask({title:'Reporter ce R1',node:node,buttons:[{t:'Valider',cls:'p',v:1},{t:'Annuler',v:0}]});
  if(!v||i.value<TODAY)return;var e=await sb.rpc('r1_move',{aid:a.id,nd:i.value});if(err(e))return;await loadAgenda();toast('R1 reporté')}
+var R1_HOUR=17,r1Asked={};
 async function askTodayR1(){
- var due=agenda.filter(function(a){return a.day===TODAY});
+ if(new Date().getHours()<R1_HOUR||askTodayR1.busy||!$('md').hidden)return;askTodayR1.busy=true;
+ try{await loadAgenda()}catch(e){}
+ var due=agenda.filter(function(a){return a.day===TODAY&&!r1Asked[a.id]});
+ due.forEach(function(a){r1Asked[a.id]=1});
+ try{await askTodayR1b(due)}finally{askTodayR1.busy=false}
+}
+async function askTodayR1b(due){
  for(var k=0;k<due.length;k++){
   var a=due[k],v=await ask({badge:'🤝',title:'Tu avais un R1 prévu aujourd’hui : réalisé ?',paras:[],buttons:[{t:'Oui',cls:'p',v:'y'},{t:'Non',v:'n'},{t:'Reporter',v:'r'}]});
   if(v==='y')await r1Done(a);else if(v==='n')await r1Drop(a);else await r1Move(a);
@@ -801,8 +819,14 @@ async function renderTeam0(){
  var b=$('team');b.innerHTML='';
  var r=await sb.rpc('team_totals2'),rows=r.data||[],al=rows.filter(function(p){return p.alert});
  var r0d=await r0Days();rows.forEach(function(p){if(p.r0===undefined||p.r0===null)p.r0=r0Sum(r0d,p.id,start,lastDay())});
+ var wkp=await weekPts();rows.forEach(function(p){p.week=wkp[p.id]||0});
  $('teamDot').hidden=!al.length;
  if(al.length){var a=el('div','alertbar','⚠ '+al.length+' consultant'+(al.length>1?'s':'')+' sans saisie depuis 2 jours : '+al.map(function(p){return p.name}).join(', '));b.appendChild(a)}
+ var tot=rows.reduce(function(s,p){return s+Number(p.points)},0),wtot=rows.reduce(function(s,p){return s+p.week},0),eng=rows.filter(function(p){return Number(p.points)>0}).length;
+ var ts=el('div','card teamsum');ts.appendChild(el('h2','h','Score de l’équipe'));
+ var tg3=el('div','sum3');tg3.style.gridTemplateColumns='1fr 1fr';tg3.innerHTML='<div><b>'+fmt(tot)+'</b><span>points cumulés</span></div><div><b>+'+fmt(wtot)+'</b><span>cette semaine</span></div>';ts.appendChild(tg3);
+ ts.appendChild(el('small',0,eng?'Moyenne : '+fmt(Math.round(tot/eng))+' pts par personne engagée ('+eng+') · +'+fmt(Math.round(wtot/eng))+' cette semaine':'Personne n’a encore marqué de points.'));
+ b.appendChild(ts);
  var avg=el('div','card');avg.appendChild(el('h2','h','Moyenne de l’équipe'));
  var n=rows.length||1,t={},pt=0;C.forEach(function(c){t[c[0]]=rows.reduce(function(s,p){return s+Number(p[c[0]])},0)});rows.forEach(function(p){pt+=Number(p.points)});
  var g=el('div','sum3');g.innerHTML='<div><b>'+fmt(Math.round(pt/n))+'</b><span>points</span></div><div><b>'+(t.c1/n).toFixed(1).replace('.',',')+'</b><span>C1</span></div><div><b>'+(t.r1/n).toFixed(1).replace('.',',')+'</b><span>R1</span></div>';
@@ -810,14 +834,14 @@ async function renderTeam0(){
  var g2=el('div','sum3');g2.style.marginTop='8px';g2.innerHTML='<div><b>'+(t.c2/n).toFixed(1).replace('.',',')+'</b><span>C2</span></div><div><b>'+(t.c3/n).toFixed(1).replace('.',',')+'</b><span>C3</span></div><div><b>'+(t.c6/n).toFixed(1).replace('.',',')+'</b><span>C6</span></div>';avg.appendChild(g2);
  var ex=el('button','btn');ex.style.marginTop='12px';ex.textContent='Exporter en Excel';
  ex.onclick=async function(){try{await loadX()}catch(e){toast('Export impossible : bibliothèque non chargée');return}
-  var data=[['Nom','Points','C1','C2','C3','C6','R0','R1','R2','R3','Dernière saisie']].concat(rows.map(function(p){return[p.name,Number(p.points),Number(p.c1),Number(p.c2),Number(p.c3),Number(p.c6),Number(p.r0||0),Number(p.r1),Number(p.r2),Number(p.r3),p.last_day||'']}));
+  var data=[['Nom','Points','Points semaine','C1','C2','C3','C6','R0','R1','R2','R3','Dernière saisie']].concat(rows.map(function(p){return[p.name,Number(p.points),p.week,Number(p.c1),Number(p.c2),Number(p.c3),Number(p.c6),Number(p.r0||0),Number(p.r1),Number(p.r2),Number(p.r3),p.last_day||'']}));
   var ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Focus');XLSX.writeFile(wb,'focus-5-semaines-'+TODAY+'.xlsx')};
  avg.appendChild(ex);b.appendChild(avg);
  var c=el('div','card');c.appendChild(el('h2','h','Classement général'));var ul=el('ul','rank');
  rows.forEach(function(p,i){var mineP=p.id===me.id,li=el('li',p.alert?'al':mineP?'me':'');li.style.flexWrap='wrap';
   li.appendChild(el('span','n',i+1));
   var nm=el('span',0,p.name+(mineP?' (toi)':''));nm.style.cssText='font-weight:700;cursor:pointer;flex:1;min-width:0';nm.onclick=function(){openP(mineP?me:{id:p.id,name:p.name})};li.appendChild(nm);
-  li.appendChild(el('span','pt',fmt(p.points)+' pts'));
+  li.appendChild(scoreEl(Number(p.points),p.week));
   var det=el('div','tiny','R0 '+(p.r0||0)+' · R1 '+p.r1+' · R2 '+p.r2+' · R3 '+p.r3+' · '+(p.last_day?'dernière saisie le '+dm(p.last_day):'aucune saisie')+(p.alert?' · à relancer':''));det.style.cssText='width:100%;padding-left:36px';li.appendChild(det);
   var ac=el('div','row');ac.style.cssText='width:100%;padding-left:36px;gap:6px';
   var z0=el('button','btn sm','Remettre à zéro le focus');z0.onclick=async function(){
