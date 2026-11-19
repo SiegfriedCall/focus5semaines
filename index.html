@@ -98,6 +98,16 @@ ol.rank,ul.rank{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direc
 .rank .sc{margin-left:auto;text-align:right;line-height:1.15;font-variant-numeric:tabular-nums}
 .rank .sc b{display:block;font-weight:700}
 .rank .sc small{display:block;font-size:.72rem;font-weight:500;opacity:.72}
+.mjbar{position:sticky;top:0;z-index:6;background:var(--bg);padding:calc(6px + env(safe-area-inset-top,0px)) 2px 8px;margin:-6px -2px 0;display:flex;flex-direction:column;gap:7px;box-shadow:0 8px 10px -10px #0004}
+.mjn{display:flex;justify-content:space-between;align-items:baseline;font-size:.86rem}.mjn b{font-size:1.15rem;font-variant-numeric:tabular-nums;color:var(--acc)}.mjn small{color:var(--mut);font-size:.74rem}
+.mjbar.ok .gbar i{background:#3aa76d}.mjbar.ok #mjW{color:#3aa76d}
+.mjchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.mjchips::-webkit-scrollbar{display:none}
+.mjc{flex:1 0 auto;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:7px 8px;font-weight:700;font-size:.82rem;color:var(--ink)}.mjc.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.mjsec .mjrow:first-of-type{border-top:0}
+.mjrow{display:flex;align-items:center;gap:8px;padding:9px 0 7px;border-top:1px solid var(--line)}
+.mjname{flex:1;min-width:0;text-align:left;border:0;background:none;padding:0;display:flex;flex-direction:column;gap:1px}.mjname span{font-weight:600;font-size:.93rem}.mjname small{color:var(--acc);font-weight:700;font-size:.75rem}
+.mjdesc{padding:0 0 8px;margin-top:-2px}
+.mjrew{display:flex;gap:10px;align-items:center;background:var(--acc-soft);border-radius:14px;padding:10px 12px;margin-top:10px}.mjrew span{font-size:1.6rem}.mjrew small{display:block;color:var(--mut);font-size:.74rem}.mjrew b{font-size:1rem}
 .teamsum small{display:block;font-size:.72rem;opacity:.72;margin-top:6px;text-align:center}
 .sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
 th,td{padding:7px 6px;text-align:center;border-top:1px solid var(--line);white-space:nowrap}
@@ -432,8 +442,11 @@ async function boot(){
  $('auth').hidden=true;$('app').hidden=false;$('appname').hidden=true;
  var n=Math.floor((Date.parse(TODAY)-Date.parse('2026-01-01'))/864e5);$('motto').textContent=MOTTOS[((n%MOTTOS.length)+MOTTOS.length)%MOTTOS.length];
  $('who').textContent=me.name;
+ if(mojoOn())await loadMojo();
  await loadDefis();setupTabs();
+ var mjDue=[];if(mojoOn()&&mp.start_day){var qa=await sb.from('r1_agenda').select('id,day').eq('user_id',me.id).eq('status','planned').lt('day',TODAY);mjDue=(qa.data||[]).filter(function(a){return a.day>=mp.start_day})}
  await sb.rpc('r1_sync');
+ if(mjDue.length){var qb=await sb.from('r1_agenda').select('id,status').in('id',mjDue.map(function(a){return a.id}));var ok={};(qb.data||[]).forEach(function(x){if(x.status!=='planned')ok[x.id]=1});mjDue.forEach(function(a){if(ok[a.id])mjAdd(a.day,'r1',1)})}
  var lastT=null;try{lastT=localStorage.getItem('f5_tab')}catch(e){}
  await openP(me);
  if(lastT&&lastT!=='focus'){var tb=document.querySelector('.tab[data-tab="'+lastT+'"]');if(tb&&!tb.hidden)showTab(lastT)}
@@ -445,6 +458,7 @@ async function boot(){
 async function routines(){
  if(prefs.seen_focus!==start&&TODAY<=lastDay())await focusIntro(true);
  await congrats();
+ if(mojoOn()){await mjWelcome();await mjMessages()}
  await askTodayR1();
  await vaPrompt();
  if(me.role!=='admin'&&((!dst&&!prefs.defi_no)||(defiRecent()&&!dst.choice)))await defiQuestion();
@@ -464,7 +478,7 @@ async function openP(p){
 async function reloadMine(){mine=await loadCounts(me.id);if(tg&&tg.id===me.id)data=mine}
 
 /* ===== Onglets ===== */
-function setupTabs(){var isA=me.role==='admin',sd=!isA&&defiEligible();$('tabTeam').hidden=!isA;$('tabRun').hidden=!(isA||me.run90);$('tabDefis').hidden=!sd;$('defiDot').hidden=true;$('defiBack').hidden=isA||!((prefs.defi_no&&!dst)||(defiRecent()&&dst.choice==='no'));
+function setupTabs(){var isA=me.role==='admin',sd=!isA&&defiEligible();$('tabTeam').hidden=!isA;$('tabRun').hidden=!(isA||me.run90||(mojoOn()&&mp&&mp.rhythm==='90'));$('tabDefis').hidden=!sd;$('defiDot').hidden=true;$('defiBack').hidden=isA||!((prefs.defi_no&&!dst)||(defiRecent()&&dst.choice==='no'));
  $('tabs').style.gridTemplateColumns='repeat('+(3+(isA?2:0)+(sd?1:0))+',1fr)'}
 function showTab(t){
  curTab=t;try{localStorage.setItem('f5_tab',t)}catch(e){}
@@ -713,7 +727,7 @@ function agendaR(box){
  f.appendChild(inp);f.appendChild(bt);box.appendChild(f);
  box.appendChild(el('div','tiny','Un R1 planifié ne compte qu’une fois réalisé. À minuit, s’il est toujours noté, il est compté automatiquement.')).style.marginTop='8px';
 }
-async function r1Done(a){var e=await sb.rpc('r1_done',{aid:a.id});if(err(e))return;await reloadMine();await loadAgenda();renderFocus();if(curTab==='exo')renderExo();loadTop();toast('R1 réalisé : +50 points')}
+async function r1Done(a){var e=await sb.rpc('r1_done',{aid:a.id});if(err(e))return;if(mojoOn()&&mp&&mp.start_day&&a.day>=mp.start_day)mjAdd(a.day,'r1',1);await reloadMine();await loadAgenda();renderFocus();if(curTab==='exo')renderExo();loadTop();toast('R1 réalisé : +50 points')}
 async function r1Drop(a){var e=await sb.rpc('r1_drop',{aid:a.id});if(err(e))return;await loadAgenda();toast('R1 retiré de l’agenda')}
 async function r1Move(a){
  var node=el('div','fl'),i=el('input');i.type='date';i.min=TODAY;i.value=add(TODAY,1);node.appendChild(el('label',0,'Nouvelle date'));node.appendChild(i);
@@ -761,6 +775,7 @@ function gaugeEl(vol,enc,thr){
  return d;
 }
 async function renderExo(){
+ if(mojoOn()&&prefs.exo_active!==false){renderMojo();return}
  var b=$('exo');
  if(prefs.exo_active===false){
   b.innerHTML='';var c=el('div','card');c.appendChild(el('h2','h','Mon exercice'));
@@ -807,6 +822,245 @@ async function renderExo(){
   var ul=el('ul','rank');vaHist.slice(0,8).forEach(function(h){var li=el('li');li.appendChild(el('span',0,'Semaine du '+dm(h.week)));li.appendChild(el('span','pt',eur(h.volume)+' · '+eur(h.encours)));ul.appendChild(li)});hs.appendChild(ul);c2.appendChild(hs)}
  b.appendChild(c2);
  var c3=el('div','card');c3.id='agendaE';b.appendChild(c3);agendaR(c3);
+}
+
+/* ===== MOJO (barème détaillé, Mon exercice) ===== */
+var MOJO_ALL=false; /* phase 1 : administrateur seul. Passer à true pour ouvrir à tous. */
+var MJ_CATS=[
+ ['c1','C1','Savoir créer la relation'],['c2','C2','Savoir inviter'],['c3','C3','Savoir présenter'],
+ ['c4','C4','Savoir aider à la décision'],['c5','C5','Savoir engager la décision'],['c6','C6','Savoir faire du suivi'],
+ ['c7','C7','Promouvoir équipe et événements'],['dv','Divers','Divers']];
+var MJ=[
+ ['pc','c1','Prise de contact',2,'Ajout d’un nom avec ses coordonnées à ta liste de noms.'],
+ ['cq','c1','Contacter quelqu’un',0.1,'Envoi d’un contact sur les réseaux sociaux.'],
+ ['cr','c1','Contact ou relance',1,'Échange d’un message, mail, texto ou autre.'],
+ ['inv','c2','Invitation (téléphone, live)',2,'Invitation personnalisée par téléphone ou en direct, ou validation d’une prise de RDV. Exclus : mailing groupé, simple invitation à un événement Facebook.'],
+ ['exp','c2','Participant à une exposition',3,'Un invité participe à une conférence, une FIAD, un Objectif Manager, une Rentrée non commerciale…'],
+ ['non','c2','J’obtiens un « Non »',1,'Un « Non » obtenu suite à une invitation.'],
+ ['an5','c3','Animation avec 5 invités minimum',30,'Bonus si tu animes devant au moins 5 invités à toi.'],
+ ['conf','c3','Animer une conférence',5,'Animation de chapitres dans une conférence.'],
+ ['acc','c4','Accompagner son filleul en RDV',10,'Tu accompagnes un filleul en rendez-vous.'],
+ ['r0','c4','RDV R0',5,'Rendez-vous où tu présentes ton activité et proposes un audit patrimonial.'],
+ ['r1','c4','RDV R1',5,'Premier rendez-vous d’étude. Compté aussi dans tes R1 de l’exercice.'],
+ ['r2','c4','RDV R2',5,'Deuxième rendez-vous.'],
+ ['r3','c4','RDV R3 et suivants',5,'Rendez-vous de mise en place (R3, R4, POA…).'],
+ ['plac','c5','Client en placement',8,'Mise en place d’un versement initial ou supplémentaire.'],
+ ['vp','c5','Versement programmé',5,'Mise en place ou augmentation d’un versement programmé.'],
+ ['resa','c5','Client immo : réservation',15,'Signature d’un dossier de réservation.'],
+ ['acte','c5','Client immo : signature de l’acte',15,'Signature chez le notaire.'],
+ ['parr','c5','Parrainage d’un consultant',20,'Conventionnement d’un nouveau consultant.'],
+ ['srdv','c6','Suivi client en RDV',5,'RDV de suivi en direct sur une étude patrimoniale ou un dossier en cours. Exclus : prendre des nouvelles des amis ou de la famille.'],
+ ['scli','c6','Suivi client',3,'Suivi d’une étude patrimoniale ou d’un dossier en cours. Exclus : prendre des nouvelles des amis ou de la famille.'],
+ ['sfil','c6','Suivi filleul',3,'Suivi avec ton filleul (visio, téléphone, direct) sur le professionnel.'],
+ ['evt','c7','Inscription à un événement d’envergure',15,'Rentrée co, Team Booster, Forum, Momentum, Miip, Tribune, Boostcamp…'],
+ ['reco','c7','Recommandation',3,'Recommandation d’un client (prise de coordonnées).'],
+ ['live','dv','Présence en Facebook Live',5,'Participation en direct à un live.'],
+ ['com','dv','Commentaires inspirants',2,'Poster des commentaires inspirants et en rapport avec toi.']];
+var MJW={std:{tp:135,da:68},'90':{tp:270,da:135}};
+var mp=null,mdays={},mjDay=null,mjOpen={};
+function mojoOn(){return !!me&&(MOJO_ALL||me.role==='admin')}
+function mjPts(r){if(!r)return 0;return Math.round(MJ.reduce(function(a,x){return a+(Number(r[x[0]])||0)*x[3]},0)*10)/10}
+function fp(n){return Number(n).toLocaleString('fr-FR',{maximumFractionDigits:1})}
+async function loadMojo(){
+ var r=await sb.from('mojo_profile').select('data').eq('user_id',me.id).maybeSingle();mp=(r.data&&r.data.data)||{};
+ var g=exoRange(),q=await sb.from('mojo_days').select('day,data').eq('user_id',me.id).gte('day',add(g.s,-100));mdays={};(q.data||[]).forEach(function(x){mdays[x.day]=x.data||{}});
+ try{await loadVa()}catch(e){}
+}
+function mpSave(){var row={user_id:me.id,data:mp,updated_at:new Date().toISOString()};queue(function(){return sb.from('mojo_profile').upsert(row,{onConflict:'user_id'}).then(function(e){err(e,'Réglage MOJO non enregistré')})})}
+function mdSave(d){var row={user_id:me.id,day:d,data:mdays[d]||{}};queue(function(){return sb.from('mojo_days').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e)})})}
+function mjAdd(d,k,n){if(!mdays[d])mdays[d]={};mdays[d][k]=Math.max(0,(Number(mdays[d][k])||0)+n);mdSave(d)}
+function mjPeriod(){if(mp.rhythm==='90'&&mp.run_start)return{s:mp.run_start,e:add(mp.run_start,89),n:'90 jours'};var g=exoRange();return{s:g.s,e:g.e,n:'Rythme standard'}}
+function mjWeekObj(){return (MJW[mp.rhythm==='90'?'90':'std']||MJW.std)[mp.activity==='da'?'da':'tp']}
+function mjWeekPts(m){return Math.round(span(m,7).reduce(function(a,d){return a+mjPts(mdays[d])},0)*10)/10}
+function mjCatPts(days,c){return Math.round(days.reduce(function(a,d){var r=mdays[d];if(!r)return a;return a+MJ.reduce(function(s,x){return s+(x[1]===c?(Number(r[x[0]])||0)*x[3]:0)},0)},0)*10)/10}
+function mjGoal(){ /* {thr, vol, enc, label} */
+ var last=vaHist[0],vol=last?Number(last.volume):null,enc=last?Number(last.encours):0;
+ if(mp.rhythm==='90'){var thr=Number(mp.goal_eur)||0;if(vol!==null)vol=Math.max(0,vol-(Number(mp.base_vol)||0));return{thr:thr,vol:vol,enc:enc,label:thr?eur(thr)+' sur 90 jours':'Aucun montant'}}
+ if(mp.goal_type==='eur'){var t=Number(mp.goal_eur)||0;return{thr:t,vol:vol,enc:enc,label:t?eur(t)+' sur l’exercice':'Aucun montant'}}
+ var oi=prefs.objective;return{thr:oi!=null?OBJ[oi][1]:0,vol:vol,enc:enc,label:oi!=null?OBJ[oi][0]:'Aucun palier'}}
+function mjRew(){return (mp.reward||'').trim()}
+/* R1 de l'exercice : avant le démarrage MOJO, comptage historique ; ensuite, R1 saisis dans MOJO */
+function mjWeekR1(m){var s=mp.start_day||TODAY,n=0,g=exoRange();span(m,7).forEach(function(d){if(d<g.s||d>g.e)return;n+=d<s?((mine[d]&&mine[d].r1)||0):(Number((mdays[d]||{}).r1)||0)});return n+(exoW[m]||0)}
+
+/* --- messages sans répétition --- */
+function mjPick(pool){var h=(mp.used||[]).filter(function(u){return u.d>=add(TODAY,-56)}),ids=h.map(function(u){return u.id});
+ var free=pool.filter(function(p){return ids.indexOf(p[0])<0});if(!free.length)free=pool;var p=free[Math.floor(Math.random()*free.length)];
+ h.push({id:p[0],d:TODAY});mp.used=h.slice(-60);return p[1]}
+function fill(t,o){return t.replace(/\{(\w+)\}/g,function(_,k){return o[k]!==undefined?o[k]:''})}
+var MJ_FRI=[
+ ['f1','Vendredi : plus que {r} points pour boucler ta semaine. Par exemple {plan}. Aujourd’hui et demain, tout se joue.'],
+ ['f2','{w} / {o} points cette semaine. Il te reste vendredi et samedi pour aller chercher les {r} points manquants : {plan}.'],
+ ['f3','Les champions se révèlent en fin de semaine. {r} points à aller chercher : {plan}. On y va ?'],
+ ['f4','Ta semaine n’est pas finie : {r} points d’écart. {plan}, et tu la termines la tête haute.'],
+ ['f5','Vendredi et samedi, tes deux jours pour faire la différence. Il manque {r} points : {plan}.'],
+ ['f6','Rappel du vendredi : {r} points te séparent de ton objectif. Commence par {first}, le reste suivra.'],
+ ['f7','Ce que tu fais aujourd’hui, tu l’encaisses demain. {r} points à aller chercher : {plan}.'],
+ ['f8','Tu as encore la main sur ta semaine : {plan}, et les {r} points sont à toi.'],
+ ['f9','Pas de week-end avant d’avoir tout donné : {r} points pour atteindre {o}. {plan}.'],
+ ['f10','La régularité fait les grands résultats. Aujourd’hui et samedi : {plan}, soit les {r} points qui manquent.']];
+var MJ_END=[
+ ['e1','Il reste {j} jours et {m} pour décrocher « {rec} ». Chaque rendez-vous compte maintenant.'],
+ ['e2','{p} % du chemin est fait. Ceux qui terminent forts sont ceux qui accélèrent quand les autres lèvent le pied.'],
+ ['e3','« {rec} » n’est plus très loin : {m} à aller chercher en {j} jours. Relance tes dossiers en cours.'],
+ ['e4','Dernière ligne droite : {j} jours. Ton encours peut faire la différence, va chercher les signatures.'],
+ ['e5','{p} % ! Ne lâche rien maintenant : {m} et « {rec} » est à toi.'],
+ ['e6','Le sprint final commence : {j} jours pour transformer tes rendez-vous en résultats.'],
+ ['e7','Tu vois la ligne d’arrivée ? {m} en {j} jours. Bloque tes créneaux de rendez-vous dès maintenant.'],
+ ['e8','Plus que {m}. Pense à « {rec} » et décroche ton téléphone.']];
+var MJ_WIN=[
+ ['w1','Objectif atteint ! « {rec} » t’attend, tu l’as mérité.'],
+ ['w2','Tu l’as fait ! Offre-toi « {rec} », et fixe-toi déjà le prochain cap.'],
+ ['w3','Ligne franchie ! Savoure « {rec} » : c’est la récompense de chaque action que tu as notée ici.']];
+function mjPlan(r){
+ var seq=[[5,2,'R1','R1'],[5,2,'suivi client en RDV','suivis clients en RDV'],[2,4,'invitation','invitations'],[3,2,'recommandation','recommandations'],[1,10,'relance','relances']],out=[],left=r;
+ seq.forEach(function(x){if(left<=0)return;if(x[0]>left&&out.length)return;var n=Math.min(x[1],Math.ceil(left/x[0]));out.push(n+' '+(n>1?x[3]:x[2]));left-=n*x[0]});
+ if(left>0)out.push('quelques actions de plus');
+ return out.length>1?out.slice(0,-1).join(', ')+' et '+out[out.length-1]:out[0]||''}
+async function mjMessages(){
+ if(!mp.setup)return;mp.shown=mp.shown||{};if(!exoReady)await mjLoadExo();var P=mjPeriod();if(TODAY<P.s||TODAY>P.e)return;
+ /* vendredi matin : semaine en cours */
+ var mon=mondayOf(TODAY);
+ if(dow(TODAY)===5&&mp.shown.fri!==mon){var o=mjWeekObj(),w=mjWeekPts(mon);mp.shown.fri=mon;
+  if(w<o){var r=Math.ceil(o-w),pl=r>40?'chaque jour, vendredi et samedi : '+mjPlan(Math.ceil(r/2)):mjPlan(r);var t=fill(mjPick(MJ_FRI),{r:r,w:fp(w),o:o,plan:pl,first:pl.split(',')[0].split(' et ')[0]});mpSave();
+   await ask({badge:'⚡',title:'Vendredi : on finit fort',paras:[t,'Le dimanche, on souffle : tout se joue aujourd’hui et demain.'],buttons:[{t:'J’y vais',cls:'p',v:1}]})}else mpSave()}
+ /* objectif de volume d'affaires */
+ var g=mjGoal();if(!g.thr||g.vol===null)return;var rec=mjRew()||'ta récompense',p=g.vol/g.thr;
+ if(p>=1){if(!mp.shown.win||mp.shown.win<P.s){mp.shown.win=TODAY;var t2=fill(mjPick(MJ_WIN),{rec:rec});mpSave();await ask({badge:'🏆',title:'Objectif atteint',paras:[t2],buttons:[{t:'Merci !',cls:'p',v:1}]})}return}
+ var j=Math.round((Date.parse(P.e)-Date.parse(TODAY))/864e5)+1,win=mp.rhythm==='90'?14:30;
+ if(j<=win&&p>=0.7&&mp.shown.end!==mon){mp.shown.end=mon;var t3=fill(mjPick(MJ_END),{j:j,m:eur(g.thr-g.vol),rec:rec,p:Math.floor(p*100)});mpSave();
+  await ask({badge:'🎯',title:'La ligne d’arrivée approche',paras:[t3],buttons:[{t:'Je fonce',cls:'p',v:1}]})}
+}
+
+/* --- accueil et questionnaire --- */
+async function mjWelcome(){
+ if(mp.welcomed)return;
+ await ask({badge:'🔥',title:'Maintenant, on ne rigole plus !',paras:[
+  'Ton onglet Mon exercice passe au barème MOJO : 25 actions classées par compétence, de C1 à C7. Les actions faciles rapportent peu, les actions décisives rapportent beaucoup. De quoi te donner le vrai rythme d’une journée productive.',
+  'Les pastilles en haut t’emmènent directement à la bonne compétence, sans tout faire défiler. Appuie sur le nom d’une action pour voir ce qu’elle recouvre.',
+  'Tu fixes ton rythme (standard ou 90 jours), ton activité (temps plein ou double activité), ton objectif de volume d’affaires et la récompense que tu t’offriras. Ton objectif de points par semaine en découle.',
+  'Le vendredi matin, si ta semaine n’est pas bouclée, tu sauras exactement quoi faire vendredi et samedi pour la terminer.',
+  'Tes R1 planifiés et ton historique de R1 sont conservés.'],buttons:[{t:'C’est parti',cls:'p',v:1}]});
+ mp.welcomed=true;mp.start_day=mp.start_day||TODAY;mpSave();
+ await mjSetup(true);
+}
+function numIn(id,val,ph){return '<input type="text" inputmode="decimal" id="'+id+'" value="'+(val!=null&&val!==''?val:'')+'" placeholder="'+(ph||'')+'">'}
+function nv2(v){var n=parseFloat(String(v).replace(/\s/g,'').replace('€','').replace(',','.'));return isNaN(n)?null:n}
+async function mjSetup(first){
+ var cancel=first?[]:[{t:'Annuler',v:'x'}],d=JSON.parse(JSON.stringify(mp));
+ var a=await ask({badge:'1/4',title:'Ton activité',paras:['Tu exerces en double activité ou à temps plein ? Ton objectif de points par semaine en dépend.'],buttons:[{t:'Temps plein',cls:d.activity!=='da'?'p':'',v:'tp'},{t:'Double activité',cls:d.activity==='da'?'p':'',v:'da'}].concat(cancel)});
+ if(a==='x')return;d.activity=a;
+ var r=await ask({badge:'2/4',title:'Ton rythme',paras:['Rythme standard : du 1er août au 31 juillet.','90 jours : un sprint de 90 jours à partir de la date de ton choix, avec un objectif de points doublé.'],buttons:[{t:'Rythme standard',cls:d.rhythm!=='90'?'p':'',v:'std'},{t:'90 jours',cls:d.rhythm==='90'?'p':'',v:'90'}].concat(cancel)});
+ if(r==='x')return;d.rhythm=r;
+ if(r==='90'){
+  var node=el('div','fl');node.innerHTML='<label for="mj_s">Date de début</label><input type="date" id="mj_s" value="'+(d.run_start||prefs.run_start||TODAY)+'"><div class="tiny" id="mj_e" style="margin:-4px 0 10px"></div><label for="mj_b">Ton volume d’affaires actuel, point de départ des 90 jours (€)</label>'+numIn('mj_b',d.base_vol!=null?d.base_vol:(vaHist[0]?vaHist[0].volume:''),'0')+'<label for="mj_g">Ton objectif de volume d’affaires sur les 90 jours (€)</label>'+numIn('mj_g',d.goal_eur,'ex. 150000');
+  var si=node.querySelector('#mj_s'),eo=node.querySelector('#mj_e'),upd=function(){eo.textContent=si.value?'Fin du 90 jours : '+long(add(si.value,89)):''};si.oninput=upd;upd();
+  for(;;){var v=await ask({badge:'3/4',title:'Ton objectif sur 90 jours',paras:[],node:node,buttons:[{t:'Valider',cls:'p',v:'ok'}].concat(cancel)});if(v==='x')return;
+   var g=nv2(node.querySelector('#mj_g').value),b0=nv2(node.querySelector('#mj_b').value);
+   if(!si.value||!g||g<=0){toast('Indique la date de début et un objectif en euros');continue}d.run_start=si.value;d.goal_eur=g;d.base_vol=b0||0;break}
+ }else{
+  var t=await ask({badge:'3/4',title:'Ton objectif sur l’exercice',paras:['Choisis un palier du PMR (Senior, Major, Expert…) ou un montant de volume d’affaires en euros.'],buttons:[{t:'Un palier',cls:d.goal_type!=='eur'?'p':'',v:'palier'},{t:'Un montant en €',cls:d.goal_type==='eur'?'p':'',v:'eur'}].concat(cancel)});
+  if(t==='x')return;d.goal_type=t;
+  if(t==='palier'){var sel=el('select');sel.style.width='100%';sel.innerHTML=OBJ.map(function(o,i){return '<option value="'+i+'"'+(prefs.objective===i?' selected':'')+'>'+esc(o[0])+(o[1]?' · '+eur(o[1]):'')+'</option>'}).join('');
+   var v2=await ask({badge:'3/4',title:'Ton palier',paras:[],node:sel,buttons:[{t:'Valider',cls:'p',v:'ok'}].concat(cancel)});if(v2==='x')return;await savePrefs({objective:+sel.value})}
+  else{var n2=el('div','fl');n2.innerHTML='<label for="mj_g2">Objectif de volume d’affaires du 1er août au 31 juillet (€)</label>'+numIn('mj_g2',d.goal_eur,'ex. 800000');
+   for(;;){var v3=await ask({badge:'3/4',title:'Ton montant',paras:[],node:n2,buttons:[{t:'Valider',cls:'p',v:'ok'}].concat(cancel)});if(v3==='x')return;var g2=nv2(n2.querySelector('#mj_g2').value);if(!g2||g2<=0){toast('Indique un montant en euros');continue}d.goal_eur=g2;break}}
+ }
+ var n3=el('div','fl');n3.innerHTML='<input type="text" id="mj_r" maxlength="80" placeholder="ex. Un week-end à Rome" value="'+esc(d.reward||'')+'">';
+ var v4=await ask({badge:'4/4',title:'Qu’est-ce que tu t’offres le jour où tu atteins ton objectif ? Donne-lui un nom.',paras:['Elle s’affichera sous ton compteur, pour l’avoir sous les yeux chaque jour.'],node:n3,buttons:[{t:'Valider',cls:'p',v:'ok'}].concat(cancel)});
+ if(v4==='x')return;d.reward=n3.querySelector('#mj_r').value.trim();
+ d.setup=true;mp=d;mpSave();
+ if(mp.rhythm==='90'&&mp.run_start!==prefs.run_start)await savePrefs({run_start:mp.run_start});
+ setupTabs();
+ toast('Objectif : '+mjWeekObj()+' points par semaine');
+ if(curTab==='exo')renderExo();
+}
+
+/* --- écran --- */
+function renderMojo(){
+ var b=$('exo');b.innerHTML='';
+ if(!mp.setup){var c0=el('div','card');c0.appendChild(el('h2','h','MOJO'));c0.appendChild(el('p','mut','Règle ton rythme et ton objectif pour démarrer.'));var s0=el('button','btn p','Régler mon MOJO');s0.onclick=function(){mjSetup(true)};c0.appendChild(s0);b.appendChild(c0);return}
+ var P=mjPeriod(),g=exoRange(),lo=P.s<g.s?P.s:g.s;
+ if(!mjDay||mjDay>TODAY)mjDay=TODAY;if(mjDay<lo)mjDay=lo;
+ var o=mjWeekObj();
+ /* en-tête */
+ var hd=el('div','card');var tl=el('div','row sp');tl.appendChild(el('h2','h','MOJO'));tl.lastChild.style.margin='0';
+ var tg=el('span','tag',P.n+' · '+(mp.activity==='da'?'double activité':'temps plein'));tl.appendChild(tg);hd.appendChild(tl);
+ hd.appendChild(el('div','mut',mp.rhythm==='90'?'Du '+dm(P.s)+' au '+dm(P.e)+' '+P.e.slice(0,4)+(TODAY>=P.s&&TODAY<=P.e?' · jour '+(Math.round((Date.parse(TODAY)-Date.parse(P.s))/864e5)+1)+' sur 90':''):'Exercice du '+dm(g.s)+' '+g.s.slice(0,4)+' au '+dm(g.e)+' '+g.e.slice(0,4)));
+ var nav=el('div','nav');nav.style.marginTop='10px';var pv=el('button','btn'),nx=el('button','btn');pv.innerHTML=ico('back');nx.innerHTML=ico('chev');
+ pv.setAttribute('aria-label','Jour précédent');nx.setAttribute('aria-label','Jour suivant');pv.disabled=mjDay<=lo;nx.disabled=mjDay>=TODAY;
+ pv.onclick=function(){mjDay=add(mjDay,-1);renderMojo()};nx.onclick=function(){mjDay=add(mjDay,1);renderMojo()};
+ var dl=el('div');dl.style.cssText='flex:1;text-align:center;min-width:0';dl.appendChild(el('div','h',mjDay===TODAY?'Aujourd’hui':long(mjDay)));dl.lastChild.style.margin='0';dl.appendChild(el('div','mut',mjDay===TODAY?long(mjDay):'Saisie d’un jour passé'));
+ nav.appendChild(pv);nav.appendChild(dl);nav.appendChild(nx);hd.appendChild(nav);b.appendChild(hd);
+ /* barre fixe */
+ var bar=el('div','mjbar');bar.id='mjbar';
+ var nums=el('div','mjn');nums.innerHTML='<span><b id="mjD"></b> pts <small>ce jour</small></span><span><b id="mjW"></b> / '+o+' <small>semaine</small></span>';bar.appendChild(nums);
+ var gb=el('div','gbar');gb.innerHTML='<i id="mjG"></i>';bar.appendChild(gb);
+ var chips=el('div','mjchips');MJ_CATS.forEach(function(c){var ch=el('button','mjc',c[1]);ch.dataset.c=c[0];ch.onclick=function(){var t=$('mj_'+c[0]);if(t){var y=t.getBoundingClientRect().top+window.scrollY-bar.offsetHeight-8;window.scrollTo({top:y,behavior:'smooth'})}};chips.appendChild(ch)});
+ bar.appendChild(chips);b.appendChild(bar);
+ /* compétences */
+ var r=mdays[mjDay]||{};
+ MJ_CATS.forEach(function(c){
+  var cd=el('div','card mjsec');cd.id='mj_'+c[0];
+  var hh=el('div','row sp');hh.appendChild(el('h2','h',c[0]==='dv'?'Divers':c[1]+' · '+c[2]));hh.lastChild.style.margin='0';var cp=el('span','tag');cp.id='mjcp_'+c[0];hh.appendChild(cp);cd.appendChild(hh);
+  MJ.filter(function(x){return x[1]===c[0]}).forEach(function(x){
+   var row=el('div','mjrow'),nm=el('button','mjname');nm.innerHTML='<span>'+esc(x[2])+'</span><small>'+fp(x[3])+' pt'+(x[3]>=2?'s':'')+'</small>';
+   var ds=el('div','tiny mjdesc',x[4]);ds.hidden=!mjOpen[x[0]];nm.onclick=function(){mjOpen[x[0]]=!mjOpen[x[0]];ds.hidden=!mjOpen[x[0]]};nm.setAttribute('aria-label',x[2]+', '+fp(x[3])+' points, afficher la description');
+   var st=el('div','cstep'),mi=el('button',0,'−'),ov=el('output',0,Number(r[x[0]])||0),pl=el('button','cp','+');
+   mi.setAttribute('aria-label','Moins une : '+x[2]);pl.setAttribute('aria-label','Plus une : '+x[2]);mi.disabled=!(Number(r[x[0]])>0);
+   function tap(n){mjAdd(mjDay,x[0],n);var v=Number(mdays[mjDay][x[0]])||0;ov.textContent=v;mi.disabled=v<=0;mjNums();if(x[0]==='r1'&&exoReady)mjR1Card()}
+   mi.onclick=function(){tap(-1)};pl.onclick=function(){tap(1)};
+   st.appendChild(mi);st.appendChild(ov);st.appendChild(pl);
+   row.appendChild(nm);row.appendChild(st);cd.appendChild(row);cd.appendChild(ds)});
+  b.appendChild(cd)});
+ /* R1 de l'exercice */
+ var c1=el('div','card');c1.id='mjR1';b.appendChild(c1);
+ /* objectif */
+ var c2=el('div','card');c2.id='mjObj';b.appendChild(c2);
+ var c3=el('div','card');c3.id='agendaE';b.appendChild(c3);agendaR(c3);
+ mjNums();
+ (exoReady?Promise.resolve():mjLoadExo()).then(function(){mjR1Card();mjObjCard()});
+ mjSpy();
+}
+async function mjLoadExo(){var r1=await sb.from('exo_weeks').select('*').eq('user_id',me.id);exoW={};(r1.data||[]).forEach(function(x){exoW[x.week]=x.r1});await loadVa();exoReady=true}
+function mjNums(){
+ var o=mjWeekObj(),d=mjPts(mdays[mjDay]),m=mondayOf(mjDay),w=mjWeekPts(m);
+ if($('mjD'))$('mjD').textContent=fp(d);if($('mjW'))$('mjW').textContent=fp(w);if($('mjG'))$('mjG').style.width=Math.min(100,w/o*100)+'%';
+ MJ_CATS.forEach(function(c){var e=$('mjcp_'+c[0]);if(e)e.textContent=fp(mjCatPts([mjDay],c[0]))+' pts'});
+ var wl=$('mjbar');if(wl)wl.classList.toggle('ok',w>=o);
+}
+function mjSpy(){
+ if(mjSpy.on)return;mjSpy.on=true;
+ window.addEventListener('scroll',function(){if(curTab!=='exo'||!$('mjbar'))return;var bar=$('mjbar'),lim=bar.getBoundingClientRect().bottom+20,cur=null;
+  MJ_CATS.forEach(function(c){var t=$('mj_'+c[0]);if(t&&t.getBoundingClientRect().top<=lim)cur=c[0]});
+  bar.querySelectorAll('.mjc').forEach(function(x){x.classList.toggle('on',x.dataset.c===cur)})},{passive:true});
+}
+function mjR1Card(){
+ var c=$('mjR1');if(!c)return;c.innerHTML='';var ws=exoWeeks();if(exi===null||exi>=ws.length)exi=ws.length-1;var m=ws[exi];
+ c.appendChild(el('h2','h','Mes R1 de l’exercice'));
+ var nav=el('div','nav'),pv=el('button','btn'),nx=el('button','btn');pv.innerHTML=ico('back');nx.innerHTML=ico('chev');pv.disabled=exi<=0;nx.disabled=exi>=ws.length-1;
+ pv.setAttribute('aria-label','Semaine précédente');nx.setAttribute('aria-label','Semaine suivante');pv.onclick=function(){exi--;mjR1Card()};nx.onclick=function(){exi++;mjR1Card()};
+ var lb=el('div');lb.style.cssText='flex:1;text-align:center;min-width:0';lb.appendChild(el('div',0,'S'+isoWeek(m)+' · '+dms(m)+' – '+dms(add(m,6))));lb.lastChild.style.fontWeight='700';
+ var n=mjWeekR1(m);lb.appendChild(el('div','big',n));lb.lastChild.style.fontSize='2rem';nav.appendChild(pv);nav.appendChild(lb);nav.appendChild(nx);c.appendChild(nav);
+ var s=mp.start_day||TODAY,man=add(m,6)<s&&!weekLocked(m);
+ if(man){var st=el('div','row');st.style.cssText='justify-content:center;margin-top:6px';var sd=el('div','step'),mi=el('button',0,'−'),pl=el('button',0,'+'),ov=el('output',0,exoW[m]||0);
+  mi.disabled=!(exoW[m]>0);mi.onclick=function(){setW(-1)};pl.onclick=function(){setW(1)};function setW(k){exoW[m]=Math.max(0,(exoW[m]||0)+k);var row={user_id:me.id,week:m,r1:exoW[m]};queue(function(){return sb.from('exo_weeks').upsert(row,{onConflict:'user_id,week'}).then(function(e){err(e)})});mjR1Card()}
+  sd.appendChild(mi);sd.appendChild(ov);sd.appendChild(pl);st.appendChild(sd);c.appendChild(st);c.appendChild(el('div','tiny','Semaine d’avant MOJO : tu peux corriger ta saisie manuelle.')).style.textAlign='center'}
+ else c.appendChild(el('div','tiny',add(m,6)>=s?'Repris automatiquement de ta saisie MOJO (RDV R1).':'Historique conservé.')).style.textAlign='center';
+ var tot=0;ws.forEach(function(x){tot+=mjWeekR1(x)});
+ var s3=el('div','sum3');s3.style.cssText='grid-template-columns:1fr 1fr;margin-top:12px';s3.innerHTML='<div><b>'+tot+'</b><span>R1 depuis le 1<sup>er</sup> août</span></div><div><b>'+(tot/ws.length).toFixed(1).replace('.',',')+'</b><span>moyenne par semaine</span></div>';c.appendChild(s3);
+}
+function mjObjCard(){
+ var c=$('mjObj');if(!c)return;c.innerHTML='';var g=mjGoal();
+ var hh=el('div','row sp');hh.appendChild(el('h2','h','Mon objectif'));hh.lastChild.style.margin='0';hh.appendChild(el('span','tag',g.label));c.appendChild(hh);
+ if(mp.rhythm==='90')c.appendChild(el('div','tiny','Volume compté depuis le début du 90 jours (point de départ : '+eur(Number(mp.base_vol)||0)+').'));
+ c.appendChild(gaugeEl(g.vol,g.enc,g.thr));
+ if(g.vol===null){var nv=el('p','mut','Aucun volume d’affaires renseigné.');nv.style.textAlign='center';c.appendChild(nv)}
+ var rw=mjRew();if(rw){var rb=el('div','mjrew');rb.innerHTML='<span>🎁</span><div><small>Ce que tu t’offres à l’arrivée</small><b>'+esc(rw)+'</b></div>';c.appendChild(rb)}
+ if(g.thr&&g.vol!==null&&g.vol<g.thr){var P=mjPeriod(),j=Math.max(0,Math.round((Date.parse(P.e)-Date.parse(TODAY))/864e5)+1);c.appendChild(el('p','mut','Il te reste '+eur(g.thr-g.vol)+' à aller chercher en '+j+' jours.')).style.textAlign='center'}
+ var row=el('div','row');row.style.cssText='margin-top:12px;gap:8px;flex-wrap:wrap';
+ var ub=el('button','btn p','Mettre à jour mon volume d’affaires');ub.onclick=async function(){await vaForm();mjObjCard();mjMessages()};
+ var sb2=el('button','btn','Modifier mes réglages');sb2.onclick=function(){mjSetup(false)};row.appendChild(ub);row.appendChild(sb2);c.appendChild(row);
+ c.appendChild(el('div','tiny','Visible par toi seul. Objectif de la semaine : '+mjWeekObj()+' points.')).style.marginTop='10px';
 }
 
 /* ===== ÉQUIPE (administrateur) ===== */
