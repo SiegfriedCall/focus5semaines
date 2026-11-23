@@ -1547,13 +1547,13 @@ function scLoan(L,rate,years,ins,diff){ /* échéancier mensuel : différé part
  return{mo:mo,m:m,mI:mI,n:n}}
 function scCredit(al,o){
  var c=o.cr,fees=o.A*c.fees/100,L=Math.max(0,o.A-c.apport+fees),ln=scLoan(L,c.rate,c.years,c.ins,c.diff),H=o.H,rows=[],fl=[-c.apport],carry=[],totInt=0,totIns=0;
- var frShare=al.reduce(function(a,x){return a+x.a*(1-x.s.etr)},0)/o.A;
+ var frShare=1; /* choix du cabinet : 100 % des intérêts et de l'assurance déduits, y compris pour les SCPI européennes */
  var Y=Math.max(H,c.years);
  for(var y=1;y<=Y;y++){var g=0,ft=0,gf=0;
   al.forEach(function(x){var d=scDiv(x.s,x.a,y,o);g+=d;ft+=d*x.s.fe;gf+=d*(1-x.s.etr)});
   var ms=ln.mo.slice((y-1)*12,y*12),it=0,ins=0,pay=0;ms.forEach(function(m){it+=m.it;ins+=m.ins;pay+=m.pay});totInt+=it;totIns+=ins;
   var ded=(it+ins+(y===1?fees:0))*frShare,bil=gf-ded,tax=0,def=0;
-  if(bil<0){carry.push({y:y,v:-bil});def=-bil}else{ /* imputation des déficits fonciers des 10 années précédentes */
+  if(bil<0&&c.otherRF){tax=bil*(o.tmi+SC_PS)}else if(bil<0){carry.push({y:y,v:-bil});def=-bil}else{ /* imputation des déficits fonciers des 10 années précédentes */
    carry=carry.filter(function(d){return y-d.y<=10});for(var i=0;i<carry.length&&bil>0;i++){var u=Math.min(bil,carry[i].v);carry[i].v-=u;bil-=u}
    carry=carry.filter(function(d){return d.v>0.005});tax=bil*(o.tmi+SC_PS)}
   var net=g-ft-tax,flow=net-pay;
@@ -1627,13 +1627,13 @@ function fmtM(m){return (m>=1000?(m/1000).toFixed(1).replace('.',',')+' Md€':M
 
 /* ===== SIMULATEUR SCPI : interface ===== */
 var SC_DATE='Panorama Stellium (distributions 2025)';
-var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,touched:false},npD:[5,10],npSale:false,usuD:[5,10],isCo:null,is:25,fiche:{}};
+var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,otherRF:false,touched:false},npD:[5,10],npSale:false,usuD:[5,10],isCo:null,is:25,fiche:{}};
 var SC_HELP={
  tri:['Le TRI, c’est quoi ?','Le taux de rendement interne résume en un seul pourcentage annuel tout ce que l’investissement a coûté et rapporté : la mise de départ, les loyers nets d’impôt, les mensualités éventuelles et la revente au bout de la durée choisie. C’est le meilleur moyen de comparer des solutions différentes entre elles.'],
  ret:['Valeur de retrait','C’est le prix auquel la SCPI rachète tes parts si tu revends. Elle est inférieure au prix d’achat car les frais de souscription sont retenus à la sortie : chez nous, tu ne les paies que si tu revends. Tant que tu gardes tes parts, 100 % de ton argent travaille.'],
  jouis:['Délai de jouissance','Après la souscription, tes parts ne touchent pas de loyers pendant quelques mois, le temps que la SCPI investisse ton argent. Ce délai est propre à chaque SCPI (de 0 à 5 mois).'],
  fisc:['La fiscalité, SCPI par SCPI','Les loyers d’immeubles situés en France sont imposés à ta tranche marginale (TMI) et supportent 17,2 % de prélèvements sociaux. Les loyers d’immeubles à l’étranger sont imposés sur place (la SCPI le prélève pour toi) ; en France, une convention fiscale évite la double imposition et il n’y a pas de prélèvements sociaux. Plus une SCPI est investie à l’étranger, plus son rendement net est proche de son rendement brut. Simplification : l’outil ne calcule pas l’effet du « taux effectif », qui peut légèrement augmenter l’impôt sur tes autres revenus.'],
- deficit:['Intérêts d’emprunt et impôt','Les intérêts et l’assurance du prêt se déduisent des loyers français. S’ils dépassent les loyers, le déficit n’est pas déduit de ton salaire : il est reporté sur tes revenus fonciers des 10 années suivantes. Pour les loyers étrangers, les intérêts n’apportent pas d’économie d’impôt.'],
+ deficit:['Intérêts d’emprunt et impôt','Au régime réel, 100 % des intérêts et de l’assurance du prêt se déduisent de tes revenus fonciers français, y compris pour les SCPI européennes. S’ils dépassent ces revenus, le déficit n’est pas déduit de ton salaire : il est reporté sur tes revenus fonciers des 10 années suivantes. Si tu as d’autres revenus fonciers en France (une location, d’autres SCPI françaises), coche la case : le déficit vient alors réduire tout de suite l’impôt sur ces revenus. Au micro-foncier, aucun intérêt n’est déductible.'],
  np:['La nue-propriété','Tu achètes les parts sans leurs loyers, avec une forte décote (la « clé »). Pendant la durée choisie, un usufruitier touche les loyers à ta place. À la fin, tu récupères automatiquement la pleine propriété, sans frais ni impôt. Pas de revenus, donc pas d’impôt pendant le démembrement, et la nue-propriété n’entre pas dans l’IFI.'],
  usu:['L’usufruit temporaire','La société achète le droit de toucher les loyers pendant une durée fixe. À la fin, l’usufruit s’éteint : il ne reste rien à revendre. Son coût est amorti chaque année, ce qui réduit l’impôt sur les sociétés. C’est un outil réservé aux sociétés à l’IS.'],
  vp:['Versements programmés','Chaque mois, le même montant que ton effort d’épargne du crédit est investi dans les mêmes SCPI. Les dividendes, nets d’impôt, sont réinvestis automatiquement. Tes droits d’entrée ne sont dus qu’à la revente : 100 % de chaque versement travaille. Chaque versement attend son délai de jouissance avant de toucher des loyers.']};
@@ -1683,6 +1683,7 @@ function renderScpi(){
   $('scCf').innerHTML=field('scc','rate','Taux d’intérêt',SC.cr.rate,0,10,.01,'%')+field('scc','ins','Assurance (sur le capital emprunté)',SC.cr.ins,0,1.5,.01,'%')+field('scc','apport','Apport personnel',SC.cr.apport,0,Math.max(SC.A,1000),500,'€')+
    field('scc','fees','Frais de dossier et de garantie',SC.cr.fees,0,5,.1,'%')+field('scc','diff','Différé d’amortissement',SC.cr.diff,0,24,1,'mois');
   bind(SC.cr,'scc',['rate','ins','apport','fees','diff'],function(){SC.cr.touched=true;scDraw()});
+  var orf=el('label','sctg');orf.innerHTML='<input type="checkbox" id="scOrf"'+(SC.cr.otherRF?' checked':'')+'> Le client a d’autres revenus fonciers en France';mf.appendChild(orf);$('scOrf').onchange=function(){SC.cr.otherRF=this.checked;scDraw()};
   $('scCr').textContent=rates[SC.cr.years]!=null?'Taux indicatif du moment pour '+SC.cr.years+' ans, modifiable.':'Saisis le taux obtenu.';
  }else if(SC.mode==='np'||SC.mode==='usu'){
   if(SC.mode==='usu'&&SC.isCo!==true){
@@ -1746,10 +1747,10 @@ function scDrawCash(r,al,o,out){
 function scDrawCredit(r,al,o,out){
  var c=scCredit(al,o);out.credit=c;var N=SC.cr.years,first=c.rows[0],avg=c.effAvg;
  var res=el('div','res');res.innerHTML=kpi('Ton effort d’épargne moyen',(avg>=0?eur(avg):'+'+eur(-avg))+' /mois',true)+kpi('Mensualité du prêt',eur(c.loan.m+c.loan.mI)+' /mois')+kpi('Montant emprunté',eur(c.L))+
-  kpi('Coût du crédit',eur(c.totInt+c.totIns))+kpi('Patrimoine à la fin du prêt',eur(al.reduce(function(a,x){return a+scSale(x.s,x.a,N,o)},0)),false,'ret')+kpi('TRI net sur '+o.H+' ans',pc(c.irr),false,'tri');r.appendChild(res);
+  kpi('Coût du crédit',eur(c.totInt+c.totIns))+kpi('Patrimoine à la fin du prêt',eur(al.reduce(function(a,x){return a+scSale(x.s,x.a,N,o)},0)),false,'ret')+kpi('TRI net sur '+o.H+' ans',c.irr==null?'Autofinancé':pc(c.irr),false,'tri');r.appendChild(res);
  r.appendChild(scClear(['La banque finance <b>'+eur(c.L)+'</b>'+(SC.cr.apport?' et tu apportes <b>'+eur(SC.cr.apport)+'</b>':'')+'. Les loyers des SCPI remboursent une grande partie des mensualités.',
   'Ce qui sort vraiment de ta poche (mensualité − loyers + impôt) : <b>'+eur(Math.max(0,first.eff))+' par mois la première année</b>, puis <b>'+eur(avg)+' par mois en moyenne</b> sur '+N+' ans.',
-  'Les intérêts réduisent l’impôt sur tes loyers français ; un éventuel excédent est reporté sur les années suivantes '+scI('deficit')+'.',
+  (SC.cr.otherRF?'Les intérêts réduisent l’impôt sur tes revenus fonciers français, y compris ceux que tu as en dehors de ces SCPI '+scI('deficit')+'.':'Les intérêts réduisent l’impôt sur tes loyers français ; un éventuel excédent est reporté sur les années suivantes '+scI('deficit')+'.'),
   'Dans '+N+' ans, le prêt est remboursé : tu possèdes des parts estimées à <b>'+eur(al.reduce(function(a,x){return a+scSale(x.s,x.a,N,o)},0))+'</b> (valeur de retrait) et tu touches environ <b>'+eur((c.rows[Math.min(N,c.rows.length-1)]||c.rows[N-1]).net/12)+' net par mois</b>.']));
  r.appendChild(scChartCard('Ton effort mois par mois, année après année',c.rows.slice(0,N).map(function(x){return x.eff}),'Effort d’épargne mensuel (€/mois)',avg));
  r.appendChild(scYearTable(['Année','Loyers nets','Mensualités','Impôt France','Effort /mois','Capital restant'],c.rows.slice(0,Math.max(N,o.H)).map(function(x){return[x.y,eur(x.gross-x.ft),eur(x.pay),eur(x.tax),eur(x.eff),eur(x.bal)]}),'Moyenne sur la durée du prêt : '+eur(avg)+' par mois'));
@@ -1797,7 +1798,7 @@ function scDrawCmp(r,al,o,out){
  t+='<tr><td>Mise de départ</td><td>'+eur(SC.A)+'</td><td>'+eur(SC.cr.apport)+'</td>'+(np?'<td>'+eur(SC.A)+'</td>':'')+'</tr>';
  t+='<tr><td>Chaque mois</td><td>+'+eur(cash.rows[Math.min(1,cash.rows.length-1)].net/12)+'</td><td>−'+eur(cr.effAvg)+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
  t+='<tr><td>Impôt pendant la période</td><td>'+eur(cash.rows.reduce(function(a,x){return a+x.tax+x.ft},0))+'</td><td>'+eur(cr.rows.slice(0,o.H).reduce(function(a,x){return a+x.tax+x.ft},0))+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
- t+='<tr><td>TRI net si revente</td><td><b>'+pc(cash.irr)+'</b></td><td><b>'+pc(cr.irr)+'</b></td>'+(np?'<td>'+(SC.npSale?'<b>'+pc(np.irr)+'</b>':'—')+'</td>':'')+'</tr>';
+ t+='<tr><td>TRI net si revente</td><td><b>'+pc(cash.irr)+'</b></td><td><b>'+(cr.irr==null?'Autofinancé':pc(cr.irr))+'</b></td>'+(np?'<td>'+(SC.npSale?'<b>'+pc(np.irr)+'</b>':'—')+'</td>':'')+'</tr>';
  if(np)t+='<tr><td>Rendement sans revente</td><td>'+pc(cash.rows[Math.min(1,cash.rows.length-1)].net/SC.A)+'</td><td>—</td><td><b>'+pc(np.ry)+'</b></td></tr>';
  t+='</table>';
  t+='<div class="tiny">Comptant : tu touches des revenus tout de suite. Crédit : tu construis un patrimoine plus gros avec peu d’apport. Nue-propriété : aucune fiscalité, idéale si tu n’as pas besoin de revenus.'+(np?' Nue-propriété comptée sur '+np.d+' ans, la durée de démembrement disponible la plus proche de ton horizon de '+o.H+' ans.':'')+'</div>';
@@ -1854,7 +1855,7 @@ async function scPdf(out){
  if(out.usu){h2('Usufruit temporaire');tb(['Durée','Revenus nets d’IS','Gain net','TRI'],out.usu.map(function(x){return[x.d+' ans',eur(x.tot),eur(x.gain),pc(x.irr)]}))}
  if(out.cmp){h2('Comparaison des solutions');var m=out.cmp;tb(['','Comptant','Crédit'].concat(m.np?['Nue-prop. '+m.np.d+' ans']:[]),[['TRI net',pc(m.cash.irr),pc(m.cr.irr)].concat(m.np?[SC.npSale?pc(m.np.irr):'-']:[])].concat(m.np?[['Rendement sans revente','','',pc(m.np.ry)]]:[]))}
  h2('Notre lecture (recommandation indicative)');(out.reco||[]).forEach(function(z,i){p((i+1)+'. '+z.s.n+' ('+z.r.score+'/100) : '+(z.r.pro.join(' ; ')||'profil équilibré')+(z.r.con.length?'. À surveiller : '+z.r.con.join(' ; '):'')+'.',9)});
- Y+=3;p('Simulation indicative et non contractuelle, établie à partir du '+SC_DATE+'. Ce document est à usage interne des consultants. Les performances passées ne préjugent pas des performances futures. Le capital, les revenus et la liquidité ne sont pas garantis. Horizon recommandé : 10 ans minimum. Fiscalité simplifiée : revenus étrangers sans prélèvements sociaux et sans effet du taux effectif ; régime réel ; plus-value immobilière des particuliers.',8);
+ Y+=3;p('Simulation indicative et non contractuelle, établie à partir du '+SC_DATE+'. Ce document est à usage interne des consultants. Les performances passées ne préjugent pas des performances futures. Le capital, les revenus et la liquidité ne sont pas garantis. Horizon recommandé : 10 ans minimum. Fiscalité simplifiée : revenus étrangers sans prélèvements sociaux et sans effet du taux effectif ; régime réel, intérêts d’emprunt déduits à 100 % des revenus fonciers français'+(o.cr&&o.cr.otherRF?' (le client a d’autres revenus fonciers en France)':'')+' ; plus-value immobilière des particuliers.',8);
  doc.save('simulation-scpi.pdf');
 }
 
