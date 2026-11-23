@@ -128,6 +128,7 @@ ol.rank,ul.rank{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direc
 .scrk{display:grid;gap:10px;margin-top:6px}.scrk .pro{font-size:.8rem;margin-top:3px}.scrk .con{font-size:.78rem;color:#f0b37e;margin-top:2px}
 .scch{width:100%;height:auto;display:block;margin-top:6px}.scch text{font-size:8px;fill:var(--mut)}.scch .gl{stroke:var(--line);stroke-width:.5}.scch .pos{fill:var(--acc)}.scch .neg{fill:#e08a6b}.scch .avg{stroke:#f0c36d;stroke-dasharray:4 3;stroke-width:1.2}.scch .avgt{fill:#f0c36d;font-weight:700}
 .sctg{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.85rem}.sctg input{width:18px;height:18px;accent-color:var(--acc)}
+.scck{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:.86rem}
 .teamsum small{display:block;font-size:.72rem;opacity:.72;margin-top:6px;text-align:center}
 .sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
 th,td{padding:7px 6px;text-align:center;border-top:1px solid var(--line);white-space:nowrap}
@@ -1601,6 +1602,18 @@ function scUsu(al,o,d){
  return{d:d,rows:rows,irr:scIrr(fl),tot:tot,gain:tot-o.A}
 }
 
+/* --- Démembrement familial : enfants en nue-propriété (financée par don), parents en usufruit viager --- */
+function sc669(age){var t=[[21,.9],[31,.8],[41,.7],[51,.6],[61,.5],[71,.4],[81,.3],[91,.2]];for(var i=0;i<t.length;i++)if(age<t[i][0])return t[i][1];return .1}
+function scDroits(base){var b=[[8072,.05],[12109,.10],[15932,.15],[552324,.20],[902838,.30],[1805677,.40],[1e15,.45]],d=0,lo=0;
+ for(var i=0;i<b.length&&base>lo;i++){d+=(Math.min(base,b[i][0])-lo)*b[i][1];lo=b[i][0]}return d}
+function scFamPlan(f){var age=Math.min.apply(null,f.ages.slice(0,f.nP)),us=sc669(age),gifts=f.gift*f.nP*f.nE;return{age:age,us:us,gifts:gifts,T:gifts/(1-us),U:gifts/(1-us)*us}}
+function scFam(al,o,f,pl){
+ var H=o.H,rows=[];
+ for(var y=1;y<=H;y++){var g=0,ft=0,tx=0;al.forEach(function(x){var d=scDiv(x.s,x.a,y,o);g+=d;ft+=d*x.s.fe;tx+=d*(1-x.s.etr)*(o.tmi+SC_PS)});rows.push({y:y,gross:g,ft:ft,tax:tx,net:g-ft-tx})}
+ var V=al.reduce(function(a,x){return a+scSale(x.s,x.a,H,o)},0),abat=100000,per=V/(f.nP*f.nE),dr=scDroits(Math.max(0,per-abat))*f.nP*f.nE;
+ return{rows:rows,V:V,droits:dr,abat:abat,netY:rows[Math.min(1,rows.length-1)].net,netSum:rows.reduce(function(a,r){return a+r.net},0)}
+}
+
 /* --- Note qualitative (indicative) --- */
 function scScore(s,tmi){
  var nr=s.td*scNetRate(s,tmi),liq=(s.retr||0)+(s.attp||0),age=2026-s.cree;
@@ -1627,7 +1640,7 @@ function fmtM(m){return (m>=1000?(m/1000).toFixed(1).replace('.',',')+' Md€':M
 
 /* ===== SIMULATEUR SCPI : interface ===== */
 var SC_DATE='Panorama Stellium (distributions 2025)';
-var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,otherRF:false,touched:false},npD:[5,10],npSale:false,usuD:[5,10],isCo:null,is:25,fiche:{}};
+var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,otherRF:false,touched:false},npD:[5,10],npSale:false,usuD:[5,10],isCo:null,is:25,fiche:{},fam:{nP:2,ages:[60,60],nE:1,abt:false,gift:31865,cmp:false,hSet:false}};
 var SC_HELP={
  tri:['Le TRI, c’est quoi ?','Le taux de rendement interne résume en un seul pourcentage annuel tout ce que l’investissement a coûté et rapporté : la mise de départ, les loyers nets d’impôt, les mensualités éventuelles et la revente au bout de la durée choisie. C’est le meilleur moyen de comparer des solutions différentes entre elles.'],
  ret:['Valeur de retrait','C’est le prix auquel la SCPI rachète tes parts si tu revends. Elle est inférieure au prix d’achat car les frais de souscription sont retenus à la sortie : chez nous, tu ne les paies que si tu revends. Tant que tu gardes tes parts, 100 % de ton argent travaille.'],
@@ -1636,6 +1649,7 @@ var SC_HELP={
  deficit:['Intérêts d’emprunt et impôt','Au régime réel, 100 % des intérêts et de l’assurance du prêt se déduisent de tes revenus fonciers français, y compris pour les SCPI européennes. S’ils dépassent ces revenus, le déficit n’est pas déduit de ton salaire : il est reporté sur tes revenus fonciers des 10 années suivantes. Si tu as d’autres revenus fonciers en France (une location, d’autres SCPI françaises), coche la case : le déficit vient alors réduire tout de suite l’impôt sur ces revenus. Au micro-foncier, aucun intérêt n’est déductible.'],
  np:['La nue-propriété','Tu achètes les parts sans leurs loyers, avec une forte décote (la « clé »). Pendant la durée choisie, un usufruitier touche les loyers à ta place. À la fin, tu récupères automatiquement la pleine propriété, sans frais ni impôt. Pas de revenus, donc pas d’impôt pendant le démembrement, et la nue-propriété n’entre pas dans l’IFI.'],
  usu:['L’usufruit temporaire','La société achète le droit de toucher les loyers pendant une durée fixe. À la fin, l’usufruit s’éteint : il ne reste rien à revendre. Son coût est amorti chaque année, ce qui réduit l’impôt sur les sociétés. C’est un outil réservé aux sociétés à l’IS.'],
+ fam:['Démembrement parent / enfant','Chaque parent donne de l’argent à son enfant (don Sarkozy de 31 865 € maximum, exonéré, déclaré dans le mois ; parent de moins de 80 ans, enfant majeur). L’enfant achète la nue-propriété des parts ; les parents achètent l’usufruit viager. La répartition du prix suit le barème fiscal selon l’âge du parent le plus jeune (article 669 du CGI). Les parents touchent tous les loyers jusqu’à leur décès ; l’usufruit s’éteint alors et les enfants deviennent pleins propriétaires sans droits de succession. Pour que l’administration ne réintègre pas les parts dans la succession (article 751 du CGI), le don doit être déclaré avant la souscription, l’origine des fonds indiquée dans le bulletin, et l’opération réalisée plus de 3 mois avant le décès. À valider avec le notaire.'],
  vp:['Versements programmés','Chaque mois, le même montant que ton effort d’épargne du crédit est investi dans les mêmes SCPI. Les dividendes, nets d’impôt, sont réinvestis automatiquement. Tes droits d’entrée ne sont dus qu’à la revente : 100 % de chaque versement travaille. Chaque versement attend son délai de jouissance avant de toucher des loyers.']};
 function scHelp(k){var h=SC_HELP[k];ask({badge:'💡',title:h[0],paras:[h[1]],buttons:[{t:'Compris',cls:'p',v:1}]})}
 function scI(k){return '<button class="sci" data-help="'+k+'" aria-label="Explication">?</button>'}
@@ -1667,9 +1681,9 @@ function renderScpi(){
   '<div class="sclab">Tranche marginale d’imposition (TMI) '+scI('fisc')+'</div><div class="seg" id="scTmi"></div><div id="scModeF"></div>'+
   '<details class="adv" style="margin-top:8px"><summary><svg class="i"><use href="#chev"/></svg>Hypothèses d’évolution</summary><div id="scAdv"></div></details>';
  b.appendChild(c2);
- $('scF0').innerHTML=field('sc','A','Montant à investir',SC.A,5000,1000000,1000,'€')+(SC.mode==='np'||SC.mode==='usu'?'':field('sc','H','Durée de détention (pour le TRI)',SC.H,5,30,1,'ans'));
- bind(SC,'sc',['A','H'],scDraw);
- $('scMode').innerHTML=[['cash','Comptant'],['credit','À crédit'],['np','Nue-propriété'],['usu','Usufruit']].map(function(m){return '<button data-m="'+m[0]+'" aria-pressed="'+(SC.mode===m[0])+'">'+m[1]+'</button>'}).join('');
+ $('scF0').innerHTML=(SC.mode==='fam'?'':field('sc','A','Montant à investir',SC.A,5000,1000000,1000,'€'))+(SC.mode==='np'||SC.mode==='usu'||SC.mode==='fam'?'':field('sc','H','Durée de détention (pour le TRI)',SC.H,5,30,1,'ans'));
+ if(SC.mode!=='fam')bind(SC,'sc',['A','H'],scDraw);
+ $('scMode').innerHTML=[['cash','Comptant'],['credit','À crédit'],['np','Nue-propriété'],['usu','Usufruit'],['fam','Parent / enfant']].map(function(m){return '<button data-m="'+m[0]+'" aria-pressed="'+(SC.mode===m[0])+'">'+m[1]+'</button>'}).join('');
  $$('#scMode button').forEach(function(x){x.onclick=function(){SC.mode=x.dataset.m;renderScpi()}});
  $('scTmi').innerHTML=[0,0.11,0.30,0.41,0.45].map(function(t){return '<button data-t="'+t+'" aria-pressed="'+(Math.abs(SC.tmi-t)<1e-9)+'">'+Math.round(t*100)+' %</button>'}).join('');
  $$('#scTmi button').forEach(function(x){x.onclick=function(){SC.tmi=+x.dataset.t;$$('#scTmi button').forEach(function(y){y.setAttribute('aria-pressed',y===x)});scDraw()}});
@@ -1685,6 +1699,24 @@ function renderScpi(){
   bind(SC.cr,'scc',['rate','ins','apport','fees','diff'],function(){SC.cr.touched=true;scDraw()});
   var orf=el('label','sctg');orf.innerHTML='<input type="checkbox" id="scOrf"'+(SC.cr.otherRF?' checked':'')+'> Le client a d’autres revenus fonciers en France';mf.appendChild(orf);$('scOrf').onchange=function(){SC.cr.otherRF=this.checked;scDraw()};
   $('scCr').textContent=rates[SC.cr.years]!=null?'Taux indicatif du moment pour '+SC.cr.years+' ans, modifiable.':'Saisis le taux obtenu.';
+ }else if(SC.mode==='fam'){
+  var F=SC.fam;if(!F.hSet){SC.H=Math.max(5,88-Math.min.apply(null,F.ages.slice(0,F.nP)));F.hSet=true}
+  mf.innerHTML='<div class="scq" style="margin-top:12px">Les enfants achètent la <b>nue-propriété</b> avec l’argent donné par leurs parents ; les parents achètent l’<b>usufruit viager</b> et touchent les loyers à vie. Au décès, les enfants récupèrent la pleine propriété <b>sans droits de succession</b>. '+scI('fam')+'</div>'+
+   '<div class="sclab">Qui donne ?</div><div class="seg" id="scFp"></div><div id="scFa"></div>'+
+   '<div class="sclab">Nombre d’enfants</div><div class="seg" id="scFe"></div>'+
+   '<div class="sclab">Montant donné par parent et par enfant</div><div class="seg wrap" id="scFg"></div><div id="scFgv"></div>'+
+   '<div id="scFh"></div><label class="sctg"><input type="checkbox" id="scFc"'+(F.cmp?' checked':'')+'> Comparer avec une succession classique</label>';
+  $('scFp').innerHTML=[[1,'Un parent'],[2,'Les deux parents']].map(function(x){return '<button data-v="'+x[0]+'" aria-pressed="'+(F.nP===x[0])+'">'+x[1]+'</button>'}).join('');
+  $$('#scFp button').forEach(function(x){x.onclick=function(){F.nP=+x.dataset.v;F.hSet=false;renderScpi()}});
+  var ag={a0:F.ages[0],a1:F.ages[1]};$('scFa').innerHTML=field('scfa','a0',F.nP===2?'Âge du premier parent':'Âge du parent',ag.a0,18,95,1,'ans')+(F.nP===2?field('scfa','a1','Âge du second parent',ag.a1,18,95,1,'ans'):'');
+  bind(ag,'scfa',F.nP===2?['a0','a1']:['a0'],function(){F.ages=[ag.a0,ag.a1];scDraw()});
+  $('scFe').innerHTML=[1,2,3,4].map(function(n){return '<button data-v="'+n+'" aria-pressed="'+(F.nE===n)+'">'+n+'</button>'}).join('');
+  $$('#scFe button').forEach(function(x){x.onclick=function(){F.nE=+x.dataset.v;renderScpi()}});
+  $('scFg').innerHTML='<button data-v="0" aria-pressed="'+(!F.abt)+'">Don Sarkozy · 31 865 €</button><button data-v="1" aria-pressed="'+F.abt+'">Avec l’abattement de 100 000 €</button>';
+  $$('#scFg button').forEach(function(x){x.onclick=function(){F.abt=x.dataset.v==='1';F.gift=F.abt?Math.max(F.gift,60000):31865;renderScpi()}});
+  if(F.abt){$('scFgv').innerHTML=field('scfg','gift','Montant par parent et par enfant',F.gift,31865,131865,1000,'€')+'<div class="tiny">Jusqu’à 31 865 € en don Sarkozy, puis jusqu’à 100 000 € de plus avec l’abattement parent-enfant (s’il n’a pas été utilisé depuis 15 ans).</div>';bind(F,'scfg',['gift'],scDraw)}
+  $('scFh').innerHTML=field('scfh','H','Transmission estimée dans',SC.H,3,40,1,'ans');bind(SC,'scfh',['H'],scDraw);
+  $('scFc').onchange=function(){F.cmp=this.checked;scDraw()};
  }else if(SC.mode==='np'||SC.mode==='usu'){
   if(SC.mode==='usu'&&SC.isCo!==true){
    mf.innerHTML='<div class="scq"><b>Le souscripteur est-il une société soumise à l’impôt sur les sociétés (IS) ?</b><div class="row" style="gap:8px;margin-top:8px"><button class="btn p" id="scIsY">Oui, une société à l’IS</button><button class="btn" id="scIsN">Non</button></div></div>'+
@@ -1710,17 +1742,19 @@ function scDraw(){
  var r=$('scRes');if(!r)return;r.innerHTML='';var sel=scSel();
  if(!sel.length){r.appendChild(el('div','card mut','Choisis au moins une SCPI pour lancer la simulation.'));return}
  if(SC.mode==='usu'&&SC.isCo!==true)return;
- var o=scO(),al=scAlloc(sel,SC.A),out={o:o,al:al,mode:SC.mode};
+ if(SC.mode==='fam'){var fp0=scFamPlan(SC.fam);SC.famPlan=fp0;var o=scO();o.A=fp0.T;var al=scAlloc(sel,fp0.T)}else{var o=scO(),al=scAlloc(sel,SC.A)}
+ var out={o:o,al:al,mode:SC.mode};
  /* Répartition */
- var ca=el('div','card');ca.innerHTML='<div class="row sp"><b>Répartition</b><span class="tag">'+eur(SC.A)+'</span></div>';
+ var ca=el('div','card');ca.innerHTML='<div class="row sp"><b>Répartition</b><span class="tag">'+eur(o.A)+'</span></div>';
  var t='<table class="sct"><tr><th>SCPI</th><th>Montant</th><th>≈ parts</th></tr>',warn=[];
  al.forEach(function(x){var unit=SC.mode==='np'&&SC.npD.length?x.s.prix*x.s.np[SC.npD[0]]:SC.mode==='usu'&&SC.usuD.length?x.s.prix*(1-x.s.np[SC.usuD[0]]):x.s.prix;
   t+='<tr><td>'+esc(x.s.n)+'</td><td>'+eur(x.a)+'</td><td>'+(unit?fp(Math.floor(x.a/unit*100)/100):'—')+'</td></tr>';
-  var mn=SC.mode==='np'||SC.mode==='usu'?x.s.mdE:x.s.minE;if(mn&&x.a<mn)warn.push(x.s.n+' : minimum '+eur(mn)+(SC.mode==='np'||SC.mode==='usu'?' en démembrement':''))});
+  var dm=SC.mode==='np'||SC.mode==='usu'||SC.mode==='fam',mn=dm?x.s.mdE:x.s.minE;if(mn&&x.a<mn)warn.push(x.s.n+' : minimum '+eur(mn)+(dm?' en démembrement':''))});
  ca.innerHTML+=t+'</table>'+(warn.length?'<div class="scwarn">Minimum non atteint : '+esc(warn.join(' · '))+'. Augmente le montant ou retire une SCPI.</div>':'');r.appendChild(ca);
  if(SC.mode==='cash')scDrawCash(r,al,o,out);
  else if(SC.mode==='credit')scDrawCredit(r,al,o,out);
  else if(SC.mode==='np')scDrawNP(r,al,o,out);
+ else if(SC.mode==='fam')scDrawFam(r,al,o,out);
  else scDrawUsu(r,al,o,out);
  if(SC.mode==='cash'||SC.mode==='credit')scDrawCmp(r,al,o,out);
  scDrawReco(r,sel,o,out);
@@ -1791,6 +1825,24 @@ function scDrawUsu(r,al,o,out){
   rs.length>1?'Parmi les durées étudiées, <b>'+best.d+' ans</b> rapporte proportionnellement le plus (TRI de <b>'+pc(best.irr)+'</b>).':'TRI de <b>'+pc(best.irr)+'</b> par an.']));
  r.appendChild(scYearTable(['Année','Loyers bruts','Impôt étranger','Amortissement','IS','Net'],best.rows.map(function(x){return[x.y,eur(x.gross),eur(x.ft),eur(x.am),eur(x.is),eur(x.net)]}),'Détail pour '+best.d+' ans'));
 }
+function scDrawFam(r,al,o,out){
+ var F=SC.fam,P=SC.famPlan,f=scFam(al,o,F,P);out.fam={f:f,P:P,F:F};
+ var old=F.ages.slice(0,F.nP).filter(function(a){return a>=80});
+ if(old.length)r.appendChild(el('div','scwarn','Un parent a 80 ans ou plus : le don Sarkozy n’est plus possible. Seul l’abattement de 100 000 € (donation classique) reste utilisable.'));
+ var res=el('div','res');res.innerHTML=kpi('Revenus nets des parents',eur(f.netY/12)+' /mois',true)+kpi('Les enfants versent (dons reçus)',eur(P.gifts))+kpi('Les parents versent (usufruit)',eur(P.U))+
+  kpi('Parts achetées en tout',eur(P.T))+kpi('Les enfants récupèrent dans '+o.H+' ans',eur(f.V),false,'ret')+kpi('Droits de succession sur ces parts','0 €');r.appendChild(res);
+ r.appendChild(el('div','tiny','Usufruit viager : '+pc(P.us,0)+' du prix, nue-propriété : '+pc(1-P.us,0)+' (barème fiscal, parent le plus jeune : '+P.age+' ans). Valeur reçue estimée à la valeur de retrait.'));
+ r.appendChild(scClear([(F.nP===2?'Les deux parents donnent':'Le parent donne')+' <b>'+eur(F.gift)+'</b> à '+(F.nE>1?'chacun des '+F.nE+' enfants':'l’enfant')+', soit <b>'+eur(P.gifts)+'</b>'+(F.gift<=31865?', sans aucun droit à payer (don Sarkozy)':'')+'.',
+  'Avec cet argent, '+(F.nE>1?'les enfants achètent':'l’enfant achète')+' la nue-propriété ; les parents ajoutent <b>'+eur(P.U)+'</b> pour l’usufruit. Au total, <b>'+eur(P.T)+'</b> de parts.',
+  'Les parents touchent <b>tous les loyers à vie</b> : environ <b>'+eur(f.netY/12)+' net par mois</b>.',
+  'Au décès, l’usufruit s’éteint : '+(F.nE>1?'les enfants deviennent':'l’enfant devient')+' plein propriétaire de parts estimées à <b>'+eur(f.V)+'</b>, <b>sans droits de succession</b> '+scI('fam')+'.']));
+ if(F.cmp){var c=el('div','card');var mx=Math.max(f.droits,1);
+  c.innerHTML='<div class="row sp"><b>Et sans ce montage ?</b><span class="tag">dans '+o.H+' ans</span></div><p class="mut" style="margin:6px 0 10px">Les parents placent eux-mêmes les '+eur(P.T)+' et touchent les mêmes loyers. À leur décès, '+(F.nE>1?'les enfants héritent':'l’enfant hérite')+' des parts et paie'+(F.nE>1?'nt':'')+' des droits de succession.</p>'+
+   '<div class="scbar alt"><span>Succession classique</span><div><i style="width:100%"></i></div><b>'+eur(f.droits)+'</b></div><div class="scbar"><span>Parent / enfant</span><div><i style="width:0"></i></div><b>0 €</b></div>'+
+   '<p style="margin-top:10px">'+(f.droits>0?'Le montage fait économiser <b>'+eur(f.droits)+'</b> de droits de succession.':'Ici, les abattements suffiraient à couvrir la succession : l’intérêt du montage est surtout de transmettre dès maintenant et de préserver les abattements pour le reste du patrimoine.')+'</p>'+
+   '<div class="tiny">Droits calculés au barème en ligne directe, après un abattement de '+eur(f.abat)+' par parent et par enfant, en supposant qu’aucune autre donation n’a été faite dans les 15 dernières années et que le reste du patrimoine ne consomme pas ces abattements.'+(F.gift>31865?' Attention : le montage utilise déjà '+eur(F.gift-31865)+' de cet abattement par parent et par enfant.':'')+'</div>';r.appendChild(c)}
+ var ck=el('div','card');ck.innerHTML='<b>Les 4 conditions pour sécuriser le montage</b><ul class="scck"><li>Déclarer chaque don en ligne dans le mois (formulaire 2735), <b>avant</b> la souscription.</li><li>Indiquer l’origine des fonds (le don) dans le bulletin de souscription de l’enfant.</li><li>Souscrire plus de 3 mois avant un éventuel décès ; parent de moins de 80 ans, enfant majeur.</li><li>Ventiler le prix selon le barème fiscal (article 669) et vérifier que la SCPI accepte le démembrement viager. Faire valider par le notaire.</li></ul>';r.appendChild(ck);
+}
 function scDrawCmp(r,al,o,out){
  var cash=out.cash||scCash(al,o),cr=out.credit||scCredit(al,o),av=scDurs().filter(function(d){return d<=o.H}),np=null;
  if(av.length){var x0=scNP(al,o,av[av.length-1]);if(!x0.missing)np=x0}
@@ -1842,7 +1894,7 @@ async function scPdf(out){
  function p(s,sz){doc.setFont('helvetica','normal');doc.setFontSize(sz||10);var l=doc.splitTextToSize(T(s.replace(/<[^>]+>/g,'')),W);need(l.length*4.6);doc.text(l,M,Y);Y+=l.length*4.6+1}
  function tb(head,rows){var cw=W/head.length;doc.setFontSize(8.5);need(7);doc.setFont('helvetica','bold');doc.setFillColor(225,234,243);doc.rect(M,Y-4,W,6,'F');head.forEach(function(h,i){doc.text(T(h),M+1+i*cw,Y)});Y+=5;doc.setFont('helvetica','normal');
   rows.forEach(function(r){need(5);r.forEach(function(c,i){doc.text(T(c),M+1+i*cw,Y)});Y+=4.6});Y+=2}
- var o=out.o,al=out.al,modes={cash:'Pleine propriété au comptant',credit:'Pleine propriété à crédit',np:'Nue-propriété',usu:'Usufruit temporaire (société à l’IS)'};
+ var o=out.o,al=out.al,modes={cash:'Pleine propriété au comptant',credit:'Pleine propriété à crédit',np:'Nue-propriété',usu:'Usufruit temporaire (société à l’IS)',fam:'Démembrement parent / enfant (usufruit viager)'};
  h1('Simulation SCPI');p('Établie le '+new Date().toLocaleDateString('fr-FR')+' · '+modes[out.mode]+' · TMI '+Math.round(o.tmi*100)+' %');
  h2('Répartition');tb(['SCPI','Société de gestion','Montant','Taux 2025'],al.map(function(x){return[x.s.n,x.s.sg,eur(x.a),pc(x.s.td)]}));
  h2('Hypothèses');p('Montant : '+eur(o.A)+'. Revalorisation de la part : '+pc(o.gp,1)+' par an. Évolution des dividendes : '+pc(o.gd,1)+' par an. Revente à la valeur de retrait de chaque SCPI.'+(out.mode==='credit'?' Prêt de '+eur(out.credit.L)+' sur '+o.cr.years+' ans à '+String(o.cr.rate).replace('.',',')+' %, assurance '+String(o.cr.ins).replace('.',',')+' %, apport '+eur(o.cr.apport)+'.':''));
@@ -1852,6 +1904,8 @@ async function scPdf(out){
   h2('Effort d’épargne net, année par année');tb(['Année','Loyers nets','Mensualités','Impôt France','Effort / mois','Capital restant'],cr.rows.slice(0,Math.max(o.cr.years,o.H)).map(function(x){return[x.y,eur(x.gross-x.ft),eur(x.pay),eur(x.tax),eur(x.eff),eur(x.bal)]}));
   if(out.vp){h2('Crédit ou versements programmés (même effort, '+out.vp.N+' ans)');tb(['Solution','Patrimoine au terme'],[['Avec le crédit',eur(out.vp.crVal)],['En versements programmés + réinvestissement',eur(out.vp.vpVal)]])}}
  if(out.np){h2('Nue-propriété');tb(['Durée','Tu paies','Tu récupères','Rendement / an'].concat(SC.npSale?['TRI si revente']:[]),out.np.map(function(x){return[x.d+' ans',eur(o.A),eur(x.full),pc(x.ry)].concat(SC.npSale?[pc(x.irr)]:[])}))}
+ if(out.fam){var Z=out.fam;h2('Démembrement parent / enfant');tb(['Indicateur','Valeur'],[['Dons aux enfants',eur(Z.P.gifts)+' ('+Z.F.nP+' parent(s), '+Z.F.nE+' enfant(s), '+eur(Z.F.gift)+' chacun)'],['Nue-propriété (enfants)',pc(1-Z.P.us,0)+' · '+eur(Z.P.gifts)],['Usufruit viager (parents)',pc(Z.P.us,0)+' · '+eur(Z.P.U)],['Revenus nets des parents',eur(Z.f.netY/12)+' / mois'],['Valeur reçue par les enfants dans '+o.H+' ans',eur(Z.f.V)],['Droits de succession sur ces parts','0 €']].concat(Z.F.cmp?[['Droits sans le montage',eur(Z.f.droits)]]:[]));
+  p('Conditions : don déclaré dans le mois (2735) avant la souscription ; origine des fonds indiquée au bulletin ; souscription plus de 3 mois avant un éventuel décès ; ventilation selon le barème de l’article 669 du CGI (parent le plus jeune : '+Z.P.age+' ans) ; validation par le notaire.',9)}
  if(out.usu){h2('Usufruit temporaire');tb(['Durée','Revenus nets d’IS','Gain net','TRI'],out.usu.map(function(x){return[x.d+' ans',eur(x.tot),eur(x.gain),pc(x.irr)]}))}
  if(out.cmp){h2('Comparaison des solutions');var m=out.cmp;tb(['','Comptant','Crédit'].concat(m.np?['Nue-prop. '+m.np.d+' ans']:[]),[['TRI net',pc(m.cash.irr),pc(m.cr.irr)].concat(m.np?[SC.npSale?pc(m.np.irr):'-']:[])].concat(m.np?[['Rendement sans revente','','',pc(m.np.ry)]]:[]))}
  h2('Notre lecture (recommandation indicative)');(out.reco||[]).forEach(function(z,i){p((i+1)+'. '+z.s.n+' ('+z.r.score+'/100) : '+(z.r.pro.join(' ; ')||'profil équilibré')+(z.r.con.length?'. À surveiller : '+z.r.con.join(' ; '):'')+'.',9)});
