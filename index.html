@@ -129,6 +129,7 @@ ol.rank,ul.rank{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direc
 .scch{width:100%;height:auto;display:block;margin-top:6px}.scch text{font-size:8px;fill:var(--mut)}.scch .gl{stroke:var(--line);stroke-width:.5}.scch .pos{fill:var(--acc)}.scch .neg{fill:#e08a6b}.scch .avg{stroke:#f0c36d;stroke-dasharray:4 3;stroke-width:1.2}.scch .avgt{fill:#f0c36d;font-weight:700}
 .sctg{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.85rem}.sctg input{width:18px;height:18px;accent-color:var(--acc)}
 .scck{margin:8px 0 0;padding-left:18px;display:grid;gap:6px;font-size:.86rem}
+.sctd span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}.sctd input{width:58px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:var(--pill);color:var(--ink);font:inherit;text-align:right}.sctd input.mod{border-color:#f0b37e;color:#f0b37e;font-weight:700}.sctd small{display:block;font-size:.68rem;color:var(--mut);margin-top:2px}.sctd small button{border:0;background:none;color:var(--acc);font-size:.9rem;padding:0 2px}
 .teamsum small{display:block;font-size:.72rem;opacity:.72;margin-top:6px;text-align:center}
 .sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
 th,td{padding:7px 6px;text-align:center;border-top:1px solid var(--line);white-space:nowrap}
@@ -1653,7 +1654,7 @@ var SC_HELP={
  vp:['Versements programmés','Chaque mois, le même montant que ton effort d’épargne du crédit est investi dans les mêmes SCPI. Les dividendes, nets d’impôt, sont réinvestis automatiquement. Tes droits d’entrée ne sont dus qu’à la revente : 100 % de chaque versement travaille. Chaque versement attend son délai de jouissance avant de toucher des loyers.']};
 function scHelp(k){var h=SC_HELP[k];ask({badge:'💡',title:h[0],paras:[h[1]],buttons:[{t:'Compris',cls:'p',v:1}]})}
 function scI(k){return '<button class="sci" data-help="'+k+'" aria-label="Explication">?</button>'}
-function scSel(){return SC.sel.map(function(n){return SCPI.find(function(s){return s.n===n})}).filter(Boolean)}
+function scSel(){return SC.sel.map(function(n){var s=SCPI.find(function(x){return x.n===n});if(!s)return null;var t=SC.td&&SC.td[n]!=null?SC.td[n]:s.td;return Object.assign({},s,{td:t,td0:s.td})}).filter(Boolean)}
 function scO(){return{A:SC.A,tmi:SC.tmi,H:SC.H,gp:SC.gp/100,gd:SC.gd/100,cr:SC.cr,is:SC.is}}
 function pc(x,d){return x==null?'—':(x*100).toFixed(d==null?2:d).replace('.',',')+' %'}
 function scDurs(){var sel=scSel(),out=[];for(var d=3;d<=20;d++){if(sel.length&&sel.every(function(s){return s.np[d]!=null}))out.push(d)}return out}
@@ -1746,11 +1747,13 @@ function scDraw(){
  var out={o:o,al:al,mode:SC.mode};
  /* Répartition */
  var ca=el('div','card');ca.innerHTML='<div class="row sp"><b>Répartition</b><span class="tag">'+eur(o.A)+'</span></div>';
- var t='<table class="sct"><tr><th>SCPI</th><th>Montant</th><th>≈ parts</th></tr>',warn=[];
+ var t='<table class="sct"><tr><th>SCPI</th><th>Montant</th><th>≈ parts</th><th>Rendement retenu</th></tr>',warn=[];
  al.forEach(function(x){var unit=SC.mode==='np'&&SC.npD.length?x.s.prix*x.s.np[SC.npD[0]]:SC.mode==='usu'&&SC.usuD.length?x.s.prix*(1-x.s.np[SC.usuD[0]]):x.s.prix;
-  t+='<tr><td>'+esc(x.s.n)+'</td><td>'+eur(x.a)+'</td><td>'+(unit?fp(Math.floor(x.a/unit*100)/100):'—')+'</td></tr>';
+  var mod=Math.abs(x.s.td-x.s.td0)>1e-9;t+='<tr><td>'+esc(x.s.n)+'</td><td>'+eur(x.a)+'</td><td>'+(unit?fp(Math.floor(x.a/unit*100)/100):'—')+'</td><td class="sctd"><span><input type="text" inputmode="decimal" data-td="'+esc(x.s.n)+'" value="'+(x.s.td*100).toFixed(2).replace('.',',')+'" aria-label="Rendement retenu pour '+esc(x.s.n)+'"'+(mod?' class="mod"':'')+'> %</span>'+(mod?'<small>2025 : <s>'+pc(x.s.td0)+'</s> <button data-tdr="'+esc(x.s.n)+'" aria-label="Revenir au taux 2025">↺</button></small>':'')+'</td></tr>';
   var dm=SC.mode==='np'||SC.mode==='usu'||SC.mode==='fam',mn=dm?x.s.mdE:x.s.minE;if(mn&&x.a<mn)warn.push(x.s.n+' : minimum '+eur(mn)+(dm?' en démembrement':''))});
- ca.innerHTML+=t+'</table>'+(warn.length?'<div class="scwarn">Minimum non atteint : '+esc(warn.join(' · '))+'. Augmente le montant ou retire une SCPI.</div>':'');r.appendChild(ca);
+ ca.innerHTML+=t+'</table><div class="tiny">Le rendement retenu est pré-rempli avec le taux de distribution 2025. Tu peux le remplacer par une hypothèse plus prudente.</div>'+(warn.length?'<div class="scwarn">Minimum non atteint : '+esc(warn.join(' · '))+'. Augmente le montant ou retire une SCPI.</div>':'');r.appendChild(ca);
+ ca.querySelectorAll('[data-td]').forEach(function(i){i.onchange=function(){var v=parseFloat(String(i.value).replace(',','.'));if(isNaN(v)||v<0||v>20){toast('Taux entre 0 et 20 %');scDraw();return}SC.td=SC.td||{};var n=i.dataset.td,s0=SCPI.find(function(z){return z.n===n});if(Math.abs(v/100-s0.td)<1e-9)delete SC.td[n];else SC.td[n]=v/100;scDraw()}});
+ ca.querySelectorAll('[data-tdr]').forEach(function(bt){bt.onclick=function(){delete SC.td[bt.dataset.tdr];scDraw()}});
  if(SC.mode==='cash')scDrawCash(r,al,o,out);
  else if(SC.mode==='credit')scDrawCredit(r,al,o,out);
  else if(SC.mode==='np')scDrawNP(r,al,o,out);
@@ -1857,7 +1860,7 @@ function scDrawCmp(r,al,o,out){
  c.innerHTML=t;r.appendChild(c);out.cmp={cash:cash,cr:cr,np:np};
 }
 function scDrawReco(r,sel,o,out){
- var c=el('div','card screco');var sc=sel.map(function(s){return{s:s,r:scScore(s,o.tmi)}}).sort(function(a,b){return b.r.score-a.r.score});
+ var c=el('div','card screco');var sc=sel.map(function(s){var s0=SCPI.find(function(z){return z.n===s.n})||s;return{s:s0,r:scScore(s0,o.tmi)}}).sort(function(a,b){return b.r.score-a.r.score});
  var h='<b>Notre lecture</b><div class="tiny" style="margin:2px 0 8px">Une recommandation indicative, pas un conseil personnalisé : c’est à toi de la confronter à la situation de ton client.</div>';
  if(SC.mode==='np'&&out.npBest){
   var d=out.npBest.d,all=SCPI.filter(function(s){return s.np[d]!=null}).map(function(s){return{s:s,x:scNP([{s:s,a:SC.A}],o,d)}}).sort(function(a,b){return b.x.ry-a.x.ry}).slice(0,3);
@@ -1896,7 +1899,7 @@ async function scPdf(out){
   rows.forEach(function(r){need(5);r.forEach(function(c,i){doc.text(T(c),M+1+i*cw,Y)});Y+=4.6});Y+=2}
  var o=out.o,al=out.al,modes={cash:'Pleine propriété au comptant',credit:'Pleine propriété à crédit',np:'Nue-propriété',usu:'Usufruit temporaire (société à l’IS)',fam:'Démembrement parent / enfant (usufruit viager)'};
  h1('Simulation SCPI');p('Établie le '+new Date().toLocaleDateString('fr-FR')+' · '+modes[out.mode]+' · TMI '+Math.round(o.tmi*100)+' %');
- h2('Répartition');tb(['SCPI','Société de gestion','Montant','Taux 2025'],al.map(function(x){return[x.s.n,x.s.sg,eur(x.a),pc(x.s.td)]}));
+ h2('Répartition');tb(['SCPI','Société de gestion','Montant','Taux 2025','Rendement retenu'],al.map(function(x){return[x.s.n,x.s.sg,eur(x.a),pc(x.s.td0),pc(x.s.td)+(Math.abs(x.s.td-x.s.td0)>1e-9?' (prudent)':'')]}));
  h2('Hypothèses');p('Montant : '+eur(o.A)+'. Revalorisation de la part : '+pc(o.gp,1)+' par an. Évolution des dividendes : '+pc(o.gd,1)+' par an. Revente à la valeur de retrait de chaque SCPI.'+(out.mode==='credit'?' Prêt de '+eur(out.credit.L)+' sur '+o.cr.years+' ans à '+String(o.cr.rate).replace('.',',')+' %, assurance '+String(o.cr.ins).replace('.',',')+' %, apport '+eur(o.cr.apport)+'.':''));
  if(out.cash){h2('Résultats');var c=out.cash,y2=c.rows[Math.min(1,c.rows.length-1)];tb(['Indicateur','Valeur'],[['Revenus nets mensuels (année pleine)',eur(y2.net/12)],['Rendement net d’impôt',pc(y2.net/o.A)],['Revenus nets cumulés sur '+o.H+' ans',eur(c.netSum)],['Valeur de retrait à '+o.H+' ans',eur(c.sale)],['TRI net sur '+o.H+' ans',pc(c.irr)]]);
   h2('Détail annuel');tb(['Année','Loyers bruts','Impôt étr.','Impôt France','Nets','Par mois'],c.rows.map(function(x){return[x.y,eur(x.gross),eur(x.ft),eur(x.tax),eur(x.net),eur(x.net/12)]}))}
