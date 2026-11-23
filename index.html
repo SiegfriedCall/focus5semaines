@@ -108,6 +108,25 @@ ol.rank,ul.rank{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direc
 .mjname{flex:1;min-width:0;text-align:left;border:0;background:none;padding:0;display:flex;flex-direction:column;gap:1px}.mjname span{font-weight:600;font-size:.93rem}.mjname small{color:var(--acc);font-weight:700;font-size:.75rem}
 .mjdesc{padding:0 0 8px;margin-top:-2px}
 .mjrew{display:flex;gap:10px;align-items:center;background:var(--acc-soft);border-radius:14px;padding:10px 12px;margin-top:10px}.mjrew span{font-size:1.6rem}.mjrew small{display:block;color:var(--mut);font-size:.74rem}.mjrew b{font-size:1rem}
+.scgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}
+.scp{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--pill);border-radius:14px;padding:10px;color:var(--ink)}
+.scp b{font-size:.9rem;line-height:1.15}.scp small{color:var(--mut);font-size:.7rem}.scp span{font-weight:700;color:var(--acc);font-size:.85rem;margin-top:2px}.scp span i{font-style:normal;font-weight:500;color:var(--mut);font-size:.7rem}
+.scp.on{border-color:var(--acc);background:var(--acc-soft);box-shadow:0 0 0 1px var(--acc) inset}
+.scf{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}.scf summary,.scyt summary{cursor:pointer;font-weight:700;display:flex;align-items:center;gap:6px;list-style:none}.scf summary::-webkit-details-marker,.scyt summary::-webkit-details-marker{display:none}
+.scf[open] summary svg,.scyt[open] summary svg{transform:rotate(90deg)}
+.scfg{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:8px;font-size:.8rem}.scfg span{display:block;color:var(--mut);font-size:.7rem}
+.sclab{margin:12px 0 6px;font-size:.85rem;color:var(--mut);display:flex;align-items:center;gap:6px}
+.sci{width:20px;height:20px;border-radius:50%;border:1px solid var(--acc);background:none;color:var(--acc);font-weight:800;font-size:.72rem;line-height:1;padding:0;display:inline-grid;place-items:center;flex:none;vertical-align:middle}
+.scds{display:flex;flex-wrap:wrap;gap:6px}.scds button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 9px;font-weight:600;font-size:.8rem;color:var(--ink)}.scds button.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}.scds button:disabled{opacity:.3}
+.scq{background:var(--pill);border-radius:14px;padding:12px;margin-top:12px}
+.scwarn{background:#5a3b1f;color:#ffd9a8;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:.84rem}
+.sct{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:8px;font-variant-numeric:tabular-nums}.sct th{text-align:left;color:var(--mut);font-weight:600;padding:6px 4px;border-bottom:1px solid var(--line)}.sct td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+.sct tr.best td{color:var(--acc);font-weight:700}.sct.cmp td:not(:first-child),.sct.cmp th:not(:first-child){text-align:right}
+.scscroll{overflow-x:auto}.scscroll .sct{min-width:480px}
+.scclear{background:var(--acc-soft)}.scclear ul{margin:6px 0 0;padding-left:18px;display:grid;gap:6px;font-size:.9rem;line-height:1.4}
+.scbar{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:8px;margin:6px 0;font-size:.82rem}.scbar>div{height:14px;background:var(--pill);border-radius:7px;overflow:hidden}.scbar i{display:block;height:100%;background:var(--acc);border-radius:7px}.scbar.alt i{background:var(--mut)}
+.scrk{display:grid;gap:10px;margin-top:6px}.scrk .pro{font-size:.8rem;margin-top:3px}.scrk .con{font-size:.78rem;color:#f0b37e;margin-top:2px}
+.scch{width:100%;height:auto;display:block;margin-top:6px}.scch text{font-size:8px;fill:var(--mut)}.scch .gl{stroke:var(--line);stroke-width:.5}.scch .pos{fill:var(--acc)}.scch .neg{fill:#e08a6b}.scch .avg{stroke:#f0c36d;stroke-dasharray:4 3;stroke-width:1.2}.scch .avgt{fill:#f0c36d;font-weight:700}
 .teamsum small{display:block;font-size:.72rem;opacity:.72;margin-top:6px;text-align:center}
 .sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
 th,td{padding:7px 6px;text-align:center;border-top:1px solid var(--line);white-space:nowrap}
@@ -249,12 +268,17 @@ table.rg{width:100%;border-collapse:collapse}.rg th,.rg td{padding:7px 2px;font-
  <div id="toolList" class="stack">
   <div class="mut">Choisis un outil</div>
   <div class="tool-list">
+   <button class="tool-item" data-tool="tScpi"><span class="ic"><svg class="i"><use href="#bldg"/></svg></span><span><b>Simulateur SCPI</b><small>Comptant, crédit, nue-propriété, usufruit</small></span></button>
    <button class="tool-item" data-tool="tEpargne"><span class="ic"><svg class="i"><use href="#piggy"/></svg></span><span><b>Calculatrice d’épargne</b><small>Capital, épargne, rendement ou durée</small></span></button>
    <button class="tool-item" data-tool="tCredit"><span class="ic"><svg class="i"><use href="#home"/></svg></span><span><b>Mensualités de crédit</b><small>Mensualité, assurance, coût total</small></span></button>
    <button class="tool-item" data-tool="tPlan"><span class="ic"><svg class="i"><use href="#target"/></svg></span><span><b>Planificateur d’objectif</b><small>Combien de R1 pour atteindre ton chiffre</small></span></button>
    <button class="tool-item" data-tool="tRet"><span class="ic"><svg class="i"><use href="#ret"/></svg></span><span><b>Capital pour la retraite</b><small>Capital à constituer et épargne mensuelle</small></span></button>
    <button class="tool-item" data-tool="tCap"><span class="ic"><svg class="i"><use href="#chart"/></svg></span><span><b>Capacité d’emprunt</b><small>Taux d’endettement et montant empruntable</small></span></button>
   </div>
+ </div>
+ <div id="tScpi" class="stack" hidden>
+  <button class="back" data-back><svg class="i"><use href="#back"/></svg>Outils</button>
+  <div id="scBody" class="stack"></div>
  </div>
  <div id="tEpargne" class="stack" hidden>
   <button class="back" data-back><svg class="i"><use href="#back"/></svg>Outils</button>
@@ -329,6 +353,7 @@ table.rg{width:100%;border-collapse:collapse}.rg th,.rg td{padding:7px 2px;font-
  <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
  <symbol id="back" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></symbol>
  <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+ <symbol id="bldg" viewBox="0 0 24 24"><path d="M4 20.5h16M6 20.5V6.5L12 3.5l6 3v14"/><path d="M9.5 9h.01M14.5 9h.01M9.5 12.5h.01M14.5 12.5h.01M10.5 20.5v-4h3v4"/></symbol>
  <symbol id="home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8.5a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></symbol>
  <symbol id="chart" viewBox="0 0 24 24"><path d="M4 19.5h16M6.5 16v-4M11 16V8M15.5 16v-6M20 16V5"/></symbol>
  <symbol id="piggy" viewBox="0 0 24 24"><path d="M5 11.5C5 8.5 8 6.5 12 6.5s7 2 7 5c0 1.8-.9 3.2-2.3 4.1V19h-3v-1.5h-3.4V19h-3v-3.1C6.2 15 5 13.4 5 11.5z"/><path d="M19 10.5h1.5M9.5 10h.01"/></symbol>
@@ -1457,9 +1482,9 @@ function runTap(k,d){
 }
 
 /* ===== OUTILS ===== */
-var TOOLS=['toolList','tEpargne','tCredit','tPlan','tRet','tCap'];
+var TOOLS=['toolList','tScpi','tEpargne','tCredit','tPlan','tRet','tCap'];
 function showTool(id){TOOLS.forEach(function(x){$(x).hidden=x!==id});window.scrollTo({top:0});
- if(id==='tEpargne')renderE();if(id==='tCredit')renderK();if(id==='tPlan')renderP();if(id==='tRet')renderR();if(id==='tCap')renderCap()}
+ if(id==='tScpi')renderScpi();if(id==='tEpargne')renderE();if(id==='tCredit')renderK();if(id==='tPlan')renderP();if(id==='tRet')renderR();if(id==='tCap')renderCap()}
 $$('[data-tool]').forEach(function(b){b.onclick=function(){showTool(b.dataset.tool)}});
 $$('[data-back]').forEach(function(b){b.onclick=function(){showTool('toolList')}});
 
@@ -1481,6 +1506,355 @@ function shareCard(title,lines,file){
  cv.toBlob(function(b){var f=new File([b],file,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:title}).catch(function(){})}
   else{var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=file;document.body.appendChild(a);a.click();a.remove();toast('Image téléchargée')}})}
+
+/* Données SCPI : Panorama Stellium, mise à jour du 23/11/2026 */
+var SCPI=[{"n":"Activimmo","sg":"ALDÉRAN","cat":"Thématique","cree":2019,"sri":3,"isr":false,"capi":1420.0,"coll":23.4,"retr":0.0122,"att":0,"attp":0,"nb":182.0,"prix":613.5,"ret":548.46,"recon":614.9,"dec":-0.0023,"lev":0.0316,"tof":0.915,"td":0.0549,"fe":0.0361,"etr":0.267,"jm":5,"minE":613.5,"mdE":613.5,"mdT":"1 part","vp":true,"reinv":true,"verse":"Mensuel","hist":[[2020,0.0605],[2021,0.0602],[2022,0.055],[2023,0.0552],[2024,0.055],[2025,0.0549]],"np":{"3":0.865,"4":0.82,"5":0.78,"6":0.75,"7":0.72,"8":0.7,"9":0.67,"10":0.65,"11":0.635,"12":0.625,"13":0.605,"14":0.59,"15":0.58,"16":0.57,"17":0.56,"18":0.55,"19":0.54,"20":0.53}},{"n":"Comète","sg":"ALDÉRAN","cat":"Diversifiée","cree":2023,"sri":3,"isr":false,"capi":902.9,"coll":381.3,"retr":0.0011,"att":0,"attp":0,"nb":44.0,"prix":250.0,"ret":225.0,"recon":254.73,"dec":-0.0186,"lev":0.0,"tof":0.995,"td":0.09,"fe":0.2325,"etr":1.0,"jm":5,"minE":5000.0,"mdE":5000.0,"mdT":"20 parts","vp":true,"reinv":true,"verse":"Mensuel","hist":[[2024,0.1062],[2025,0.09]],"np":{"3":0.875,"4":0.84,"5":0.8,"6":0.77,"7":0.74,"8":0.715,"9":0.7,"10":0.67,"11":0.655,"12":0.64,"13":0.63,"14":0.62,"15":0.61,"16":0.6,"17":0.59,"18":0.58,"19":0.57,"20":0.56}},{"n":"Alta Convictions","sg":"ALTAREA IM","cat":"Diversifiée","cree":2023,"sri":3,"isr":false,"capi":142.1,"coll":36.0,"retr":0.0084,"att":0,"attp":0,"nb":20.0,"prix":308.0,"ret":281.97,"recon":333.36,"dec":-0.0761,"lev":0.146,"tof":0.97,"td":0.0657,"fe":0.0109,"etr":0.06,"jm":3,"minE":308.0,"mdE":308.0,"mdT":"1 part","vp":true,"reinv":false,"verse":"Mensuel","hist":[[2024,0.065],[2025,0.0657]],"np":{"3":0.855,"4":0.815,"5":0.775,"6":0.745,"7":0.715,"8":0.69,"9":0.665,"10":0.64,"11":0.625,"12":0.61,"13":0.595,"14":0.585,"15":0.575,"16":0.56,"17":0.55,"18":0.54,"19":0.53,"20":0.52}},{"n":"Epargne Pierre Europe","sg":"ATLAND VOISIN","cat":"Diversifiée","cree":2022,"sri":3,"isr":false,"capi":763.0,"coll":203.66,"retr":0.0035,"att":0,"attp":0,"nb":33.0,"prix":20.0,"ret":18.0,"recon":20.54,"dec":-0.0263,"lev":0.0,"tof":0.9977,"td":0.0675,"fe":0.0607,"etr":1.0,"jm":5,"minE":6000.0,"mdE":15000.0,"mdT":null,"vp":true,"reinv":true,"verse":"Trimestriel","hist":[[2023,0.0626],[2024,0.0675],[2025,0.0675]],"np":{"3":0.875,"4":0.84,"5":0.8,"6":0.765,"7":0.74,"8":0.715,"9":0.7,"10":0.67,"11":0.655,"12":0.64,"13":0.63,"14":0.62,"15":0.585,"16":0.575,"17":0.565,"18":0.555,"19":0.55,"20":0.545}},{"n":"Epargne Pierre","sg":"ATLAND VOISIN","cat":"Diversifiée","cree":2013,"sri":3,"isr":false,"capi":2811.0,"coll":7.8,"retr":0.0199,"att":18.71,"attp":0.0067,"nb":411.0,"prix":20.8,"ret":18.72,"recon":20.722,"dec":0.0038,"lev":0.112,"tof":0.9414,"td":0.0528,"fe":0.0,"etr":0.0,"jm":0,"minE":2080.0,"mdE":15000.0,"mdT":null,"vp":true,"reinv":true,"verse":"Trimestriel","hist":[[2017,0.0597],[2018,0.0597],[2019,0.0585],[2020,0.0536],[2021,0.0536],[2022,0.0528],[2023,0.0528],[2024,0.0528],[2025,0.0528]],"np":{"3":0.87,"4":0.83,"5":0.79,"6":0.76,"7":0.73,"8":0.71,"9":0.68,"10":0.66,"11":0.65,"12":0.64,"13":0.63,"14":0.62,"15":0.6,"16":0.59,"17":0.58,"18":0.57,"19":0.56,"20":0.55}},{"n":"Atream Hôtels","sg":"ATREAM","cat":"Thématique","cree":2016,"sri":4,"isr":false,"capi":329.8,"coll":11.85,"retr":0.0183,"att":0,"attp":0,"nb":25.0,"prix":1000.0,"ret":900.0,"recon":1059.54,"dec":-0.0562,"lev":0.2423,"tof":1.0,"td":0.0505,"fe":0.061,"etr":0.71,"jm":3,"minE":5000.0,"mdE":5000.0,"mdT":"5 parts","vp":false,"reinv":false,"verse":"Trimestriel","hist":[[2017,0.048],[2018,0.046],[2019,0.0475],[2020,0.0237],[2021,0.0264],[2022,0.0505],[2023,0.053],[2024,0.0505],[2025,0.0505]],"np":{"5":0.815,"6":0.785,"7":0.755,"8":0.735,"9":0.71,"10":0.69,"12":0.66,"15":0.63,"20":0.59}},{"n":"Transitions Europe","sg":"ARKEA REIM","cat":"Diversifiée","cree":2022,"sri":3,"isr":false,"capi":1380.0,"coll":385.45,"retr":0.0033,"att":0,"attp":0,"nb":65.0,"prix":204.0,"ret":183.6,"recon":208.46,"dec":-0.0214,"lev":0.0,"tof":0.99,"td":0.076,"fe":0.1993,"etr":1.0,"jm":5,"minE":1020.0,"mdE":1020.0,"mdT":"5 parts","vp":true,"reinv":true,"verse":"Trimestriel","hist":[[2023,0.0816],[2024,0.0825],[2025,0.076]],"np":{"5":0.8,"6":0.77,"7":0.74,"8":0.71,"9":0.69,"10":0.67,"11":0.65,"12":0.63,"13":0.61,"14":0.6,"15":0.58,"16":0.57,"17":0.56,"18":0.55,"19":0.54,"20":0.53}},{"n":"Corum Eurion","sg":"CORUM","cat":"Diversifiée à dominante bureaux","cree":2020,"sri":3,"isr":false,"capi":1534.0,"coll":97.3,"retr":0.014,"att":0,"attp":0,"nb":55.0,"prix":215.0,"ret":189.2,"recon":229.29,"dec":-0.0623,"lev":0.16,"tof":0.9992,"td":0.0573,"fe":0.1573,"etr":0.81,"jm":5,"minE":215.0,"mdE":5000.0,"mdT":null,"vp":true,"reinv":true,"verse":"Mensuel","hist":[[2020,0.104],[2021,0.0612],[2022,0.0647],[2023,0.0567],[2024,0.0553],[2025,0.0573]],"np":{"3":0.87,"4":0.83,"5":0.79,"6":0.76,"7":0.74,"8":0.73,"9":0.71,"10":0.69,"11":0.68,"12":0.67,"13":0.66,"14":0.65,"15":0.64,"16":0.63,"17":0.62,"18":0.61,"19":0.6,"20":0.59}},{"n":"Corum Origin","sg":"CORUM","cat":"Diversifiée","cree":2012,"sri":3,"isr":true,"capi":4044.0,"coll":431.1,"retr":0.0212,"att":0,"attp":0,"nb":170.0,"prix":1135.0,"ret":999.21,"recon":1172.41,"dec":-0.0319,"lev":0.11,"tof":0.9577,"td":0.065,"fe":0.1803,"etr":0.93,"jm":5,"minE":1135.0,"mdE":5000.0,"mdT":null,"vp":true,"reinv":true,"verse":"Mensuel","hist":[[2017,0.0645],[2018,0.0733],[2019,0.0628],[2020,0.06],[2021,0.0703],[2022,0.0688],[2023,0.0606],[2024,0.0605],[2025,0.065]],"np":{"3":0.85,"4":0.81,"5":0.78,"6":0.75,"7":0.72,"8":0.69,"9":0.67,"10":0.65,"11":0.64,"12":0.63,"13":0.62,"14":0.61,"15":0.6,"16":0.59,"17":0.58,"18":0.57,"19":0.56,"20":0.55}},{"n":"Osmo Energie","sg":"MATA CAPITAL","cat":"Diversifiée","cree":2024,"sri":3,"isr":false,"capi":141.97,"coll":56.4,"retr":0.0,"att":0,"attp":0,"nb":27.0,"prix":306.0,"ret":269.28,"recon":309.68,"dec":-0.0119,"lev":0.0,"tof":1.0,"td":0.07,"fe":0.1733,"etr":0.74,"jm":5,"minE":306.0,"mdE":306.0,"mdT":"1 part","vp":true,"reinv":true,"verse":"Mensuel","hist":[[2024,0.07],[2025,0.07]],"np":{"3":0.875,"4":0.84,"5":0.8,"6":0.765,"7":0.74,"8":0.715,"9":0.7,"10":0.67,"11":0.655,"12":0.64,"13":0.63,"14":0.62,"15":0.61,"16":0.6,"17":0.59,"18":0.58,"19":0.57,"20":0.56}},{"n":"NCAP Régions","sg":"NORMA CAPITAL","cat":"Diversifiée à dominante bureaux","cree":2015,"sri":3,"isr":false,"capi":1115.7,"coll":58.3,"retr":0.018,"att":0,"attp":0,"nb":187.0,"prix":682.0,"ret":613.8,"recon":696.09,"dec":-0.0202,"lev":0.2717,"tof":0.911,"td":0.0572,"fe":0.0,"etr":0,"jm":5,"minE":3410.0,"mdE":3410.0,"mdT":"5 parts","vp":true,"reinv":true,"verse":"Mensuel","hist":[[2017,0.0596],[2018,0.0603],[2019,0.0617],[2020,0.0602],[2021,0.0591],[2022,0.0571],[2023,0.0601],[2024,0.0572],[2025,0.0572]],"np":{"3":0.84,"4":0.81,"5":0.77,"6":0.74,"7":0.71,"8":0.68,"9":0.66,"10":0.64,"11":0.63,"12":0.61,"13":0.6,"14":0.59,"15":0.58}},{"n":"Immorente","sg":"SOFIDY","cat":"Diversifiée","cree":1988,"sri":3,"isr":true,"capi":4391.0,"coll":3.8,"retr":0.0056,"att":79.4,"attp":1.8082,"nb":976.0,"prix":340.0,"ret":306.0,"recon":317.52,"dec":0.0708,"lev":0.206,"tof":0.9118,"td":0.05,"fe":0.0388,"etr":0.212,"jm":0,"minE":340.0,"mdE":10000.0,"mdT":"Sans contrepartie : 10k€ Avec contrepartie : 4 parts","vp":true,"reinv":true,"verse":"Trimestriel","hist":[[2020,0.0454],[2021,0.0464],[2022,0.0482],[2023,0.05],[2024,0.0504],[2025,0.05]],"np":{"5":0.7975,"6":0.765,"7":0.7375,"8":0.71,"9":0.6875,"10":0.665,"11":0.645,"12":0.6275,"13":0.61,"14":0.595,"15":0.5825,"16":0.57,"17":0.56,"18":0.55,"19":0.54,"20":0.5325}},{"n":"Sofidy Europe Invest","sg":"SOFIDY","cat":"Diversifiée","cree":2021,"sri":3,"isr":false,"capi":424.0,"coll":18.6,"retr":0.0092,"att":0,"attp":0,"nb":38.0,"prix":235.0,"ret":213.85,"recon":229.06,"dec":0.0259,"lev":0.265,"tof":0.9531,"td":0.0541,"fe":0.1314,"etr":1.0,"jm":3,"minE":235.0,"mdE":10000.0,"mdT":"Sans contrepartie : 10k€ Avec contrepartie : 10 parts","vp":true,"reinv":true,"verse":"Trimestriel","hist":[[2022,0.0465],[2023,0.0471],[2024,0.052],[2025,0.0541]],"np":{"5":0.81,"6":0.78,"7":0.7525,"8":0.725,"9":0.6975,"10":0.675,"11":0.655,"12":0.635,"13":0.6175,"14":0.6,"15":0.585,"16":0.57,"17":0.5575,"18":0.545,"19":0.535,"20":0.5275}}];
+/* ===== SIMULATEUR SCPI : moteur de calcul ===== */
+var SC_PS=0.172;
+function scPvTax(gain,yrs){ /* plus-value immobilière des particuliers : 19 % IR + 17,2 % PS, abattements pour durée de détention */
+ if(gain<=0)return 0;var y=Math.floor(yrs),k=Math.max(0,Math.min(y,21)-5);
+ var ir=Math.min(100,6*k+(y>=22?4:0)),ps=Math.min(100,1.65*k+(y>=22?1.6:0)+9*Math.max(0,Math.min(y,30)-22));
+ return gain*(1-ir/100)*0.19+gain*(1-ps/100)*SC_PS}
+function scIrr(fl){ /* fl : flux annuels, fl[0] = mise de départ (négative) */
+ function npv(r){var s=0;for(var i=0;i<fl.length;i++)s+=fl[i]/Math.pow(1+r,i);return s}
+ var lo=-0.99,hi=1,a=npv(lo),b=npv(hi);if(a*b>0)return null;
+ for(var k=0;k<200;k++){var m=(lo+hi)/2,v=npv(m);if(Math.abs(v)<1e-7)return m;if(a*v<0){hi=m;b=v}else{lo=m;a=v}}return (lo+hi)/2}
+function scAlloc(sel,A){var k=sel.length;return sel.map(function(s){return{s:s,a:A/k}})}
+/* Fiscalité d'un euro de dividende brut pour une SCPI : part étrangère (impôt prélevé sur place, pas de PS), part France (TMI + PS) */
+function scNetRate(s,tmi){return 1-s.fe-(1-s.etr)*(tmi+SC_PS)}
+function scDiv(s,a,y,o){ /* dividende brut de l'année y (1..) pour a € investis en pleine propriété */
+ var f=y===1?Math.max(0,12-s.jm)/12:1;return a*s.td*Math.pow(1+o.gd,y-1)*f}
+function scSale(s,a,y,o){return a/s.prix*s.ret*Math.pow(1+o.gp,y)}
+
+/* --- Pleine propriété au comptant --- */
+function scCash(al,o){
+ var H=o.H,rows=[],fl=[-o.A];
+ for(var y=1;y<=H;y++){var g=0,ft=0,tx=0;
+  al.forEach(function(x){var d=scDiv(x.s,x.a,y,o);g+=d;ft+=d*x.s.fe;tx+=d*(1-x.s.etr)*(o.tmi+SC_PS)});
+  rows.push({y:y,gross:g,ft:ft,tax:tx,net:g-ft-tx});fl.push(g-ft-tx)}
+ var sale=0,pv=0;al.forEach(function(x){var v=scSale(x.s,x.a,H,o);sale+=v;pv+=scPvTax(v-x.a,H)});
+ fl[H]+=sale-pv;
+ var netY1=rows.length>1?rows[1].net:rows[0].net;
+ return{rows:rows,fl:fl,irr:scIrr(fl),sale:sale,pv:pv,netSum:rows.reduce(function(a,r){return a+r.net},0),grossSum:rows.reduce(function(a,r){return a+r.gross},0),
+  netYield:netY1/o.A,grossYield:al.reduce(function(a,x){return a+x.a*x.s.td},0)/o.A}
+}
+
+/* --- Pleine propriété à crédit --- */
+function scLoan(L,rate,years,ins,diff){ /* échéancier mensuel : différé partiel (intérêts seuls) puis amortissement */
+ var n=years*12,r=rate/1200,mI=L*ins/1200,am=n-diff,m=am>0?(r?L*r/(1-Math.pow(1+r,-am)):L/am):0,bal=L,mo=[];
+ for(var i=1;i<=n;i++){var it=bal*r,cap=i<=diff?0:m-it;bal=Math.max(0,bal-cap);mo.push({it:it,cap:cap,ins:mI,pay:(i<=diff?it:m)+mI,bal:bal})}
+ return{mo:mo,m:m,mI:mI,n:n}}
+function scCredit(al,o){
+ var c=o.cr,fees=o.A*c.fees/100,L=Math.max(0,o.A-c.apport+fees),ln=scLoan(L,c.rate,c.years,c.ins,c.diff),H=o.H,rows=[],fl=[-c.apport],carry=[],totInt=0,totIns=0;
+ var frShare=al.reduce(function(a,x){return a+x.a*(1-x.s.etr)},0)/o.A;
+ var Y=Math.max(H,c.years);
+ for(var y=1;y<=Y;y++){var g=0,ft=0,gf=0;
+  al.forEach(function(x){var d=scDiv(x.s,x.a,y,o);g+=d;ft+=d*x.s.fe;gf+=d*(1-x.s.etr)});
+  var ms=ln.mo.slice((y-1)*12,y*12),it=0,ins=0,pay=0;ms.forEach(function(m){it+=m.it;ins+=m.ins;pay+=m.pay});totInt+=it;totIns+=ins;
+  var ded=(it+ins+(y===1?fees:0))*frShare,bil=gf-ded,tax=0,def=0;
+  if(bil<0){carry.push({y:y,v:-bil});def=-bil}else{ /* imputation des déficits fonciers des 10 années précédentes */
+   carry=carry.filter(function(d){return y-d.y<=10});for(var i=0;i<carry.length&&bil>0;i++){var u=Math.min(bil,carry[i].v);carry[i].v-=u;bil-=u}
+   carry=carry.filter(function(d){return d.v>0.005});tax=bil*(o.tmi+SC_PS)}
+  var net=g-ft-tax,flow=net-pay;
+  rows.push({y:y,gross:g,ft:ft,tax:tax,def:def,pay:pay,it:it,ins:ins,net:net,flow:flow,eff:-flow/12,bal:ms.length?ms[ms.length-1].bal:0});
+  if(y<=H)fl.push(flow)}
+ var sale=0,pv=0;al.forEach(function(x){var v=scSale(x.s,x.a,H,o);sale+=v;pv+=scPvTax(v-x.a,H)});
+ var crd=H<c.years?rows[H-1].bal:0;fl[H]+=sale-pv-crd;
+ var during=rows.slice(0,c.years),effAvg=during.reduce(function(a,r){return a+r.eff},0)/Math.max(1,during.length);
+ return{rows:rows,fl:fl,irr:scIrr(fl),L:L,fees:fees,loan:ln,sale:sale,pv:pv,crd:crd,effAvg:effAvg,totInt:totInt,totIns:totIns,
+  effTot:during.reduce(function(a,r){return a+Math.max(0,-r.flow)},0)}
+}
+
+/* --- Versements programmés + réinvestissement des dividendes, avec le même effort que le crédit --- */
+function scVP(al,o,cr){
+ var c=o.cr,N=c.years,el=al.filter(function(x){return x.s.vp});if(!el.length)return null;
+ var pos=el.map(function(x){return{s:x.s,lots:[],units:0,cash:0}}),inv=0;
+ for(var t=0;t<N*12;t++){var y=Math.floor(t/12)+1,row=cr.rows[y-1],c0=Math.max(0,row?row.eff:0),gpm=Math.pow(1+o.gp,t/12),gdm=Math.pow(1+o.gd,t/12);
+  pos.forEach(function(p){var s=p.s,price=s.prix*gpm,share=c0/pos.length;
+   if(share>0){p.lots.push({t:t,u:share/price});inv+=share}
+   var elig=0;p.lots.forEach(function(l){if(t-l.t>=s.jm)elig+=l.u});
+   var dv=elig*s.prix*s.td*gdm/12,net=dv*scNetRate(s,o.tmi);
+   if(net>0){if(s.reinv)p.lots.push({t:t,u:net/price});else p.cash+=net}})}
+ var val=0,cash=0;pos.forEach(function(p){var u=p.lots.reduce(function(a,l){return a+l.u},0);val+=u*p.s.ret*Math.pow(1+o.gp,N);cash+=p.cash});
+ var crVal=0;al.forEach(function(x){crVal+=scSale(x.s,x.a,N,o)});
+ var surplus=cr.rows.slice(0,N).reduce(function(a,r){return a+Math.max(0,r.flow)},0);
+ return{N:N,vpVal:val+cash,cash:cash,invested:inv,crVal:crVal+surplus,excluded:al.filter(function(x){return !x.s.vp}).map(function(x){return x.s.n}),noReinv:el.filter(function(x){return !x.s.reinv}).map(function(x){return x.s.n})}
+}
+
+/* --- Nue-propriété --- */
+function scNP(al,o,d){
+ var ok=al.every(function(x){return x.s.np[d]!=null});if(!ok)return{d:d,missing:al.filter(function(x){return x.s.np[d]==null}).map(function(x){return x.s.n})};
+ var full=0,sale=0,pv=0,stel=0;
+ al.forEach(function(x){var k=x.s.np[d],parts=x.a/(x.s.prix*k);full+=parts*x.s.prix*Math.pow(1+o.gp,d);var v=parts*x.s.ret*Math.pow(1+o.gp,d);sale+=v;pv+=scPvTax(v-x.a,d);stel+=x.a*(Math.pow(1/k,1/d)-1)});
+ var fl=[-o.A];for(var y=1;y<d;y++)fl.push(0);fl.push(sale-pv);
+ return{d:d,full:full,sale:sale,pv:pv,irr:scIrr(fl),ry:Math.pow(full/o.A,1/d)-1,stel:stel/o.A,gain:full-o.A,disc:1-o.A/(full/Math.pow(1+o.gp,d))}
+}
+/* --- Usufruit temporaire (société à l'IS) --- */
+function scUsu(al,o,d){
+ var ok=al.every(function(x){return x.s.np[d]!=null});if(!ok)return{d:d,missing:al.filter(function(x){return x.s.np[d]==null}).map(function(x){return x.s.n})};
+ var fl=[-o.A],rows=[],am=o.A/d,carry=0,tot=0;
+ for(var y=1;y<=d;y++){var g=0,ft=0,gf=0;
+  al.forEach(function(x){var k=1-x.s.np[d],parts=x.a/(x.s.prix*k),dv=parts*x.s.prix*x.s.td*Math.pow(1+o.gd,y-1)*(y===1?Math.max(0,12-x.s.jm)/12:1);g+=dv;ft+=dv*x.s.fe;gf+=dv*(1-x.s.etr)});
+  var base=gf-am-carry,is=0;if(base<0){carry=-base}else{carry=0;is=base*o.is/100}
+  var net=g-ft-is;rows.push({y:y,gross:g,ft:ft,is:is,am:am,net:net});fl.push(net);tot+=net}
+ return{d:d,rows:rows,irr:scIrr(fl),tot:tot,gain:tot-o.A}
+}
+
+/* --- Note qualitative (indicative) --- */
+function scScore(s,tmi){
+ var nr=s.td*scNetRate(s,tmi),liq=(s.retr||0)+(s.attp||0),age=2026-s.cree;
+ var parts=[
+  {k:'rend',w:30,v:Math.min(1,Math.max(0,(nr-0.025)/0.045))},
+  {k:'tof',w:15,v:Math.min(1,Math.max(0,(s.tof-0.88)/0.12))},
+  {k:'val',w:15,v:Math.min(1,Math.max(0,(0.08-s.dec)/0.16))},
+  {k:'liq',w:20,v:Math.min(1,Math.max(0,1-liq/0.05))},
+  {k:'lev',w:10,v:Math.min(1,Math.max(0,1-(s.lev||0)/0.3))},
+  {k:'age',w:10,v:Math.min(1,Math.max(0,age/12))*0.6+Math.min(1,Math.max(0,Math.log10(Math.max(1,s.capi))/Math.log10(4500)))*0.4}];
+ var sc=parts.reduce(function(a,p){return a+p.w*p.v},0);
+ var pro=[],con=[];
+ if(nr>=0.045)pro.push('rendement net d’impôt élevé pour ta TMI ('+pctf(nr)+')');else if(nr<0.033)con.push('rendement net d’impôt plus modeste ('+pctf(nr)+')');
+ if(s.etr>=0.7)pro.push('patrimoine surtout à l’étranger : pas de prélèvements sociaux sur ces loyers');
+ if(s.tof>=0.98)pro.push('immeubles quasiment tous loués (TOF '+pctf(s.tof)+')');else if(s.tof<0.93)con.push('taux d’occupation à surveiller (TOF '+pctf(s.tof)+')');
+ if(s.dec<=-0.03)pro.push('part achetée sous sa valeur de reconstitution ('+pctf(-s.dec)+' de décote)');else if(s.dec>0.03)con.push('part au-dessus de sa valeur de reconstitution ('+pctf(s.dec)+')');
+ if(s.attp>0.005)con.push('parts en attente de retrait ('+fmtM(s.att)+')');else if(liq<0.005)pro.push('très peu de demandes de retrait : liquidité saine');
+ if((s.lev||0)>=0.2)con.push('endettement élevé ('+pctf(s.lev)+')');else if(!s.lev)pro.push('aucun endettement');
+ if(age<=3)con.push('SCPI récente (créée en '+s.cree+') : peu d’historique');else if(age>=10&&s.capi>=1000)pro.push('SCPI ancienne et de grande taille ('+fmtM(s.capi)+')');
+ return{score:Math.round(sc),nr:nr,pro:pro,con:con}
+}
+function pctf(x){return (x*100).toFixed(x<0.1&&x>-0.1?2:1).replace('.',',').replace(/,?0+$/,'').replace(/,$/,'')+' %'}
+function fmtM(m){return (m>=1000?(m/1000).toFixed(1).replace('.',',')+' Md€':Math.round(m)+' M€')}
+
+/* ===== SIMULATEUR SCPI : interface ===== */
+var SC_DATE='Panorama Stellium (distributions 2025)';
+var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,touched:false},npD:[5,10],usuD:[5,10],isCo:null,is:25,fiche:{}};
+var SC_HELP={
+ tri:['Le TRI, c’est quoi ?','Le taux de rendement interne résume en un seul pourcentage annuel tout ce que l’investissement a coûté et rapporté : la mise de départ, les loyers nets d’impôt, les mensualités éventuelles et la revente au bout de la durée choisie. C’est le meilleur moyen de comparer des solutions différentes entre elles.'],
+ ret:['Valeur de retrait','C’est le prix auquel la SCPI rachète tes parts si tu revends. Elle est inférieure au prix d’achat car les frais de souscription sont retenus à la sortie : chez nous, tu ne les paies que si tu revends. Tant que tu gardes tes parts, 100 % de ton argent travaille.'],
+ jouis:['Délai de jouissance','Après la souscription, tes parts ne touchent pas de loyers pendant quelques mois, le temps que la SCPI investisse ton argent. Ce délai est propre à chaque SCPI (de 0 à 5 mois).'],
+ fisc:['La fiscalité, SCPI par SCPI','Les loyers d’immeubles situés en France sont imposés à ta tranche marginale (TMI) et supportent 17,2 % de prélèvements sociaux. Les loyers d’immeubles à l’étranger sont imposés sur place (la SCPI le prélève pour toi) ; en France, une convention fiscale évite la double imposition et il n’y a pas de prélèvements sociaux. Plus une SCPI est investie à l’étranger, plus son rendement net est proche de son rendement brut. Simplification : l’outil ne calcule pas l’effet du « taux effectif », qui peut légèrement augmenter l’impôt sur tes autres revenus.'],
+ deficit:['Intérêts d’emprunt et impôt','Les intérêts et l’assurance du prêt se déduisent des loyers français. S’ils dépassent les loyers, le déficit n’est pas déduit de ton salaire : il est reporté sur tes revenus fonciers des 10 années suivantes. Pour les loyers étrangers, les intérêts n’apportent pas d’économie d’impôt.'],
+ np:['La nue-propriété','Tu achètes les parts sans leurs loyers, avec une forte décote (la « clé »). Pendant la durée choisie, un usufruitier touche les loyers à ta place. À la fin, tu récupères automatiquement la pleine propriété, sans frais ni impôt. Pas de revenus, donc pas d’impôt pendant le démembrement, et la nue-propriété n’entre pas dans l’IFI.'],
+ usu:['L’usufruit temporaire','La société achète le droit de toucher les loyers pendant une durée fixe. À la fin, l’usufruit s’éteint : il ne reste rien à revendre. Son coût est amorti chaque année, ce qui réduit l’impôt sur les sociétés. C’est un outil réservé aux sociétés à l’IS.'],
+ vp:['Versements programmés','Chaque mois, le même montant que ton effort d’épargne du crédit est investi dans les mêmes SCPI. Les dividendes, nets d’impôt, sont réinvestis automatiquement. Tes droits d’entrée ne sont dus qu’à la revente : 100 % de chaque versement travaille. Chaque versement attend son délai de jouissance avant de toucher des loyers.']};
+function scHelp(k){var h=SC_HELP[k];ask({badge:'💡',title:h[0],paras:[h[1]],buttons:[{t:'Compris',cls:'p',v:1}]})}
+function scI(k){return '<button class="sci" data-help="'+k+'" aria-label="Explication">?</button>'}
+function scSel(){return SC.sel.map(function(n){return SCPI.find(function(s){return s.n===n})}).filter(Boolean)}
+function scO(){return{A:SC.A,tmi:SC.tmi,H:SC.H,gp:SC.gp/100,gd:SC.gd/100,cr:SC.cr,is:SC.is}}
+function pc(x,d){return x==null?'—':(x*100).toFixed(d==null?2:d).replace('.',',')+' %'}
+function scDurs(){var sel=scSel(),out=[];for(var d=3;d<=20;d++){if(sel.length&&sel.every(function(s){return s.np[d]!=null}))out.push(d)}return out}
+
+function renderScpi(){
+ var b=$('scBody');b.innerHTML='';
+ if(SC.cr.rate==null)SC.cr.rate=rates[SC.cr.years]!=null?rates[SC.cr.years]:3.8;
+ /* 1. Sélection */
+ var c1=el('div','card');c1.innerHTML='<h3 class="h">1. Choisis tes SCPI</h3><div class="mut">Jusqu’à 4. Le montant sera réparti à parts égales.</div>';
+ var g=el('div','scgrid');
+ SCPI.forEach(function(s){var on=SC.sel.indexOf(s.n),bt=el('button','scp'+(on>=0?' on':''));bt.setAttribute('aria-pressed',on>=0);
+  bt.innerHTML='<b>'+esc(s.n)+'</b><small>'+esc(s.sg)+'</small><span>'+pc(s.td)+' <i>'+(s.etr>=0.5?'Europe':s.etr>0?'France + Europe':'France')+'</i></span>';
+  bt.onclick=function(){var i=SC.sel.indexOf(s.n);if(i>=0)SC.sel.splice(i,1);else{if(SC.sel.length>=4){toast('4 SCPI maximum');return}SC.sel.push(s.n)}renderScpi()};g.appendChild(bt)});
+ c1.appendChild(g);
+ scSel().forEach(function(s){var d=el('details','scf');d.open=!!SC.fiche[s.n];d.ontoggle=function(){SC.fiche[s.n]=d.open};
+  d.innerHTML='<summary><svg class="i"><use href="#chev"/></svg>Fiche '+esc(s.n)+'</summary><div class="scfg">'+
+   [['Catégorie',s.cat],['Création',s.cree],['Capitalisation',fmtM(s.capi)],['Taux de distribution 2025',pc(s.td)],['Part de patrimoine à l’étranger',pc(s.etr,0)],['Taux d’occupation financier',pc(s.tof,1)],
+    ['Prix de part / valeur de retrait',fp(s.prix)+' € / '+fp(s.ret)+' €'],['Écart à la reconstitution',(s.dec>0?'+':'')+pc(s.dec,1)],['Endettement',pc(s.lev||0,1)],['Délai de jouissance',s.jm+' mois'],
+    ['Minimum de souscription',eur(s.minE)],['Versements programmés',s.vp?'Oui':'Non'],['Réinvestissement des dividendes',s.reinv?'Oui':'Non'],['Versement des dividendes',s.verse]]
+   .map(function(r){return '<div><span>'+r[0]+'</span><b>'+r[1]+'</b></div>'}).join('')+'</div>';c1.appendChild(d)});
+ b.appendChild(c1);
+ /* 2. Projet */
+ var c2=el('div','card');c2.innerHTML='<h3 class="h">2. Ton projet</h3><div id="scF0"></div>'+
+  '<div class="sclab">Mode d’acquisition</div><div class="seg wrap" id="scMode"></div>'+
+  '<div class="sclab">Tranche marginale d’imposition (TMI) '+scI('fisc')+'</div><div class="seg" id="scTmi"></div><div id="scModeF"></div>'+
+  '<details class="adv" style="margin-top:8px"><summary><svg class="i"><use href="#chev"/></svg>Hypothèses d’évolution</summary><div id="scAdv"></div></details>';
+ b.appendChild(c2);
+ $('scF0').innerHTML=field('sc','A','Montant à investir',SC.A,5000,1000000,1000,'€')+(SC.mode==='np'||SC.mode==='usu'?'':field('sc','H','Durée de détention (pour le TRI)',SC.H,5,30,1,'ans'));
+ bind(SC,'sc',['A','H'],scDraw);
+ $('scMode').innerHTML=[['cash','Comptant'],['credit','À crédit'],['np','Nue-propriété'],['usu','Usufruit']].map(function(m){return '<button data-m="'+m[0]+'" aria-pressed="'+(SC.mode===m[0])+'">'+m[1]+'</button>'}).join('');
+ $$('#scMode button').forEach(function(x){x.onclick=function(){SC.mode=x.dataset.m;renderScpi()}});
+ $('scTmi').innerHTML=[0,0.11,0.30,0.41,0.45].map(function(t){return '<button data-t="'+t+'" aria-pressed="'+(Math.abs(SC.tmi-t)<1e-9)+'">'+Math.round(t*100)+' %</button>'}).join('');
+ $$('#scTmi button').forEach(function(x){x.onclick=function(){SC.tmi=+x.dataset.t;$$('#scTmi button').forEach(function(y){y.setAttribute('aria-pressed',y===x)});scDraw()}});
+ $('scAdv').innerHTML=field('scg','gp','Revalorisation annuelle de la part',SC.gp,-2,4,.1,'%')+field('scg','gd','Évolution annuelle des dividendes',SC.gd,-2,4,.1,'%');
+ bind(SC,'scg',['gp','gd'],scDraw);
+ var mf=$('scModeF');
+ if(SC.mode==='credit'){
+  mf.innerHTML='<div class="sclab">Durée du prêt</div><div class="seg" id="scCd"></div><div id="scCf"></div><div class="tiny" id="scCr"></div>';
+  $('scCd').innerHTML=[10,15,20,25].map(function(y){return '<button data-y="'+y+'" aria-pressed="'+(SC.cr.years===y)+'">'+y+' ans</button>'}).join('');
+  $$('#scCd button').forEach(function(x){x.onclick=function(){SC.cr.years=+x.dataset.y;if(!SC.cr.touched&&rates[SC.cr.years]!=null)SC.cr.rate=rates[SC.cr.years];renderScpi()}});
+  $('scCf').innerHTML=field('scc','rate','Taux d’intérêt',SC.cr.rate,0,10,.01,'%')+field('scc','ins','Assurance (sur le capital emprunté)',SC.cr.ins,0,1.5,.01,'%')+field('scc','apport','Apport personnel',SC.cr.apport,0,Math.max(SC.A,1000),500,'€')+
+   field('scc','fees','Frais de dossier et de garantie',SC.cr.fees,0,5,.1,'%')+field('scc','diff','Différé d’amortissement',SC.cr.diff,0,24,1,'mois');
+  bind(SC.cr,'scc',['rate','ins','apport','fees','diff'],function(){SC.cr.touched=true;scDraw()});
+  $('scCr').textContent=rates[SC.cr.years]!=null?'Taux indicatif du moment pour '+SC.cr.years+' ans, modifiable.':'Saisis le taux obtenu.';
+ }else if(SC.mode==='np'||SC.mode==='usu'){
+  if(SC.mode==='usu'&&SC.isCo!==true){
+   mf.innerHTML='<div class="scq"><b>Le souscripteur est-il une société soumise à l’impôt sur les sociétés (IS) ?</b><div class="row" style="gap:8px;margin-top:8px"><button class="btn p" id="scIsY">Oui, une société à l’IS</button><button class="btn" id="scIsN">Non</button></div></div>'+
+    (SC.isCo===false?'<div class="scwarn">L’usufruit temporaire n’est pas adapté à un particulier : les loyers sont imposés à la TMI et aux prélèvements sociaux, et à la fin il ne reste rien. Pour un particulier, regarde plutôt la nue-propriété ou la pleine propriété.<div class="row" style="margin-top:8px"><button class="btn" id="scGoNp">Voir la nue-propriété</button></div></div>':'');
+   $('scIsY').onclick=function(){SC.isCo=true;renderScpi()};$('scIsN').onclick=function(){SC.isCo=false;renderScpi()};if($('scGoNp'))$('scGoNp').onclick=function(){SC.mode='np';renderScpi()};
+  }else{
+   var av=scDurs(),key=SC.mode==='np'?'npD':'usuD';SC[key]=SC[key].filter(function(d){return av.indexOf(d)>=0});
+   mf.innerHTML=(SC.mode==='usu'?'<div class="sclab">Taux d’IS</div><div class="seg" id="scIs"></div>':'')+'<div class="sclab">Durée(s) de démembrement à étudier '+scI(SC.mode)+'</div><div class="scds" id="scDs"></div><div class="tiny" id="scDsI"></div>';
+   if(SC.mode==='usu'){$('scIs').innerHTML=[15,25].map(function(t){return '<button data-t="'+t+'" aria-pressed="'+(SC.is===t)+'">'+t+' %</button>'}).join('');$$('#scIs button').forEach(function(x){x.onclick=function(){SC.is=+x.dataset.t;renderScpi()}})}
+   var ds=$('scDs');for(var d=3;d<=20;d++){(function(d){var ok=av.indexOf(d)>=0,bt=el('button',SC[key].indexOf(d)>=0?'on':'',d+' ans');bt.disabled=!ok;bt.setAttribute('aria-pressed',SC[key].indexOf(d)>=0);
+    bt.onclick=function(){var i=SC[key].indexOf(d);if(i>=0)SC[key].splice(i,1);else SC[key].push(d);SC[key].sort(function(a,b){return a-b});renderScpi()};ds.appendChild(bt)})(d)}
+   $('scDsI').textContent=SC.sel.length?(av.length<18?'Les durées grisées ne sont pas proposées par toutes les SCPI choisies.':''):'Choisis d’abord tes SCPI.';
+  }
+ }
+ /* résultats */
+ var r=el('div','stack');r.id='scRes';b.appendChild(r);
+ b.querySelectorAll('[data-help]').forEach(function(x){x.onclick=function(){scHelp(x.dataset.help)}});
+ scDraw();
+}
+
+function scDraw(){
+ var r=$('scRes');if(!r)return;r.innerHTML='';var sel=scSel();
+ if(!sel.length){r.appendChild(el('div','card mut','Choisis au moins une SCPI pour lancer la simulation.'));return}
+ if(SC.mode==='usu'&&SC.isCo!==true)return;
+ var o=scO(),al=scAlloc(sel,SC.A),out={o:o,al:al,mode:SC.mode};
+ /* Répartition */
+ var ca=el('div','card');ca.innerHTML='<div class="row sp"><b>Répartition</b><span class="tag">'+eur(SC.A)+'</span></div>';
+ var t='<table class="sct"><tr><th>SCPI</th><th>Montant</th><th>≈ parts</th></tr>',warn=[];
+ al.forEach(function(x){var unit=SC.mode==='np'&&SC.npD.length?x.s.prix*x.s.np[SC.npD[0]]:SC.mode==='usu'&&SC.usuD.length?x.s.prix*(1-x.s.np[SC.usuD[0]]):x.s.prix;
+  t+='<tr><td>'+esc(x.s.n)+'</td><td>'+eur(x.a)+'</td><td>'+(unit?fp(Math.floor(x.a/unit*100)/100):'—')+'</td></tr>';
+  var mn=SC.mode==='np'||SC.mode==='usu'?x.s.mdE:x.s.minE;if(mn&&x.a<mn)warn.push(x.s.n+' : minimum '+eur(mn)+(SC.mode==='np'||SC.mode==='usu'?' en démembrement':''))});
+ ca.innerHTML+=t+'</table>'+(warn.length?'<div class="scwarn">Minimum non atteint : '+esc(warn.join(' · '))+'. Augmente le montant ou retire une SCPI.</div>':'');r.appendChild(ca);
+ if(SC.mode==='cash')scDrawCash(r,al,o,out);
+ else if(SC.mode==='credit')scDrawCredit(r,al,o,out);
+ else if(SC.mode==='np')scDrawNP(r,al,o,out);
+ else scDrawUsu(r,al,o,out);
+ if(SC.mode==='cash'||SC.mode==='credit')scDrawCmp(r,al,o,out);
+ scDrawReco(r,sel,o,out);
+ var ex=el('div','card row');ex.style.gap='8px';var pb=el('button','btn p','Exporter en PDF');pb.onclick=function(){scPdf(out)};ex.appendChild(pb);r.appendChild(ex);
+ r.appendChild(el('div','tiny','Simulation indicative et non contractuelle, réalisée à partir des données du '+SC_DATE+'. Les performances passées ne préjugent pas des performances futures. Le capital et les revenus ne sont pas garantis ; la liquidité des parts n’est pas garantie. Horizon de placement recommandé : 10 ans minimum. Document interne, réservé aux consultants.'));
+ r.querySelectorAll('[data-help]').forEach(function(x){x.onclick=function(){scHelp(x.dataset.help)}});
+ SC.last=out;
+}
+function kpi(lab,val,main,help){return '<div class="b'+(main?' main':'')+'"><span>'+lab+(help?' '+scI(help):'')+'</span><b>'+val+'</b></div>'}
+function scClear(lines){var c=el('div','card scclear');c.innerHTML='<b>En clair</b><ul>'+lines.map(function(l){return '<li>'+l+'</li>'}).join('')+'</ul>';return c}
+
+function scDrawCash(r,al,o,out){
+ var c=scCash(al,o);out.cash=c;var y2=c.rows[Math.min(1,c.rows.length-1)];
+ var res=el('div','res');res.innerHTML=kpi('Revenus nets d’impôt (année pleine)',eur(y2.net/12)+' /mois',true)+kpi('Rendement brut',pc(c.grossYield))+kpi('Rendement net d’impôt',pc(y2.net/SC.A),false,'fisc')+
+  kpi('Revenus nets cumulés sur '+o.H+' ans',eur(c.netSum))+kpi('Valeur de retrait à '+o.H+' ans',eur(c.sale),false,'ret')+kpi('TRI net sur '+o.H+' ans',pc(c.irr),false,'tri');r.appendChild(res);
+ var jm=Math.max.apply(null,al.map(function(x){return x.s.jm}));
+ r.appendChild(scClear(['Tu places <b>'+eur(SC.A)+'</b> : 100 % de cette somme travaille, les frais ne sont retenus qu’en cas de revente '+scI('ret')+'.',
+  'Les SCPI versent environ <b>'+eur(y2.gross/12)+' brut par mois</b> ; après impôt, il te reste <b>'+eur(y2.net/12)+' par mois</b>.',
+  jm?'La première année, les loyers démarrent après le délai de jouissance (jusqu’à '+jm+' mois) '+scI('jouis')+'.':'Les loyers démarrent presque immédiatement.',
+  'Si tu revendais dans '+o.H+' ans, tu récupérerais environ <b>'+eur(c.sale-c.pv)+'</b> après impôt sur la plus-value, en plus de <b>'+eur(c.netSum)+'</b> de loyers nets.']));
+ r.appendChild(scChartCard('Ce que ton placement te rapporte',c.rows.map(function(x){return x.net}),'Loyers nets d’impôt par an',null));
+ r.appendChild(scYearTable(['Année','Loyers bruts','Impôt étranger','Impôt France','Loyers nets','Par mois'],c.rows.map(function(x){return[x.y,eur(x.gross),eur(x.ft),eur(x.tax),eur(x.net),eur(x.net/12)]})));
+}
+function scDrawCredit(r,al,o,out){
+ var c=scCredit(al,o);out.credit=c;var N=SC.cr.years,first=c.rows[0],avg=c.effAvg;
+ var res=el('div','res');res.innerHTML=kpi('Ton effort d’épargne moyen',(avg>=0?eur(avg):'+'+eur(-avg))+' /mois',true)+kpi('Mensualité du prêt',eur(c.loan.m+c.loan.mI)+' /mois')+kpi('Montant emprunté',eur(c.L))+
+  kpi('Coût du crédit',eur(c.totInt+c.totIns))+kpi('Patrimoine à la fin du prêt',eur(al.reduce(function(a,x){return a+scSale(x.s,x.a,N,o)},0)),false,'ret')+kpi('TRI net sur '+o.H+' ans',pc(c.irr),false,'tri');r.appendChild(res);
+ r.appendChild(scClear(['La banque finance <b>'+eur(c.L)+'</b>'+(SC.cr.apport?' et tu apportes <b>'+eur(SC.cr.apport)+'</b>':'')+'. Les loyers des SCPI remboursent une grande partie des mensualités.',
+  'Ce qui sort vraiment de ta poche (mensualité − loyers + impôt) : <b>'+eur(Math.max(0,first.eff))+' par mois la première année</b>, puis <b>'+eur(avg)+' par mois en moyenne</b> sur '+N+' ans.',
+  'Les intérêts réduisent l’impôt sur tes loyers français ; un éventuel excédent est reporté sur les années suivantes '+scI('deficit')+'.',
+  'Dans '+N+' ans, le prêt est remboursé : tu possèdes des parts estimées à <b>'+eur(al.reduce(function(a,x){return a+scSale(x.s,x.a,N,o)},0))+'</b> (valeur de retrait) et tu touches environ <b>'+eur((c.rows[Math.min(N,c.rows.length-1)]||c.rows[N-1]).net/12)+' net par mois</b>.']));
+ r.appendChild(scChartCard('Ton effort mois par mois, année après année',c.rows.slice(0,N).map(function(x){return x.eff}),'Effort d’épargne mensuel (€/mois)',avg));
+ r.appendChild(scYearTable(['Année','Loyers nets','Mensualités','Impôt France','Effort /mois','Capital restant'],c.rows.slice(0,Math.max(N,o.H)).map(function(x){return[x.y,eur(x.gross-x.ft),eur(x.pay),eur(x.tax),eur(x.eff),eur(x.bal)]}),'Moyenne sur la durée du prêt : '+eur(avg)+' par mois'));
+ /* versements programmés */
+ var v=scVP(al,o,c);out.vp=v;var cv=el('div','card');
+ if(!v){cv.innerHTML='<b>Et en versements programmés ?</b><p class="mut">Aucune des SCPI choisies n’accepte les versements programmés.</p>';r.appendChild(cv);return}
+ var mx=Math.max(v.vpVal,v.crVal),w1=v.crVal/mx*100,w2=v.vpVal/mx*100;
+ cv.innerHTML='<div class="row sp"><b>Crédit ou versements programmés ? '+scI('vp')+'</b><span class="tag">même effort, '+v.N+' ans</span></div>'+
+  '<p class="mut" style="margin:6px 0 10px">Tu verses chaque mois exactement ton effort d’épargne du crédit ('+eur(avg)+' en moyenne, '+eur(v.invested)+' au total), soit à la banque, soit directement dans les SCPI.</p>'+
+  '<div class="scbar"><span>Avec le crédit</span><div><i style="width:'+w1+'%"></i></div><b>'+eur(v.crVal)+'</b></div>'+
+  '<div class="scbar alt"><span>En versements programmés</span><div><i style="width:'+w2+'%"></i></div><b>'+eur(v.vpVal)+'</b></div>'+
+  '<p style="margin-top:10px">'+(v.crVal>v.vpVal?'Le crédit te fait bâtir <b>'+eur(v.crVal-v.vpVal)+' de patrimoine en plus</b> pour le même effort : c’est l’effet de levier. La banque t’avance l’argent tout de suite, et ce sont les loyers qui remboursent.':'Ici, les versements programmés font mieux que le crédit : le taux d’emprunt est trop élevé par rapport au rendement des SCPI.')+'</p>'+
+  (v.excluded.length?'<div class="tiny">Sans versements programmés possibles : '+esc(v.excluded.join(', '))+'.</div>':'')+(v.noReinv.length?'<div class="tiny">Sans réinvestissement automatique des dividendes : '+esc(v.noReinv.join(', '))+' (dividendes gardés de côté).</div>':'')+
+  '<div class="tiny">Valeurs de retrait à '+v.N+' ans, hors impôt sur la plus-value.</div>';
+ r.appendChild(cv);
+}
+function scDrawNP(r,al,o,out){
+ var ds=SC.npD;if(!ds.length){r.appendChild(el('div','card mut','Choisis au moins une durée de démembrement.'));return}
+ var rs=ds.map(function(d){return scNP(al,o,d)}).filter(function(x){return !x.missing});out.np=rs;if(!rs.length)return;
+ var best=rs.reduce(function(a,x){return x.ry>a.ry?x:a},rs[0]);out.npBest=best;
+ var c=el('div','card');var t='<div class="row sp"><b>Nue-propriété : durée par durée '+scI('np')+'</b></div><table class="sct"><tr><th>Durée</th><th>Tu paies</th><th>Tu récupères</th><th>Rendement par an</th><th>TRI si revente '+scI('tri')+'</th></tr>';
+ rs.forEach(function(x){t+='<tr'+(x===best&&rs.length>1?' class="best"':'')+'><td>'+x.d+' ans</td><td>'+eur(SC.A)+'</td><td>'+eur(x.full)+'</td><td><b>'+pc(x.ry)+'</b></td><td>'+pc(x.irr)+'</td></tr>'});
+ c.innerHTML=t+'</table><div class="tiny">« Tu récupères » : valeur de la pleine propriété au prix de part revalorisé de '+pc(o.gp,1)+' par an. « Rendement par an » : ce que rapporte chaque année l’écart entre ce que tu paies et ce que tu récupères, sans revendre (c’est le cas le plus fréquent). « TRI si revente » : si tu revendais au terme, à la valeur de retrait et après impôt sur la plus-value.</div>';r.appendChild(c);
+ r.appendChild(scClear(['Avec <b>'+eur(SC.A)+'</b>, tu achètes des parts qui vaudront <b>'+eur(best.full)+'</b> en pleine propriété dans '+best.d+' ans, sans rien avoir à faire.',
+  'Pendant le démembrement : <b>aucun revenu, donc aucun impôt</b>, et la nue-propriété n’entre pas dans l’IFI.',
+  rs.length>1?'Parmi les durées étudiées, <b>'+best.d+' ans</b> rapporte proportionnellement le plus : <b>'+pc(best.ry)+' par an</b> sans revendre.':'Sur '+best.d+' ans, ton placement rapporte <b>'+pc(best.ry)+' par an</b> sans revendre.']));
+ r.appendChild(scChartCard('Rendement par an selon la durée',rs.map(function(x){return x.ry*100}),'Rendement annuel sans revente (%)',null,rs.map(function(x){return x.d+' a'}),true));
+}
+function scDrawUsu(r,al,o,out){
+ var ds=SC.usuD;if(!ds.length){r.appendChild(el('div','card mut','Choisis au moins une durée.'));return}
+ var rs=ds.map(function(d){return scUsu(al,o,d)}).filter(function(x){return !x.missing});out.usu=rs;if(!rs.length)return;
+ var best=rs.reduce(function(a,x){return x.irr>a.irr?x:a},rs[0]);out.usuBest=best;
+ var c=el('div','card');var t='<div class="row sp"><b>Usufruit temporaire (société à l’IS) '+scI('usu')+'</b></div><table class="sct"><tr><th>Durée</th><th>Revenus nets d’IS</th><th>Gain net</th><th>TRI '+scI('tri')+'</th></tr>';
+ rs.forEach(function(x){t+='<tr'+(x===best&&rs.length>1?' class="best"':'')+'><td>'+x.d+' ans</td><td>'+eur(x.tot)+'</td><td>'+eur(x.gain)+'</td><td><b>'+pc(x.irr)+'</b></td></tr>'});
+ c.innerHTML=t+'</table>';r.appendChild(c);
+ r.appendChild(scClear(['La société investit <b>'+eur(SC.A)+'</b> et touche les loyers pendant la durée choisie. À la fin, il ne reste rien : tout le gain vient des loyers.',
+  'Le coût de l’usufruit est amorti chaque année (<b>'+eur(SC.A/best.d)+' par an sur '+best.d+' ans</b>), ce qui réduit l’IS à '+SC.is+' %.',
+  rs.length>1?'Parmi les durées étudiées, <b>'+best.d+' ans</b> rapporte proportionnellement le plus (TRI de <b>'+pc(best.irr)+'</b>).':'TRI de <b>'+pc(best.irr)+'</b> par an.']));
+ r.appendChild(scYearTable(['Année','Loyers bruts','Impôt étranger','Amortissement','IS','Net'],best.rows.map(function(x){return[x.y,eur(x.gross),eur(x.ft),eur(x.am),eur(x.is),eur(x.net)]}),'Détail pour '+best.d+' ans'));
+}
+function scDrawCmp(r,al,o,out){
+ var cash=out.cash||scCash(al,o),cr=out.credit||scCredit(al,o),av=scDurs().filter(function(d){return d<=o.H}),np=null;
+ av.forEach(function(d){var x=scNP(al,o,d);if(!x.missing&&(!np||x.ry>np.ry))np=x});
+ var c=el('div','card');var t='<div class="row sp"><b>Comparer les solutions</b><span class="tag">'+eur(SC.A)+' · '+o.H+' ans</span></div><table class="sct cmp"><tr><th></th><th>Comptant</th><th>Crédit '+SC.cr.years+' ans</th>'+(np?'<th>Nue-prop. '+np.d+' ans</th>':'')+'</tr>';
+ t+='<tr><td>Mise de départ</td><td>'+eur(SC.A)+'</td><td>'+eur(SC.cr.apport)+'</td>'+(np?'<td>'+eur(SC.A)+'</td>':'')+'</tr>';
+ t+='<tr><td>Chaque mois</td><td>+'+eur(cash.rows[Math.min(1,cash.rows.length-1)].net/12)+'</td><td>−'+eur(cr.effAvg)+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
+ t+='<tr><td>Impôt pendant la période</td><td>'+eur(cash.rows.reduce(function(a,x){return a+x.tax+x.ft},0))+'</td><td>'+eur(cr.rows.slice(0,o.H).reduce(function(a,x){return a+x.tax+x.ft},0))+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
+ t+='<tr><td>TRI net si revente</td><td><b>'+pc(cash.irr)+'</b></td><td><b>'+pc(cr.irr)+'</b></td>'+(np?'<td><b>'+pc(np.irr)+'</b></td>':'')+'</tr>';
+ if(np)t+='<tr><td>Rendement sans revente</td><td>'+pc(cash.rows[Math.min(1,cash.rows.length-1)].net/SC.A)+'</td><td>—</td><td><b>'+pc(np.ry)+'</b></td></tr>';
+ t+='</table>';
+ t+='<div class="tiny">Comptant : tu touches des revenus tout de suite. Crédit : tu construis un patrimoine plus gros avec peu d’apport. Nue-propriété : aucune fiscalité, idéale si tu n’as pas besoin de revenus.'+(np?' Nue-propriété comptée sur '+np.d+' ans (meilleure durée disponible jusqu’à '+o.H+' ans).':'')+'</div>';
+ c.innerHTML=t;r.appendChild(c);out.cmp={cash:cash,cr:cr,np:np};
+}
+function scDrawReco(r,sel,o,out){
+ var c=el('div','card screco');var sc=sel.map(function(s){return{s:s,r:scScore(s,o.tmi)}}).sort(function(a,b){return b.r.score-a.r.score});
+ var h='<b>Notre lecture</b><div class="tiny" style="margin:2px 0 8px">Une recommandation indicative, pas un conseil personnalisé : c’est à toi de la confronter à la situation de ton client.</div>';
+ if(SC.mode==='np'&&out.npBest){
+  var d=out.npBest.d,all=SCPI.filter(function(s){return s.np[d]!=null}).map(function(s){return{s:s,x:scNP([{s:s,a:SC.A}],o,d)}}).sort(function(a,b){return b.x.ry-a.x.ry}).slice(0,3);
+  h+='<p>Sur <b>'+d+' ans</b>, les nues-propriétés les plus intéressantes de la gamme sont : '+all.map(function(z){return '<b>'+esc(z.s.n)+'</b> ('+pc(z.x.ry)+' par an)'}).join(', ')+'. Choisis aussi la SCPI pour sa qualité : voir la note ci-dessous.</p>';
+  if(out.np&&out.np.length>1)h+='<p>Entre les durées étudiées, <b>'+d+' ans</b> apporte proportionnellement le plus de gain : c’est là que la décote est la plus forte par rapport au temps d’attente. Vérifie qu’elle colle à l’horizon de ton client.</p>';
+ }
+ if(SC.mode==='usu'&&out.usuBest)h+='<p>Pour la société, la durée la plus rentable est <b>'+out.usuBest.d+' ans</b> (TRI '+pc(out.usuBest.irr)+').</p>';
+ h+='<div class="scrk">'+sc.map(function(z,i){return '<div><div class="row sp"><b>'+(i+1)+'. '+esc(z.s.n)+'</b><span class="tag">'+z.r.score+'/100</span></div>'+(z.r.pro.length?'<div class="pro">'+z.r.pro.map(esc).join(' · ')+'</div>':'')+(z.r.con.length?'<div class="con">À surveiller : '+z.r.con.map(esc).join(' · ')+'</div>':'')+'</div>'}).join('')+'</div>';
+ var others=SCPI.filter(function(s){return SC.sel.indexOf(s.n)<0}).map(function(s){return{s:s,r:scScore(s,o.tmi)}}).sort(function(a,b){return b.r.score-a.r.score}).slice(0,2);
+ if(others.length)h+='<p style="margin-top:10px">À regarder aussi : '+others.map(function(z){return '<b>'+esc(z.s.n)+'</b> ('+z.r.score+'/100, '+esc(z.r.pro[0]||'profil équilibré')+')'}).join(' ; ')+'.</p>';
+ h+='<div class="tiny">La note combine : rendement net d’impôt pour la TMI choisie (30 %), liquidité : retraits et parts en attente (20 %), taux d’occupation (15 %), prix de part par rapport à la valeur de reconstitution (15 %), endettement (10 %), ancienneté et taille (10 %).</div>';
+ c.innerHTML=h;r.appendChild(c);out.reco=sc;
+}
+function scYearTable(head,rows,foot){
+ var d=el('details','card scyt');d.innerHTML='<summary><svg class="i"><use href="#chev"/></svg>Le détail année par année</summary><div class="scscroll"><table class="sct"><tr>'+head.map(function(h){return '<th>'+h+'</th>'}).join('')+'</tr>'+rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+c+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>'+(foot?'<div class="tiny" style="margin-top:6px"><b>'+foot+'</b></div>':'');return d}
+function scChartCard(title,vals,lab,avg,labels,pct){
+ var c=el('div','card');var W=320,H=170,pl=34,pb=20,mx=Math.max.apply(null,vals.concat([avg||0,0])),mn=Math.min.apply(null,vals.concat([0])),rg=(mx-mn)||1,n=vals.length,bw=(W-pl-6)/n;
+ var y=function(v){return 8+(H-pb-8)*(1-(v-mn)/rg)},s='<svg viewBox="0 0 '+W+' '+H+'" class="scch" role="img" aria-label="'+esc(title)+'">';
+ [mx,(mx+mn)/2,mn].forEach(function(v){s+='<line x1="'+pl+'" x2="'+W+'" y1="'+y(v)+'" y2="'+y(v)+'" class="gl"/><text x="'+(pl-4)+'" y="'+(y(v)+3)+'" text-anchor="end">'+(pct?v.toFixed(1).replace('.',','):Math.round(v).toLocaleString('fr-FR'))+'</text>'});
+ vals.forEach(function(v,i){var x=pl+i*bw+bw*0.15,top=Math.min(y(v),y(0)),h=Math.abs(y(v)-y(0));s+='<rect x="'+x+'" y="'+top+'" width="'+bw*0.7+'" height="'+Math.max(1,h)+'" rx="2" class="'+(v<0?'neg':'pos')+'"><title>'+(labels?labels[i]:'Année '+(i+1))+' : '+(pct?v.toFixed(2).replace('.',',')+' %':eur(v))+'</title></rect>';
+  if(labels||n<=12||(i+1)%5===0||i===0)s+='<text x="'+(x+bw*0.35)+'" y="'+(H-6)+'" text-anchor="middle">'+(labels?labels[i]:i+1)+'</text>'});
+ if(avg!=null)s+='<line x1="'+pl+'" x2="'+W+'" y1="'+y(avg)+'" y2="'+y(avg)+'" class="avg"/><text x="'+W+'" y="'+(y(avg)-4)+'" text-anchor="end" class="avgt">moyenne '+eur(avg)+'</text>';
+ s+='</svg>';c.innerHTML='<b>'+esc(title)+'</b><div class="tiny">'+esc(lab)+'</div>'+s;return c}
+
+/* --- Export PDF --- */
+function loadPdf(){return window.jspdf?Promise.resolve():new Promise(function(ok,ko){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
+async function scPdf(out){
+ try{await loadPdf()}catch(e){toast('Export impossible : bibliothèque non chargée');return}
+ var doc=new jspdf.jsPDF({unit:'mm',format:'a4'}),Y=18,M=16,W=210-2*M;
+ function T(s){return String(s).replace(/[\u202f\u00a0]/g,' ').replace(/[≈]/g,'env.').replace(/[−]/g,'-')}
+ function need(h){if(Y+h>282){doc.addPage();Y=18}}
+ function h1(s){need(12);doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(30,60,90);doc.text(T(s),M,Y);Y+=8;doc.setTextColor(30,30,30)}
+ function h2(s){need(10);Y+=2;doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(30,60,90);doc.text(T(s),M,Y);Y+=6;doc.setTextColor(30,30,30)}
+ function p(s,sz){doc.setFont('helvetica','normal');doc.setFontSize(sz||10);var l=doc.splitTextToSize(T(s.replace(/<[^>]+>/g,'')),W);need(l.length*4.6);doc.text(l,M,Y);Y+=l.length*4.6+1}
+ function tb(head,rows){var cw=W/head.length;doc.setFontSize(8.5);need(7);doc.setFont('helvetica','bold');doc.setFillColor(225,234,243);doc.rect(M,Y-4,W,6,'F');head.forEach(function(h,i){doc.text(T(h),M+1+i*cw,Y)});Y+=5;doc.setFont('helvetica','normal');
+  rows.forEach(function(r){need(5);r.forEach(function(c,i){doc.text(T(c),M+1+i*cw,Y)});Y+=4.6});Y+=2}
+ var o=out.o,al=out.al,modes={cash:'Pleine propriété au comptant',credit:'Pleine propriété à crédit',np:'Nue-propriété',usu:'Usufruit temporaire (société à l’IS)'};
+ h1('Simulation SCPI');p('Établie le '+new Date().toLocaleDateString('fr-FR')+' · '+modes[out.mode]+' · TMI '+Math.round(o.tmi*100)+' %');
+ h2('Répartition');tb(['SCPI','Société de gestion','Montant','Taux 2025'],al.map(function(x){return[x.s.n,x.s.sg,eur(x.a),pc(x.s.td)]}));
+ h2('Hypothèses');p('Montant : '+eur(o.A)+'. Revalorisation de la part : '+pc(o.gp,1)+' par an. Évolution des dividendes : '+pc(o.gd,1)+' par an. Revente à la valeur de retrait de chaque SCPI.'+(out.mode==='credit'?' Prêt de '+eur(out.credit.L)+' sur '+o.cr.years+' ans à '+String(o.cr.rate).replace('.',',')+' %, assurance '+String(o.cr.ins).replace('.',',')+' %, apport '+eur(o.cr.apport)+'.':''));
+ if(out.cash){h2('Résultats');var c=out.cash,y2=c.rows[Math.min(1,c.rows.length-1)];tb(['Indicateur','Valeur'],[['Revenus nets mensuels (année pleine)',eur(y2.net/12)],['Rendement net d’impôt',pc(y2.net/o.A)],['Revenus nets cumulés sur '+o.H+' ans',eur(c.netSum)],['Valeur de retrait à '+o.H+' ans',eur(c.sale)],['TRI net sur '+o.H+' ans',pc(c.irr)]]);
+  h2('Détail annuel');tb(['Année','Loyers bruts','Impôt étr.','Impôt France','Nets','Par mois'],c.rows.map(function(x){return[x.y,eur(x.gross),eur(x.ft),eur(x.tax),eur(x.net),eur(x.net/12)]}))}
+ if(out.credit){h2('Résultats');var cr=out.credit;tb(['Indicateur','Valeur'],[['Montant emprunté',eur(cr.L)],['Mensualité (assurance incluse)',eur(cr.loan.m+cr.loan.mI)],['Effort d’épargne moyen',eur(cr.effAvg)+' / mois'],['Coût du crédit',eur(cr.totInt+cr.totIns)],['TRI net sur '+o.H+' ans',pc(cr.irr)]]);
+  h2('Effort d’épargne net, année par année');tb(['Année','Loyers nets','Mensualités','Impôt France','Effort / mois','Capital restant'],cr.rows.slice(0,Math.max(o.cr.years,o.H)).map(function(x){return[x.y,eur(x.gross-x.ft),eur(x.pay),eur(x.tax),eur(x.eff),eur(x.bal)]}));
+  if(out.vp){h2('Crédit ou versements programmés (même effort, '+out.vp.N+' ans)');tb(['Solution','Patrimoine au terme'],[['Avec le crédit',eur(out.vp.crVal)],['En versements programmés + réinvestissement',eur(out.vp.vpVal)]])}}
+ if(out.np){h2('Nue-propriété');tb(['Durée','Tu paies','Tu récupères','Rendement / an','TRI si revente'],out.np.map(function(x){return[x.d+' ans',eur(o.A),eur(x.full),pc(x.ry),pc(x.irr)]}))}
+ if(out.usu){h2('Usufruit temporaire');tb(['Durée','Revenus nets d’IS','Gain net','TRI'],out.usu.map(function(x){return[x.d+' ans',eur(x.tot),eur(x.gain),pc(x.irr)]}))}
+ if(out.cmp){h2('Comparaison des solutions');var m=out.cmp;tb(['','Comptant','Crédit'].concat(m.np?['Nue-prop. '+m.np.d+' ans']:[]),[['TRI net',pc(m.cash.irr),pc(m.cr.irr)].concat(m.np?[pc(m.np.irr)]:[])])}
+ h2('Notre lecture (recommandation indicative)');(out.reco||[]).forEach(function(z,i){p((i+1)+'. '+z.s.n+' ('+z.r.score+'/100) : '+(z.r.pro.join(' ; ')||'profil équilibré')+(z.r.con.length?'. À surveiller : '+z.r.con.join(' ; '):'')+'.',9)});
+ Y+=3;p('Simulation indicative et non contractuelle, établie à partir du '+SC_DATE+'. Ce document est à usage interne des consultants. Les performances passées ne préjugent pas des performances futures. Le capital, les revenus et la liquidité ne sont pas garantis. Horizon recommandé : 10 ans minimum. Fiscalité simplifiée : revenus étrangers sans prélèvements sociaux et sans effet du taux effectif ; régime réel ; plus-value immobilière des particuliers.',8);
+ doc.save('simulation-scpi.pdf');
+}
 
 /* --- Calculatrice d'épargne --- */
 var E={mode:'final',pmt:300,rate:3,init:10000,years:20,target:116359,fee:0,mgmt:0,infl:0,wait:false,delay:1,cmp:false};
