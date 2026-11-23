@@ -127,6 +127,7 @@ ol.rank,ul.rank{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direc
 .scbar{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:8px;margin:6px 0;font-size:.82rem}.scbar>div{height:14px;background:var(--pill);border-radius:7px;overflow:hidden}.scbar i{display:block;height:100%;background:var(--acc);border-radius:7px}.scbar.alt i{background:var(--mut)}
 .scrk{display:grid;gap:10px;margin-top:6px}.scrk .pro{font-size:.8rem;margin-top:3px}.scrk .con{font-size:.78rem;color:#f0b37e;margin-top:2px}
 .scch{width:100%;height:auto;display:block;margin-top:6px}.scch text{font-size:8px;fill:var(--mut)}.scch .gl{stroke:var(--line);stroke-width:.5}.scch .pos{fill:var(--acc)}.scch .neg{fill:#e08a6b}.scch .avg{stroke:#f0c36d;stroke-dasharray:4 3;stroke-width:1.2}.scch .avgt{fill:#f0c36d;font-weight:700}
+.sctg{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.85rem}.sctg input{width:18px;height:18px;accent-color:var(--acc)}
 .teamsum small{display:block;font-size:.72rem;opacity:.72;margin-top:6px;text-align:center}
 .sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
 th,td{padding:7px 6px;text-align:center;border-top:1px solid var(--line);white-space:nowrap}
@@ -1626,7 +1627,7 @@ function fmtM(m){return (m>=1000?(m/1000).toFixed(1).replace('.',',')+' Md€':M
 
 /* ===== SIMULATEUR SCPI : interface ===== */
 var SC_DATE='Panorama Stellium (distributions 2025)';
-var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,touched:false},npD:[5,10],usuD:[5,10],isCo:null,is:25,fiche:{}};
+var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,touched:false},npD:[5,10],npSale:false,usuD:[5,10],isCo:null,is:25,fiche:{}};
 var SC_HELP={
  tri:['Le TRI, c’est quoi ?','Le taux de rendement interne résume en un seul pourcentage annuel tout ce que l’investissement a coûté et rapporté : la mise de départ, les loyers nets d’impôt, les mensualités éventuelles et la revente au bout de la durée choisie. C’est le meilleur moyen de comparer des solutions différentes entre elles.'],
  ret:['Valeur de retrait','C’est le prix auquel la SCPI rachète tes parts si tu revends. Elle est inférieure au prix d’achat car les frais de souscription sont retenus à la sortie : chez nous, tu ne les paies que si tu revends. Tant que tu gardes tes parts, 100 % de ton argent travaille.'],
@@ -1694,6 +1695,7 @@ function renderScpi(){
    if(SC.mode==='usu'){$('scIs').innerHTML=[15,25].map(function(t){return '<button data-t="'+t+'" aria-pressed="'+(SC.is===t)+'">'+t+' %</button>'}).join('');$$('#scIs button').forEach(function(x){x.onclick=function(){SC.is=+x.dataset.t;renderScpi()}})}
    var ds=$('scDs');for(var d=3;d<=20;d++){(function(d){var ok=av.indexOf(d)>=0,bt=el('button',SC[key].indexOf(d)>=0?'on':'',d+' ans');bt.disabled=!ok;bt.setAttribute('aria-pressed',SC[key].indexOf(d)>=0);
     bt.onclick=function(){var i=SC[key].indexOf(d);if(i>=0)SC[key].splice(i,1);else SC[key].push(d);SC[key].sort(function(a,b){return a-b});renderScpi()};ds.appendChild(bt)})(d)}
+   if(SC.mode==='np'){var tg=el('label','sctg');tg.innerHTML='<input type="checkbox" id="scNpS"'+(SC.npSale?' checked':'')+'> Inclure une revente au terme (option)';mf.appendChild(tg);$('scNpS').onchange=function(){SC.npSale=this.checked;scDraw()}}
    $('scDsI').textContent=SC.sel.length?(av.length<18?'Les durées grisées ne sont pas proposées par toutes les SCPI choisies.':''):'Choisis d’abord tes SCPI.';
   }
  }
@@ -1768,9 +1770,9 @@ function scDrawNP(r,al,o,out){
  var ds=SC.npD;if(!ds.length){r.appendChild(el('div','card mut','Choisis au moins une durée de démembrement.'));return}
  var rs=ds.map(function(d){return scNP(al,o,d)}).filter(function(x){return !x.missing});out.np=rs;if(!rs.length)return;
  var best=rs.reduce(function(a,x){return x.ry>a.ry?x:a},rs[0]);out.npBest=best;
- var c=el('div','card');var t='<div class="row sp"><b>Nue-propriété : durée par durée '+scI('np')+'</b></div><table class="sct"><tr><th>Durée</th><th>Tu paies</th><th>Tu récupères</th><th>Rendement par an</th><th>TRI si revente '+scI('tri')+'</th></tr>';
- rs.forEach(function(x){t+='<tr'+(x===best&&rs.length>1?' class="best"':'')+'><td>'+x.d+' ans</td><td>'+eur(SC.A)+'</td><td>'+eur(x.full)+'</td><td><b>'+pc(x.ry)+'</b></td><td>'+pc(x.irr)+'</td></tr>'});
- c.innerHTML=t+'</table><div class="tiny">« Tu récupères » : valeur de la pleine propriété au prix de part revalorisé de '+pc(o.gp,1)+' par an. « Rendement par an » : ce que rapporte chaque année l’écart entre ce que tu paies et ce que tu récupères, sans revendre (c’est le cas le plus fréquent). « TRI si revente » : si tu revendais au terme, à la valeur de retrait et après impôt sur la plus-value.</div>';r.appendChild(c);
+ var c=el('div','card');var t='<div class="row sp"><b>Nue-propriété : durée par durée '+scI('np')+'</b></div><table class="sct"><tr><th>Durée</th><th>Tu paies</th><th>Tu récupères</th><th>Rendement par an</th>'+(SC.npSale?'<th>TRI si revente '+scI('tri')+'</th>':'')+'</tr>';
+ rs.forEach(function(x){t+='<tr'+(x===best&&rs.length>1?' class="best"':'')+'><td>'+x.d+' ans</td><td>'+eur(SC.A)+'</td><td>'+eur(x.full)+'</td><td><b>'+pc(x.ry)+'</b></td>'+(SC.npSale?'<td>'+pc(x.irr)+'</td>':'')+'</tr>'});
+ c.innerHTML=t+'</table><div class="tiny">« Tu récupères » : valeur de la pleine propriété au prix de part revalorisé de '+pc(o.gp,1)+' par an. « Rendement par an » : ce que rapporte chaque année l’écart entre ce que tu paies et ce que tu récupères, sans revendre.'+(SC.npSale?' « TRI si revente » : si tu revendais au terme, à la valeur de retrait et après impôt sur la plus-value.':'')+'</div>';r.appendChild(c);
  r.appendChild(scClear(['Avec <b>'+eur(SC.A)+'</b>, tu achètes des parts qui vaudront <b>'+eur(best.full)+'</b> en pleine propriété dans '+best.d+' ans, sans rien avoir à faire.',
   'Pendant le démembrement : <b>aucun revenu, donc aucun impôt</b>, et la nue-propriété n’entre pas dans l’IFI.',
   rs.length>1?'Parmi les durées étudiées, <b>'+best.d+' ans</b> rapporte proportionnellement le plus : <b>'+pc(best.ry)+' par an</b> sans revendre.':'Sur '+best.d+' ans, ton placement rapporte <b>'+pc(best.ry)+' par an</b> sans revendre.']));
@@ -1795,7 +1797,7 @@ function scDrawCmp(r,al,o,out){
  t+='<tr><td>Mise de départ</td><td>'+eur(SC.A)+'</td><td>'+eur(SC.cr.apport)+'</td>'+(np?'<td>'+eur(SC.A)+'</td>':'')+'</tr>';
  t+='<tr><td>Chaque mois</td><td>+'+eur(cash.rows[Math.min(1,cash.rows.length-1)].net/12)+'</td><td>−'+eur(cr.effAvg)+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
  t+='<tr><td>Impôt pendant la période</td><td>'+eur(cash.rows.reduce(function(a,x){return a+x.tax+x.ft},0))+'</td><td>'+eur(cr.rows.slice(0,o.H).reduce(function(a,x){return a+x.tax+x.ft},0))+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
- t+='<tr><td>TRI net si revente</td><td><b>'+pc(cash.irr)+'</b></td><td><b>'+pc(cr.irr)+'</b></td>'+(np?'<td><b>'+pc(np.irr)+'</b></td>':'')+'</tr>';
+ t+='<tr><td>TRI net si revente</td><td><b>'+pc(cash.irr)+'</b></td><td><b>'+pc(cr.irr)+'</b></td>'+(np?'<td>'+(SC.npSale?'<b>'+pc(np.irr)+'</b>':'—')+'</td>':'')+'</tr>';
  if(np)t+='<tr><td>Rendement sans revente</td><td>'+pc(cash.rows[Math.min(1,cash.rows.length-1)].net/SC.A)+'</td><td>—</td><td><b>'+pc(np.ry)+'</b></td></tr>';
  t+='</table>';
  t+='<div class="tiny">Comptant : tu touches des revenus tout de suite. Crédit : tu construis un patrimoine plus gros avec peu d’apport. Nue-propriété : aucune fiscalité, idéale si tu n’as pas besoin de revenus.'+(np?' Nue-propriété comptée sur '+np.d+' ans, la durée de démembrement disponible la plus proche de ton horizon de '+o.H+' ans.':'')+'</div>';
@@ -1848,9 +1850,9 @@ async function scPdf(out){
  if(out.credit){h2('Résultats');var cr=out.credit;tb(['Indicateur','Valeur'],[['Montant emprunté',eur(cr.L)],['Mensualité (assurance incluse)',eur(cr.loan.m+cr.loan.mI)],['Effort d’épargne moyen',eur(cr.effAvg)+' / mois'],['Coût du crédit',eur(cr.totInt+cr.totIns)],['TRI net sur '+o.H+' ans',pc(cr.irr)]]);
   h2('Effort d’épargne net, année par année');tb(['Année','Loyers nets','Mensualités','Impôt France','Effort / mois','Capital restant'],cr.rows.slice(0,Math.max(o.cr.years,o.H)).map(function(x){return[x.y,eur(x.gross-x.ft),eur(x.pay),eur(x.tax),eur(x.eff),eur(x.bal)]}));
   if(out.vp){h2('Crédit ou versements programmés (même effort, '+out.vp.N+' ans)');tb(['Solution','Patrimoine au terme'],[['Avec le crédit',eur(out.vp.crVal)],['En versements programmés + réinvestissement',eur(out.vp.vpVal)]])}}
- if(out.np){h2('Nue-propriété');tb(['Durée','Tu paies','Tu récupères','Rendement / an','TRI si revente'],out.np.map(function(x){return[x.d+' ans',eur(o.A),eur(x.full),pc(x.ry),pc(x.irr)]}))}
+ if(out.np){h2('Nue-propriété');tb(['Durée','Tu paies','Tu récupères','Rendement / an'].concat(SC.npSale?['TRI si revente']:[]),out.np.map(function(x){return[x.d+' ans',eur(o.A),eur(x.full),pc(x.ry)].concat(SC.npSale?[pc(x.irr)]:[])}))}
  if(out.usu){h2('Usufruit temporaire');tb(['Durée','Revenus nets d’IS','Gain net','TRI'],out.usu.map(function(x){return[x.d+' ans',eur(x.tot),eur(x.gain),pc(x.irr)]}))}
- if(out.cmp){h2('Comparaison des solutions');var m=out.cmp;tb(['','Comptant','Crédit'].concat(m.np?['Nue-prop. '+m.np.d+' ans']:[]),[['TRI net',pc(m.cash.irr),pc(m.cr.irr)].concat(m.np?[pc(m.np.irr)]:[])])}
+ if(out.cmp){h2('Comparaison des solutions');var m=out.cmp;tb(['','Comptant','Crédit'].concat(m.np?['Nue-prop. '+m.np.d+' ans']:[]),[['TRI net',pc(m.cash.irr),pc(m.cr.irr)].concat(m.np?[SC.npSale?pc(m.np.irr):'-']:[])].concat(m.np?[['Rendement sans revente','','',pc(m.np.ry)]]:[]))}
  h2('Notre lecture (recommandation indicative)');(out.reco||[]).forEach(function(z,i){p((i+1)+'. '+z.s.n+' ('+z.r.score+'/100) : '+(z.r.pro.join(' ; ')||'profil équilibré')+(z.r.con.length?'. À surveiller : '+z.r.con.join(' ; '):'')+'.',9)});
  Y+=3;p('Simulation indicative et non contractuelle, établie à partir du '+SC_DATE+'. Ce document est à usage interne des consultants. Les performances passées ne préjugent pas des performances futures. Le capital, les revenus et la liquidité ne sont pas garantis. Horizon recommandé : 10 ans minimum. Fiscalité simplifiée : revenus étrangers sans prélèvements sociaux et sans effet du taux effectif ; régime réel ; plus-value immobilière des particuliers.',8);
  doc.save('simulation-scpi.pdf');
