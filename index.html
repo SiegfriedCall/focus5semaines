@@ -1790,7 +1790,7 @@ function scDrawUsu(r,al,o,out){
 }
 function scDrawCmp(r,al,o,out){
  var cash=out.cash||scCash(al,o),cr=out.credit||scCredit(al,o),av=scDurs().filter(function(d){return d<=o.H}),np=null;
- av.forEach(function(d){var x=scNP(al,o,d);if(!x.missing&&(!np||x.ry>np.ry))np=x});
+ if(av.length){var x0=scNP(al,o,av[av.length-1]);if(!x0.missing)np=x0}
  var c=el('div','card');var t='<div class="row sp"><b>Comparer les solutions</b><span class="tag">'+eur(SC.A)+' · '+o.H+' ans</span></div><table class="sct cmp"><tr><th></th><th>Comptant</th><th>Crédit '+SC.cr.years+' ans</th>'+(np?'<th>Nue-prop. '+np.d+' ans</th>':'')+'</tr>';
  t+='<tr><td>Mise de départ</td><td>'+eur(SC.A)+'</td><td>'+eur(SC.cr.apport)+'</td>'+(np?'<td>'+eur(SC.A)+'</td>':'')+'</tr>';
  t+='<tr><td>Chaque mois</td><td>+'+eur(cash.rows[Math.min(1,cash.rows.length-1)].net/12)+'</td><td>−'+eur(cr.effAvg)+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
@@ -1798,7 +1798,7 @@ function scDrawCmp(r,al,o,out){
  t+='<tr><td>TRI net si revente</td><td><b>'+pc(cash.irr)+'</b></td><td><b>'+pc(cr.irr)+'</b></td>'+(np?'<td><b>'+pc(np.irr)+'</b></td>':'')+'</tr>';
  if(np)t+='<tr><td>Rendement sans revente</td><td>'+pc(cash.rows[Math.min(1,cash.rows.length-1)].net/SC.A)+'</td><td>—</td><td><b>'+pc(np.ry)+'</b></td></tr>';
  t+='</table>';
- t+='<div class="tiny">Comptant : tu touches des revenus tout de suite. Crédit : tu construis un patrimoine plus gros avec peu d’apport. Nue-propriété : aucune fiscalité, idéale si tu n’as pas besoin de revenus.'+(np?' Nue-propriété comptée sur '+np.d+' ans (meilleure durée disponible jusqu’à '+o.H+' ans).':'')+'</div>';
+ t+='<div class="tiny">Comptant : tu touches des revenus tout de suite. Crédit : tu construis un patrimoine plus gros avec peu d’apport. Nue-propriété : aucune fiscalité, idéale si tu n’as pas besoin de revenus.'+(np?' Nue-propriété comptée sur '+np.d+' ans, la durée de démembrement disponible la plus proche de ton horizon de '+o.H+' ans.':'')+'</div>';
  c.innerHTML=t;r.appendChild(c);out.cmp={cash:cash,cr:cr,np:np};
 }
 function scDrawReco(r,sel,o,out){
