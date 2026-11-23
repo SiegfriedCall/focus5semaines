@@ -868,6 +868,17 @@ async function loadMojo(){
 }
 function mpSave(){var row={user_id:me.id,data:mp,updated_at:new Date().toISOString()};queue(function(){return sb.from('mojo_profile').upsert(row,{onConflict:'user_id'}).then(function(e){err(e,'Réglage MOJO non enregistré')})})}
 function mdSave(d){var row={user_id:me.id,day:d,data:mdays[d]||{}};queue(function(){return sb.from('mojo_days').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e)})})}
+/* Équivalence MOJO → Focus pendant le focus (pas de double saisie). Exclus : Contacter quelqu'un, Non, Participant, Accompagner, C5, C7, Divers. */
+var MJ_EQ={pc:'c1',cr:'c1',inv:'c2',an5:'c3',conf:'c3',r0:'r0',r1:'r1',r2:'r2',r3:'r3',srdv:'c6',scli:'c6',sfil:'c6'};
+function mjToFocus(d,k,n){
+ var f=MJ_EQ[k];if(!f||!start||d<start||d>=add(start,35))return;
+ var md=mdays[d]||(mdays[d]={}),eq=md._eq||(md._eq={});
+ if(n<0){if(!(eq[k]>0))return;eq[k]--}else eq[k]=(eq[k]||0)+1;
+ var r=mine[d]||(mine[d]=Object.assign(z(),{user_id:me.id,day:d}));if(n<0&&!(r[f]>0)){mdSave(d);return}
+ r[f]=Math.max(0,(r[f]||0)+n);if(tg&&tg.id===me.id)data=mine;
+ var row=Object.assign({},r);mdSave(d);
+ queue(function(){return sb.from('counts').upsert(row,{onConflict:'user_id,day'}).then(function(e){err(e);loadTop()})});
+}
 function mjAdd(d,k,n){if(!mdays[d])mdays[d]={};mdays[d][k]=Math.max(0,(Number(mdays[d][k])||0)+n);mdSave(d)}
 function mjPeriod(){if(mp.rhythm==='90'&&mp.run_start)return{s:mp.run_start,e:add(mp.run_start,89),n:'90 jours'};var g=exoRange();return{s:g.s,e:g.e,n:'Rythme standard'}}
 function mjWeekObj(){return (MJW[mp.rhythm==='90'?'90':'std']||MJW.std)[mp.activity==='da'?'da':'tp']}
@@ -917,7 +928,10 @@ function mjPlan(r){
  if(left>0)out.push('quelques actions de plus');
  return out.length>1?out.slice(0,-1).join(', ')+' et '+out[out.length-1]:out[0]||''}
 async function mjMessages(){
- if(!mp.setup)return;mp.shown=mp.shown||{};if(!exoReady)await mjLoadExo();var P=mjPeriod();if(TODAY<P.s||TODAY>P.e)return;
+ if(!mp.setup)return;mp.shown=mp.shown||{};if(!exoReady)await mjLoadExo();
+ if(!mp.eq_info&&start&&TODAY<add(start,35)){mp.eq_info=TODAY;mpSave();
+  await ask({badge:'✌️',title:'Fini la double saisie',paras:['Jusqu’à la fin du focus, ce que tu notes dans MOJO s’ajoute automatiquement dans ton Focus : C1 (prise de contact, contact ou relance), C2 (invitation), C3 (animation, conférence), R0 à R3, et C6 (tous les suivis).','Pour rester juste face à l’équipe, ces actions ne passent pas dans le Focus : contacter quelqu’un sur les réseaux, « Non » obtenu, participant à une exposition, accompagnement de filleul, C5, C7 et Divers.','Les R1 validés dans ton agenda restent comptés une seule fois dans chaque onglet.'],buttons:[{t:'Top',cls:'p',v:1}]})}
+ var P=mjPeriod();if(TODAY<P.s||TODAY>P.e)return;
  /* vendredi matin : semaine en cours */
  var mon=mondayOf(TODAY);
  if(dow(TODAY)===5&&mp.shown.fri!==mon){var o=mjWeekObj(),w=mjWeekPts(mon);mp.shown.fri=mon;
@@ -1007,7 +1021,7 @@ function renderMojo(){
    var ds=el('div','tiny mjdesc',x[4]);ds.hidden=!mjOpen[x[0]];nm.onclick=function(){mjOpen[x[0]]=!mjOpen[x[0]];ds.hidden=!mjOpen[x[0]]};nm.setAttribute('aria-label',x[2]+', '+fp(x[3])+' points, afficher la description');
    var st=el('div','cstep'),mi=el('button',0,'−'),ov=el('output',0,Number(r[x[0]])||0),pl=el('button','cp','+');
    mi.setAttribute('aria-label','Moins une : '+x[2]);pl.setAttribute('aria-label','Plus une : '+x[2]);mi.disabled=!(Number(r[x[0]])>0);
-   function tap(n){mjAdd(mjDay,x[0],n);var v=Number(mdays[mjDay][x[0]])||0;ov.textContent=v;mi.disabled=v<=0;mjNums();if(x[0]==='r1'&&exoReady)mjR1Card()}
+   function tap(n){if(n<0&&!(Number((mdays[mjDay]||{})[x[0]])>0))return;mjAdd(mjDay,x[0],n);mjToFocus(mjDay,x[0],n);var v=Number(mdays[mjDay][x[0]])||0;ov.textContent=v;mi.disabled=v<=0;mjNums();if(x[0]==='r1'&&exoReady)mjR1Card()}
    mi.onclick=function(){tap(-1)};pl.onclick=function(){tap(1)};
    st.appendChild(mi);st.appendChild(ov);st.appendChild(pl);
    row.appendChild(nm);row.appendChild(st);cd.appendChild(row);cd.appendChild(ds)});
