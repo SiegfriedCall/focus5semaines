@@ -1607,8 +1607,11 @@ function scUsu(al,o,d){
 function sc669(age){var t=[[21,.9],[31,.8],[41,.7],[51,.6],[61,.5],[71,.4],[81,.3],[91,.2]];for(var i=0;i<t.length;i++)if(age<t[i][0])return t[i][1];return .1}
 function scDroits(base){var b=[[8072,.05],[12109,.10],[15932,.15],[552324,.20],[902838,.30],[1805677,.40],[1e15,.45]],d=0,lo=0;
  for(var i=0;i<b.length&&base>lo;i++){d+=(Math.min(base,b[i][0])-lo)*b[i][1];lo=b[i][0]}return d}
-function scFamPlan(f){var age=Math.min.apply(null,f.ages.slice(0,f.nP)),us=sc669(age),gifts=f.gift*f.nP*f.nE;return{age:age,us:us,gifts:gifts,T:gifts/(1-us),U:gifts/(1-us)*us}}
-function scFam(al,o,f,pl){
+function scFamPlan(f){ /* f.B : somme disponible des parents, répartie entre dons (nue-propriété des enfants) et usufruit viager */
+ var ages=f.ages.slice(0,f.nP),age=Math.min.apply(null,ages),us=sc669(age),pairs=f.nP*f.nE,sark=ages.every(function(a){return a<80})?31865:0,gmax=sark+100000;
+ var g=f.B*(1-us)/pairs,cap=g>gmax;if(cap)g=gmax;var T=g*pairs/(1-us);
+ return{age:age,us:us,pairs:pairs,g:g,gS:Math.min(g,sark),gA:Math.max(0,g-sark),sark:sark,gifts:g*pairs,T:T,U:T*us,rest:Math.max(0,f.B-T),cap:cap}}
+function scFam(al,o,f,pl){f=Object.assign({},f,{gift:pl.g});
  var H=o.H,rows=[];
  for(var y=1;y<=H;y++){var g=0,ft=0,tx=0;al.forEach(function(x){var d=scDiv(x.s,x.a,y,o);g+=d;ft+=d*x.s.fe;tx+=d*(1-x.s.etr)*(o.tmi+SC_PS)});rows.push({y:y,gross:g,ft:ft,tax:tx,net:g-ft-tx})}
  var V=al.reduce(function(a,x){return a+scSale(x.s,x.a,H,o)},0),abat=100000,per=V/(f.nP*f.nE),dr=scDroits(Math.max(0,per-abat))*f.nP*f.nE;
@@ -1641,7 +1644,7 @@ function fmtM(m){return (m>=1000?(m/1000).toFixed(1).replace('.',',')+' Md€':M
 
 /* ===== SIMULATEUR SCPI : interface ===== */
 var SC_DATE='Panorama Stellium (distributions 2025)';
-var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,otherRF:false,touched:false},npD:[5,10],npSale:false,usuD:[5,10],isCo:null,is:25,fiche:{},fam:{nP:2,ages:[60,60],nE:1,abt:false,gift:31865,cmp:false,hSet:false}};
+var SC={sel:[],A:100000,mode:'cash',tmi:0.30,H:15,gp:1,gd:1,cr:{years:20,rate:null,ins:0.30,apport:0,fees:1.5,diff:0,otherRF:false,touched:false},npD:[5,10],npSale:false,usuD:[5,10],isCo:null,is:25,fiche:{},fam:{nP:2,ages:[60,60],nE:1,B:100000,H:28,cmp:false,hSet:false}};
 var SC_HELP={
  tri:['Le TRI, c’est quoi ?','Le taux de rendement interne résume en un seul pourcentage annuel tout ce que l’investissement a coûté et rapporté : la mise de départ, les loyers nets d’impôt, les mensualités éventuelles et la revente au bout de la durée choisie. C’est le meilleur moyen de comparer des solutions différentes entre elles.'],
  ret:['Valeur de retrait','C’est le prix auquel la SCPI rachète tes parts si tu revends. Elle est inférieure au prix d’achat car les frais de souscription sont retenus à la sortie : chez nous, tu ne les paies que si tu revends. Tant que tu gardes tes parts, 100 % de ton argent travaille.'],
@@ -1701,11 +1704,10 @@ function renderScpi(){
   var orf=el('label','sctg');orf.innerHTML='<input type="checkbox" id="scOrf"'+(SC.cr.otherRF?' checked':'')+'> Le client a d’autres revenus fonciers en France';mf.appendChild(orf);$('scOrf').onchange=function(){SC.cr.otherRF=this.checked;scDraw()};
   $('scCr').textContent=rates[SC.cr.years]!=null?'Taux indicatif du moment pour '+SC.cr.years+' ans, modifiable.':'Saisis le taux obtenu.';
  }else if(SC.mode==='fam'){
-  var F=SC.fam;if(!F.hSet){SC.H=Math.max(5,88-Math.min.apply(null,F.ages.slice(0,F.nP)));F.hSet=true}
+  var F=SC.fam;if(!F.hSet){F.H=Math.max(5,88-Math.min.apply(null,F.ages.slice(0,F.nP)));F.hSet=true}
   mf.innerHTML='<div class="scq" style="margin-top:12px">Les enfants achètent la <b>nue-propriété</b> avec l’argent donné par leurs parents ; les parents achètent l’<b>usufruit viager</b> et touchent les loyers à vie. Au décès, les enfants récupèrent la pleine propriété <b>sans droits de succession</b>. '+scI('fam')+'</div>'+
-   '<div class="sclab">Qui donne ?</div><div class="seg" id="scFp"></div><div id="scFa"></div>'+
+   '<div id="scFb"></div><div class="sclab">Qui donne ?</div><div class="seg" id="scFp"></div><div id="scFa"></div>'+
    '<div class="sclab">Nombre d’enfants</div><div class="seg" id="scFe"></div>'+
-   '<div class="sclab">Montant donné par parent et par enfant</div><div class="seg wrap" id="scFg"></div><div id="scFgv"></div>'+
    '<div id="scFh"></div><label class="sctg"><input type="checkbox" id="scFc"'+(F.cmp?' checked':'')+'> Comparer avec une succession classique</label>';
   $('scFp').innerHTML=[[1,'Un parent'],[2,'Les deux parents']].map(function(x){return '<button data-v="'+x[0]+'" aria-pressed="'+(F.nP===x[0])+'">'+x[1]+'</button>'}).join('');
   $$('#scFp button').forEach(function(x){x.onclick=function(){F.nP=+x.dataset.v;F.hSet=false;renderScpi()}});
@@ -1713,10 +1715,8 @@ function renderScpi(){
   bind(ag,'scfa',F.nP===2?['a0','a1']:['a0'],function(){F.ages=[ag.a0,ag.a1];scDraw()});
   $('scFe').innerHTML=[1,2,3,4].map(function(n){return '<button data-v="'+n+'" aria-pressed="'+(F.nE===n)+'">'+n+'</button>'}).join('');
   $$('#scFe button').forEach(function(x){x.onclick=function(){F.nE=+x.dataset.v;renderScpi()}});
-  $('scFg').innerHTML='<button data-v="0" aria-pressed="'+(!F.abt)+'">Don Sarkozy · 31 865 €</button><button data-v="1" aria-pressed="'+F.abt+'">Avec l’abattement de 100 000 €</button>';
-  $$('#scFg button').forEach(function(x){x.onclick=function(){F.abt=x.dataset.v==='1';F.gift=F.abt?Math.max(F.gift,60000):31865;renderScpi()}});
-  if(F.abt){$('scFgv').innerHTML=field('scfg','gift','Montant par parent et par enfant',F.gift,31865,131865,1000,'€')+'<div class="tiny">Jusqu’à 31 865 € en don Sarkozy, puis jusqu’à 100 000 € de plus avec l’abattement parent-enfant (s’il n’a pas été utilisé depuis 15 ans).</div>';bind(F,'scfg',['gift'],scDraw)}
-  $('scFh').innerHTML=field('scfh','H','Transmission estimée dans',SC.H,3,40,1,'ans');bind(SC,'scfh',['H'],scDraw);
+  $('scFb').innerHTML=field('scfb','B','Somme disponible des parents',F.B,10000,1000000,1000,'€')+'<div class="tiny">Avant les dons : l’outil répartit lui-même entre les dons aux enfants et l’usufruit des parents.</div>';bind(F,'scfb',['B'],scDraw);
+  $('scFh').innerHTML=field('scfh','H','Transmission estimée dans',F.H,3,40,1,'ans');bind(F,'scfh',['H'],scDraw);
   $('scFc').onchange=function(){F.cmp=this.checked;scDraw()};
  }else if(SC.mode==='np'||SC.mode==='usu'){
   if(SC.mode==='usu'&&SC.isCo!==true){
@@ -1743,7 +1743,7 @@ function scDraw(){
  var r=$('scRes');if(!r)return;r.innerHTML='';var sel=scSel();
  if(!sel.length){r.appendChild(el('div','card mut','Choisis au moins une SCPI pour lancer la simulation.'));return}
  if(SC.mode==='usu'&&SC.isCo!==true)return;
- if(SC.mode==='fam'){var fp0=scFamPlan(SC.fam);SC.famPlan=fp0;var o=scO();o.A=fp0.T;var al=scAlloc(sel,fp0.T)}else{var o=scO(),al=scAlloc(sel,SC.A)}
+ if(SC.mode==='fam'){var fp0=scFamPlan(SC.fam);SC.famPlan=fp0;var o=scO();o.A=fp0.T;o.H=SC.fam.H;var al=scAlloc(sel,fp0.T)}else{var o=scO(),al=scAlloc(sel,SC.A)}
  var out={o:o,al:al,mode:SC.mode};
  /* Répartition */
  var ca=el('div','card');ca.innerHTML='<div class="row sp"><b>Répartition</b><span class="tag">'+eur(o.A)+'</span></div>';
@@ -1830,12 +1830,16 @@ function scDrawUsu(r,al,o,out){
 }
 function scDrawFam(r,al,o,out){
  var F=SC.fam,P=SC.famPlan,f=scFam(al,o,F,P);out.fam={f:f,P:P,F:F};
- var old=F.ages.slice(0,F.nP).filter(function(a){return a>=80});
- if(old.length)r.appendChild(el('div','scwarn','Un parent a 80 ans ou plus : le don Sarkozy n’est plus possible. Seul l’abattement de 100 000 € (donation classique) reste utilisable.'));
- var res=el('div','res');res.innerHTML=kpi('Revenus nets des parents',eur(f.netY/12)+' /mois',true)+kpi('Les enfants versent (dons reçus)',eur(P.gifts))+kpi('Les parents versent (usufruit)',eur(P.U))+
+ if(!P.sark)r.appendChild(el('div','scwarn','Un parent a 80 ans ou plus : le don Sarkozy n’est plus possible. L’outil utilise uniquement l’abattement de 100 000 € (donation classique).'));
+ if(P.cap)r.appendChild(el('div','scwarn','Le montage est plafonné à '+eur(P.T)+' : les dons ne peuvent pas dépasser '+eur(P.sark+100000)+' par parent et par enfant sans droits. Il reste '+eur(P.rest)+' à placer autrement.'));
+ var sp=el('div','card');sp.innerHTML='<div class="row sp"><b>Ce que fait l’outil avec les '+eur(F.B)+'</b></div><table class="sct cmp"><tr><td>Dons aux enfants'+(P.pairs>1?' ('+P.pairs+' × '+eur(P.g)+')':'')+'</td><td><b>'+eur(P.gifts)+'</b></td></tr>'+
+  '<tr><td class="tiny">dont don Sarkozy, exonéré</td><td class="tiny">'+eur(P.gS*P.pairs)+'</td></tr>'+(P.gA>0?'<tr><td class="tiny">dont abattement de 100 000 €</td><td class="tiny">'+eur(P.gA*P.pairs)+'</td></tr>':'')+
+  '<tr><td>Usufruit viager gardé par les parents</td><td><b>'+eur(P.U)+'</b></td></tr>'+(P.rest>0?'<tr><td>Reste à placer autrement</td><td>'+eur(P.rest)+'</td></tr>':'')+'</table>'+
+  '<div class="tiny">Chaque don de '+eur(P.g)+' par parent et par enfant'+(P.gA>0?' utilise '+eur(P.gS)+' de don Sarkozy et '+eur(P.gA)+' d’abattement. Il faut le déclarer avant la souscription.':' reste dans le plafond du don Sarkozy, sans droits à payer.')+'</div>';r.appendChild(sp);
+ var res=el('div','res');res.innerHTML=kpi('Revenus nets des parents',eur(f.netY/12)+' /mois',true)+kpi('Les enfants paient (avec les dons)',eur(P.gifts))+kpi('Les parents versent (usufruit)',eur(P.U))+
   kpi('Parts achetées en tout',eur(P.T))+kpi('Les enfants récupèrent dans '+o.H+' ans',eur(f.V),false,'ret')+kpi('Droits de succession sur ces parts','0 €');r.appendChild(res);
  r.appendChild(el('div','tiny','Usufruit viager : '+pc(P.us,0)+' du prix, nue-propriété : '+pc(1-P.us,0)+' (barème fiscal, parent le plus jeune : '+P.age+' ans). Valeur reçue estimée à la valeur de retrait.'));
- r.appendChild(scClear([(F.nP===2?'Les deux parents donnent':'Le parent donne')+' <b>'+eur(F.gift)+'</b> à '+(F.nE>1?'chacun des '+F.nE+' enfants':'l’enfant')+', soit <b>'+eur(P.gifts)+'</b>'+(F.gift<=31865?', sans aucun droit à payer (don Sarkozy)':'')+'.',
+ r.appendChild(scClear(['Sur les <b>'+eur(F.B)+'</b> disponibles, '+(F.nP===2?'chaque parent donne':'le parent donne')+' <b>'+eur(P.g)+'</b> à '+(F.nE>1?'chacun des '+F.nE+' enfants':'l’enfant')+', soit <b>'+eur(P.gifts)+'</b> au total, sans droits à payer.',
   'Avec cet argent, '+(F.nE>1?'les enfants achètent':'l’enfant achète')+' la nue-propriété ; les parents ajoutent <b>'+eur(P.U)+'</b> pour l’usufruit. Au total, <b>'+eur(P.T)+'</b> de parts.',
   'Les parents touchent <b>tous les loyers à vie</b> : environ <b>'+eur(f.netY/12)+' net par mois</b>.',
   'Au décès, l’usufruit s’éteint : '+(F.nE>1?'les enfants deviennent':'l’enfant devient')+' plein propriétaire de parts estimées à <b>'+eur(f.V)+'</b>, <b>sans droits de succession</b> '+scI('fam')+'.']));
@@ -1843,7 +1847,7 @@ function scDrawFam(r,al,o,out){
   c.innerHTML='<div class="row sp"><b>Et sans ce montage ?</b><span class="tag">dans '+o.H+' ans</span></div><p class="mut" style="margin:6px 0 10px">Les parents placent eux-mêmes les '+eur(P.T)+' et touchent les mêmes loyers. À leur décès, '+(F.nE>1?'les enfants héritent':'l’enfant hérite')+' des parts et paie'+(F.nE>1?'nt':'')+' des droits de succession.</p>'+
    '<div class="scbar alt"><span>Succession classique</span><div><i style="width:100%"></i></div><b>'+eur(f.droits)+'</b></div><div class="scbar"><span>Parent / enfant</span><div><i style="width:0"></i></div><b>0 €</b></div>'+
    '<p style="margin-top:10px">'+(f.droits>0?'Le montage fait économiser <b>'+eur(f.droits)+'</b> de droits de succession.':'Ici, les abattements suffiraient à couvrir la succession : l’intérêt du montage est surtout de transmettre dès maintenant et de préserver les abattements pour le reste du patrimoine.')+'</p>'+
-   '<div class="tiny">Droits calculés au barème en ligne directe, après un abattement de '+eur(f.abat)+' par parent et par enfant, en supposant qu’aucune autre donation n’a été faite dans les 15 dernières années et que le reste du patrimoine ne consomme pas ces abattements.'+(F.gift>31865?' Attention : le montage utilise déjà '+eur(F.gift-31865)+' de cet abattement par parent et par enfant.':'')+'</div>';r.appendChild(c)}
+   '<div class="tiny">Droits calculés au barème en ligne directe, après un abattement de '+eur(f.abat)+' par parent et par enfant, en supposant qu’aucune autre donation n’a été faite dans les 15 dernières années et que le reste du patrimoine ne consomme pas ces abattements.'+(P.gA>0?' Attention : le montage utilise déjà '+eur(P.gA)+' de cet abattement par parent et par enfant.':'')+'</div>';r.appendChild(c)}
  var ck=el('div','card');ck.innerHTML='<b>Les 4 conditions pour sécuriser le montage</b><ul class="scck"><li>Déclarer chaque don en ligne dans le mois (formulaire 2735), <b>avant</b> la souscription.</li><li>Indiquer l’origine des fonds (le don) dans le bulletin de souscription de l’enfant.</li><li>Souscrire plus de 3 mois avant un éventuel décès ; parent de moins de 80 ans, enfant majeur.</li><li>Ventiler le prix selon le barème fiscal (article 669) et vérifier que la SCPI accepte le démembrement viager. Faire valider par le notaire.</li></ul>';r.appendChild(ck);
 }
 function scDrawCmp(r,al,o,out){
@@ -1907,7 +1911,7 @@ async function scPdf(out){
   h2('Effort d’épargne net, année par année');tb(['Année','Loyers nets','Mensualités','Impôt France','Effort / mois','Capital restant'],cr.rows.slice(0,Math.max(o.cr.years,o.H)).map(function(x){return[x.y,eur(x.gross-x.ft),eur(x.pay),eur(x.tax),eur(x.eff),eur(x.bal)]}));
   if(out.vp){h2('Crédit ou versements programmés (même effort, '+out.vp.N+' ans)');tb(['Solution','Patrimoine au terme'],[['Avec le crédit',eur(out.vp.crVal)],['En versements programmés + réinvestissement',eur(out.vp.vpVal)]])}}
  if(out.np){h2('Nue-propriété');tb(['Durée','Tu paies','Tu récupères','Rendement / an'].concat(SC.npSale?['TRI si revente']:[]),out.np.map(function(x){return[x.d+' ans',eur(o.A),eur(x.full),pc(x.ry)].concat(SC.npSale?[pc(x.irr)]:[])}))}
- if(out.fam){var Z=out.fam;h2('Démembrement parent / enfant');tb(['Indicateur','Valeur'],[['Dons aux enfants',eur(Z.P.gifts)+' ('+Z.F.nP+' parent(s), '+Z.F.nE+' enfant(s), '+eur(Z.F.gift)+' chacun)'],['Nue-propriété (enfants)',pc(1-Z.P.us,0)+' · '+eur(Z.P.gifts)],['Usufruit viager (parents)',pc(Z.P.us,0)+' · '+eur(Z.P.U)],['Revenus nets des parents',eur(Z.f.netY/12)+' / mois'],['Valeur reçue par les enfants dans '+o.H+' ans',eur(Z.f.V)],['Droits de succession sur ces parts','0 €']].concat(Z.F.cmp?[['Droits sans le montage',eur(Z.f.droits)]]:[]));
+ if(out.fam){var Z=out.fam;h2('Démembrement parent / enfant');tb(['Indicateur','Valeur'],[['Somme disponible des parents',eur(Z.F.B)],['Dons aux enfants',eur(Z.P.gifts)+' ('+Z.F.nP+' parent(s), '+Z.F.nE+' enfant(s), '+eur(Z.P.g)+' chacun)'],['Nue-propriété (enfants)',pc(1-Z.P.us,0)+' · '+eur(Z.P.gifts)],['Usufruit viager (parents)',pc(Z.P.us,0)+' · '+eur(Z.P.U)],['Revenus nets des parents',eur(Z.f.netY/12)+' / mois'],['Valeur reçue par les enfants dans '+o.H+' ans',eur(Z.f.V)],['Droits de succession sur ces parts','0 €']].concat(Z.F.cmp?[['Droits sans le montage',eur(Z.f.droits)]]:[]));
   p('Conditions : don déclaré dans le mois (2735) avant la souscription ; origine des fonds indiquée au bulletin ; souscription plus de 3 mois avant un éventuel décès ; ventilation selon le barème de l’article 669 du CGI (parent le plus jeune : '+Z.P.age+' ans) ; validation par le notaire.',9)}
  if(out.usu){h2('Usufruit temporaire');tb(['Durée','Revenus nets d’IS','Gain net','TRI'],out.usu.map(function(x){return[x.d+' ans',eur(x.tot),eur(x.gain),pc(x.irr)]}))}
  if(out.cmp){h2('Comparaison des solutions');var m=out.cmp;tb(['','Comptant','Crédit'].concat(m.np?['Nue-prop. '+m.np.d+' ans']:[]),[['TRI net',pc(m.cash.irr),pc(m.cr.irr)].concat(m.np?[SC.npSale?pc(m.np.irr):'-']:[])].concat(m.np?[['Rendement sans revente','','',pc(m.np.ry)]]:[]))}
