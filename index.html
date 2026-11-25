@@ -1522,6 +1522,7 @@ function scIrr(fl){ /* fl : flux annuels, fl[0] = mise de départ (négative) */
  function npv(r){var s=0;for(var i=0;i<fl.length;i++)s+=fl[i]/Math.pow(1+r,i);return s}
  var lo=-0.99,hi=1,a=npv(lo),b=npv(hi);if(a*b>0)return null;
  for(var k=0;k<200;k++){var m=(lo+hi)/2,v=npv(m);if(Math.abs(v)<1e-7)return m;if(a*v<0){hi=m;b=v}else{lo=m;a=v}}return (lo+hi)/2}
+function scEur2(v){return v.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+'\u00a0€'}
 function scAlloc(sel,A){var k=sel.length;return sel.map(function(s){return{s:s,a:A/k}})}
 /* Fiscalité d'un euro de dividende brut pour une SCPI : part étrangère (impôt prélevé sur place, pas de PS), part France (TMI + PS) */
 function scNetRate(s,tmi){return 1-s.fe-(1-s.etr)*(tmi+SC_PS)}
@@ -1587,10 +1588,12 @@ function scVP(al,o,cr){
 /* --- Nue-propriété --- */
 function scNP(al,o,d){
  var ok=al.every(function(x){return x.s.np[d]!=null});if(!ok)return{d:d,missing:al.filter(function(x){return x.s.np[d]==null}).map(function(x){return x.s.n})};
- var full=0,sale=0,pv=0,stel=0;
- al.forEach(function(x){var k=x.s.np[d],parts=x.a/(x.s.prix*k);full+=parts*x.s.prix*Math.pow(1+o.gp,d);var v=parts*x.s.ret*Math.pow(1+o.gp,d);sale+=v;pv+=scPvTax(v-x.a,d);stel+=x.a*(Math.pow(1/k,1/d)-1)});
- var fl=[-o.A];for(var y=1;y<d;y++)fl.push(0);fl.push(sale-pv);
- return{d:d,full:full,sale:sale,pv:pv,irr:scIrr(fl),ry:Math.pow(full/o.A,1/d)-1,stel:stel/o.A,gain:full-o.A,disc:1-o.A/(full/Math.pow(1+o.gp,d))}
+ var full=0,sale=0,pv=0,stel=0,inv=0,lines=[];
+ /* parts entières : prix de la part en nue-propriété arrondi au centime, nombre de parts arrondi à l'inférieur pour ne pas dépasser le budget */
+ al.forEach(function(x){var k=x.s.np[d],pu=Math.round(x.s.prix*k*100)/100,parts=Math.max(1,Math.floor(x.a/pu+1e-9)),a=parts*pu;
+  lines.push({n:x.s.n,pu:pu,parts:parts,inv:a});inv+=a;full+=parts*x.s.prix*Math.pow(1+o.gp,d);var v=parts*x.s.ret*Math.pow(1+o.gp,d);sale+=v;pv+=scPvTax(v-a,d);stel+=a*(Math.pow(1/k,1/d)-1)});
+ var fl=[-inv];for(var y=1;y<d;y++)fl.push(0);fl.push(sale-pv);
+ return{d:d,inv:inv,lines:lines,full:full,sale:sale,pv:pv,irr:scIrr(fl),ry:Math.pow(full/inv,1/d)-1,stel:stel/inv,gain:full-inv,disc:1-inv/(full/Math.pow(1+o.gp,d))}
 }
 /* --- Usufruit temporaire (société à l'IS) --- */
 function scUsu(al,o,d){
@@ -1809,9 +1812,13 @@ function scDrawNP(r,al,o,out){
  var rs=ds.map(function(d){return scNP(al,o,d)}).filter(function(x){return !x.missing});out.np=rs;if(!rs.length)return;
  var best=rs.reduce(function(a,x){return x.ry>a.ry?x:a},rs[0]);out.npBest=best;
  var c=el('div','card');var t='<div class="row sp"><b>Nue-propriété : durée par durée '+scI('np')+'</b></div><table class="sct"><tr><th>Durée</th><th>Tu paies</th><th>Tu récupères</th><th>Rendement par an</th>'+(SC.npSale?'<th>TRI si revente '+scI('tri')+'</th>':'')+'</tr>';
- rs.forEach(function(x){t+='<tr'+(x===best&&rs.length>1?' class="best"':'')+'><td>'+x.d+' ans</td><td>'+eur(SC.A)+'</td><td>'+eur(x.full)+'</td><td><b>'+pc(x.ry)+'</b></td>'+(SC.npSale?'<td>'+pc(x.irr)+'</td>':'')+'</tr>'});
+ rs.forEach(function(x){t+='<tr'+(x===best&&rs.length>1?' class="best"':'')+'><td>'+x.d+' ans</td><td>'+scEur2(x.inv)+'</td><td>'+eur(x.full)+'</td><td><b>'+pc(x.ry)+'</b></td>'+(SC.npSale?'<td>'+pc(x.irr)+'</td>':'')+'</tr>'});
  c.innerHTML=t+'</table><div class="tiny">« Tu récupères » : valeur de la pleine propriété au prix de part revalorisé de '+pc(o.gp,1)+' par an. « Rendement par an » : ce que rapporte chaque année l’écart entre ce que tu paies et ce que tu récupères, sans revendre.'+(SC.npSale?' « TRI si revente » : si tu revendais au terme, à la valeur de retrait et après impôt sur la plus-value.':'')+'</div>';r.appendChild(c);
- r.appendChild(scClear(['Avec <b>'+eur(SC.A)+'</b>, tu achètes des parts qui vaudront <b>'+eur(best.full)+'</b> en pleine propriété dans '+best.d+' ans, sans rien avoir à faire.',
+ var bs=el('div','card'),bt='<div class="row sp"><b>Montant à inscrire sur le bulletin</b></div><table class="sct"><tr><th>SCPI</th><th>Durée</th><th>Prix de la part en NP</th><th>Parts</th><th>Montant</th></tr>';
+ rs.forEach(function(x){x.lines.forEach(function(l){bt+='<tr><td>'+esc(l.n)+'</td><td>'+x.d+' ans</td><td>'+scEur2(l.pu)+'</td><td>'+l.parts+'</td><td><b>'+scEur2(l.inv)+'</b></td></tr>'});
+  if(x.lines.length>1)bt+='<tr class="best"><td colspan="4"><b>Total '+x.d+' ans</b></td><td><b>'+scEur2(x.inv)+'</b></td></tr>'});
+ bs.innerHTML=bt+'</table><div class="tiny">On achète des parts entières : le nombre de parts est arrondi à l’inférieur pour rester dans ton budget de '+eur(SC.A)+'. Le prix de la part en nue-propriété est calculé avec la clé de répartition de chaque SCPI : vérifie-le sur le bulletin en vigueur.</div>';r.appendChild(bs);
+ r.appendChild(scClear(['Avec <b>'+scEur2(best.inv)+'</b>, tu achètes des parts qui vaudront <b>'+eur(best.full)+'</b> en pleine propriété dans '+best.d+' ans, sans rien avoir à faire.',
   'Pendant le démembrement : <b>aucun revenu, donc aucun impôt</b>, et la nue-propriété n’entre pas dans l’IFI.',
   rs.length>1?'Parmi les durées étudiées, <b>'+best.d+' ans</b> rapporte proportionnellement le plus : <b>'+pc(best.ry)+' par an</b> sans revendre.':'Sur '+best.d+' ans, ton placement rapporte <b>'+pc(best.ry)+' par an</b> sans revendre.']));
  r.appendChild(scChartCard('Rendement par an selon la durée',rs.map(function(x){return x.ry*100}),'Rendement annuel sans revente (%)',null,rs.map(function(x){return x.d+' a'}),true));
@@ -1854,7 +1861,7 @@ function scDrawCmp(r,al,o,out){
  var cash=out.cash||scCash(al,o),cr=out.credit||scCredit(al,o),av=scDurs().filter(function(d){return d<=o.H}),np=null;
  if(av.length){var x0=scNP(al,o,av[av.length-1]);if(!x0.missing)np=x0}
  var c=el('div','card');var t='<div class="row sp"><b>Comparer les solutions</b><span class="tag">'+eur(SC.A)+' · '+o.H+' ans</span></div><table class="sct cmp"><tr><th></th><th>Comptant</th><th>Crédit '+SC.cr.years+' ans</th>'+(np?'<th>Nue-prop. '+np.d+' ans</th>':'')+'</tr>';
- t+='<tr><td>Mise de départ</td><td>'+eur(SC.A)+'</td><td>'+eur(SC.cr.apport)+'</td>'+(np?'<td>'+eur(SC.A)+'</td>':'')+'</tr>';
+ t+='<tr><td>Mise de départ</td><td>'+eur(SC.A)+'</td><td>'+eur(SC.cr.apport)+'</td>'+(np?'<td>'+eur(np.inv)+'</td>':'')+'</tr>';
  t+='<tr><td>Chaque mois</td><td>+'+eur(cash.rows[Math.min(1,cash.rows.length-1)].net/12)+'</td><td>−'+eur(cr.effAvg)+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
  t+='<tr><td>Impôt pendant la période</td><td>'+eur(cash.rows.reduce(function(a,x){return a+x.tax+x.ft},0))+'</td><td>'+eur(cr.rows.slice(0,o.H).reduce(function(a,x){return a+x.tax+x.ft},0))+'</td>'+(np?'<td>0 €</td>':'')+'</tr>';
  t+='<tr><td>TRI net si revente</td><td><b>'+pc(cash.irr)+'</b></td><td><b>'+(cr.irr==null?'Autofinancé':pc(cr.irr))+'</b></td>'+(np?'<td>'+(SC.npSale?'<b>'+pc(np.irr)+'</b>':'—')+'</td>':'')+'</tr>';
@@ -1910,7 +1917,7 @@ async function scPdf(out){
  if(out.credit){h2('Résultats');var cr=out.credit;tb(['Indicateur','Valeur'],[['Montant emprunté',eur(cr.L)],['Mensualité (assurance incluse)',eur(cr.loan.m+cr.loan.mI)],['Effort d’épargne moyen',eur(cr.effAvg)+' / mois'],['Coût du crédit',eur(cr.totInt+cr.totIns)],['TRI net sur '+o.H+' ans',pc(cr.irr)]]);
   h2('Effort d’épargne net, année par année');tb(['Année','Loyers nets','Mensualités','Impôt France','Effort / mois','Capital restant'],cr.rows.slice(0,Math.max(o.cr.years,o.H)).map(function(x){return[x.y,eur(x.gross-x.ft),eur(x.pay),eur(x.tax),eur(x.eff),eur(x.bal)]}));
   if(out.vp){h2('Crédit ou versements programmés (même effort, '+out.vp.N+' ans)');tb(['Solution','Patrimoine au terme'],[['Avec le crédit',eur(out.vp.crVal)],['En versements programmés + réinvestissement',eur(out.vp.vpVal)]])}}
- if(out.np){h2('Nue-propriété');tb(['Durée','Tu paies','Tu récupères','Rendement / an'].concat(SC.npSale?['TRI si revente']:[]),out.np.map(function(x){return[x.d+' ans',eur(o.A),eur(x.full),pc(x.ry)].concat(SC.npSale?[pc(x.irr)]:[])}))}
+ if(out.np){h2('Nue-propriété');tb(['SCPI','Durée','Prix de la part en NP','Parts','Montant à souscrire'],[].concat.apply([],out.np.map(function(x){return x.lines.map(function(l){return[l.n,x.d+' ans',scEur2(l.pu),String(l.parts),scEur2(l.inv)]}).concat(x.lines.length>1?[['Total',x.d+' ans','','',scEur2(x.inv)]]:[])})));tb(['Durée','Tu paies','Tu récupères','Rendement / an'].concat(SC.npSale?['TRI si revente']:[]),out.np.map(function(x){return[x.d+' ans',scEur2(x.inv),eur(x.full),pc(x.ry)].concat(SC.npSale?[pc(x.irr)]:[])}))}
  if(out.fam){var Z=out.fam;h2('Démembrement parent / enfant');tb(['Indicateur','Valeur'],[['Somme disponible des parents',eur(Z.F.B)],['Dons aux enfants',eur(Z.P.gifts)+' ('+Z.F.nP+' parent(s), '+Z.F.nE+' enfant(s), '+eur(Z.P.g)+' chacun)'],['Nue-propriété (enfants)',pc(1-Z.P.us,0)+' · '+eur(Z.P.gifts)],['Usufruit viager (parents)',pc(Z.P.us,0)+' · '+eur(Z.P.U)],['Revenus nets des parents',eur(Z.f.netY/12)+' / mois'],['Valeur reçue par les enfants dans '+o.H+' ans',eur(Z.f.V)],['Droits de succession sur ces parts','0 €']].concat(Z.F.cmp?[['Droits sans le montage',eur(Z.f.droits)]]:[]));
   p('Conditions : don déclaré dans le mois (2735) avant la souscription ; origine des fonds indiquée au bulletin ; souscription plus de 3 mois avant un éventuel décès ; ventilation selon le barème de l’article 669 du CGI (parent le plus jeune : '+Z.P.age+' ans) ; validation par le notaire.',9)}
  if(out.usu){h2('Usufruit temporaire');tb(['Durée','Revenus nets d’IS','Gain net','TRI'],out.usu.map(function(x){return[x.d+' ans',eur(x.tot),eur(x.gain),pc(x.irr)]}))}
