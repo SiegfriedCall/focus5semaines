@@ -422,7 +422,16 @@ var CLOSE=['La semaine 2 est ouverte : une bonne série d’actions dès lundi e
 
 var sb=supabase.createClient(SB_URL,SB_KEY),$=function(i){return document.getElementById(i)};
 var me,tg,start,ratesDate,prefs={},data={},mine={},mode='day',day,wk=0,q=Promise.resolve(),timer,TODAY;
-var r1Timer=null;document.addEventListener('visibilitychange',function(){if(!document.hidden&&me&&TODAY===iso(new Date()))askTodayR1()});
+var r1Timer=null,hiddenAt=0;
+/* Rafraîchissement : l'app peut rester ouverte en arrière-plan plusieurs jours (iPhone). Si le jour a changé ou après 30 min d'absence, on recharge
+   pour repartir de données à jour (sinon les saisies iraient sur la veille). On attend la fin des enregistrements en cours. */
+function freshReload(){if(freshReload.on)return;freshReload.on=true;q.then(function(){location.reload()})}
+function idle(){var a=document.activeElement;return $('md').hidden&&!(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))}
+document.addEventListener('visibilitychange',function(){
+ if(document.hidden){hiddenAt=Date.now();return}
+ if(!me)return;if(TODAY!==iso(new Date())||(hiddenAt&&Date.now()-hiddenAt>18e5)){freshReload();return}
+ askTodayR1()});
+setInterval(function(){if(me&&!document.hidden&&TODAY!==iso(new Date())&&idle())freshReload()},60000);
 var agenda=[],exoW={},vaHist=[],goals={c1:0,c2:0,c3:0,skipped:false},exi=null,curTab='focus',exoReady=false;
 
 /* ===== Utilitaires ===== */
@@ -569,7 +578,7 @@ function goalR(){
  g.appendChild(el('div','mut','Se fixer un objectif te donne beaucoup plus de chances de passer à l’action. C’est facultatif.'));
  ['c1','c2','c3'].forEach(function(k){
   var c=C.filter(function(x){return x[0]===k})[0],n=(mine[TODAY]||{})[k]||0,t=goals[k]||0;
-  var row=el('div','goal'),lab=el('div');lab.innerHTML='<b>'+c[1]+'</b> <span class="mut">'+esc(c[2])+'</span>';
+  var lab=el('div');lab.innerHTML='<b>'+c[1]+'</b> <span class="mut">'+esc(c[2])+'</span>';
   var mid=el('div'),bar=el('div','gbar'+(t&&n>=t?' full':'')),f=el('i');f.style.width=t?Math.min(100,n/t*100)+'%':'0%';bar.appendChild(f);
   mid.appendChild(bar);mid.appendChild(el('div','tiny',t?n+' / '+t:'Pas d’objectif'));
   var st=el('div','gst'),m=el('button',0,'−'),p=el('button',0,'+');
@@ -789,8 +798,8 @@ function exoWeeks(){var r=exoRange(),a=mondayOf(r.s),b=mondayOf(TODAY<r.e?TODAY:
 function weekAuto(m){var r=exoRange(),n=0;span(m,7).forEach(function(d){if(d>=r.s&&d<=r.e&&mine[d])n+=mine[d].r1||0});return n}
 function weekLocked(m){return (m>=start&&add(m,6)<=lastDay())||runLocked(m)}
 
-function gaugeEl(vol,enc,thr){
- var on=thr>0,max=thr||1,vv=vol||0,has=on&&vol!==null,v=has?Math.min(1,vv/max):0,t=has?Math.min(1,(vv+enc)/max):0,A0=-120,SW=240;
+function gaugeEl(vol,enc,thr,prog){ /* vol : volume affiché sur le compteur ; prog : volume compté pour l'objectif (par défaut vol) */
+ var on=thr>0,max=thr||1,vv=vol||0,pv=prog===undefined||prog===null?vv:prog,has=on&&vol!==null,v=has?Math.min(1,pv/max):0,t=has?Math.min(1,(pv+enc)/max):0,A0=-120,SW=240;
  function P(f,r){var a=(A0+SW*f)*Math.PI/180;return[(100+r*Math.sin(a)).toFixed(2),(100-r*Math.cos(a)).toFixed(2)]}
  function arc(f0,f1,r,cls,w){if(f1-f0<=0.0005)return '';var p0=P(f0,r),p1=P(f1,r);return '<path class="'+cls+'" d="M'+p0[0]+' '+p0[1]+' A'+r+' '+r+' 0 '+(((f1-f0)*SW>180)?1:0)+' 1 '+p1[0]+' '+p1[1]+'" fill="none" stroke-width="'+w+'"/>'}
  function cp(n){return n>=1e6?(n/1e6).toLocaleString('fr-FR',{maximumFractionDigits:2})+' M€':Math.round(n/1e3)+' k€'}
@@ -798,7 +807,7 @@ function gaugeEl(vol,enc,thr){
   if(mj&&on){var q=P(f,52);tk+='<text x="'+q[0]+'" y="'+(+q[1]+3)+'" text-anchor="middle" class="gl">'+cp(thr*f)+'</text>'}}
  var d=el('div','gauge');
  d.innerHTML='<svg viewBox="0 0 200 150" role="img" aria-label="'+(on?'Compteur de progression vers l’objectif '+cp(thr):'Compteur : choisis un objectif')+'">'+arc(0,1,88,'gtr',9)+arc(0,v,88,'gvol',9)+arc(v,t,88,'genc',9)+tk+
-  '<text x="100" y="128" text-anchor="middle" class="gp">'+(has?Math.round(vv/max*100)+' %':'–')+'</text><text x="100" y="141" text-anchor="middle" class="gs">'+(on?'de l’objectif':'')+'</text>'+
+  '<text x="100" y="128" text-anchor="middle" class="gp">'+(has?Math.round(pv/max*100)+' %':'–')+'</text><text x="100" y="141" text-anchor="middle" class="gs">'+(on?'de l’objectif':'')+'</text>'+
   '<g class="needle" style="transform-origin:100px 100px;transform:rotate('+A0+'deg)"><polygon points="97.5,104 100,30 102.5,104"/><circle cx="100" cy="100" r="8"/><circle cx="100" cy="100" r="3" class="hub"/></g></svg>'+
   (on?'':'<div class="gnone">Choisis ton objectif pour activer le compteur</div>');
  function odo(label,cls,val){var w=el('div','odo '+cls),lb=el('div','olb');lb.innerHTML='<i></i>'+label;w.appendChild(lb);
@@ -899,7 +908,7 @@ function mjPts(r){if(!r)return 0;return Math.round(MJ.reduce(function(a,x){retur
 function fp(n){return Number(n).toLocaleString('fr-FR',{maximumFractionDigits:1})}
 async function loadMojo(){
  var r=await sb.from('mojo_profile').select('data').eq('user_id',me.id).maybeSingle();mp=(r.data&&r.data.data)||{};
- var g=exoRange(),q=await sb.from('mojo_days').select('day,data').eq('user_id',me.id).gte('day',add(g.s,-100));mdays={};(q.data||[]).forEach(function(x){mdays[x.day]=x.data||{}});
+ var g=exoRange(),qd=await sb.from('mojo_days').select('day,data').eq('user_id',me.id).gte('day',add(g.s,-100));mdays={};(qd.data||[]).forEach(function(x){mdays[x.day]=x.data||{}});
  try{await loadVa()}catch(e){}
 }
 function mpSave(){var row={user_id:me.id,data:mp,updated_at:new Date().toISOString()};queue(function(){return sb.from('mojo_profile').upsert(row,{onConflict:'user_id'}).then(function(e){err(e,'Réglage MOJO non enregistré')})})}
@@ -920,11 +929,11 @@ function mjPeriod(){if(mp.rhythm==='90'&&mp.run_start)return{s:mp.run_start,e:ad
 function mjWeekObj(){return (MJW[mp.rhythm==='90'?'90':'std']||MJW.std)[mp.activity==='da'?'da':'tp']}
 function mjWeekPts(m){return Math.round(span(m,7).reduce(function(a,d){return a+mjPts(mdays[d])},0)*10)/10}
 function mjCatPts(days,c){return Math.round(days.reduce(function(a,d){var r=mdays[d];if(!r)return a;return a+MJ.reduce(function(s,x){return s+(x[1]===c?(Number(r[x[0]])||0)*x[3]:0)},0)},0)*10)/10}
-function mjGoal(){ /* {thr, vol, enc, label} */
+function mjGoal(){ /* {thr, vol : volume saisi, prog : volume compté pour l'objectif, enc, label} */
  var last=vaHist[0],vol=last?Number(last.volume):null,enc=last?Number(last.encours):0;
- if(mp.rhythm==='90'){var thr=Number(mp.goal_eur)||0;if(vol!==null)vol=Math.max(0,vol-(Number(mp.base_vol)||0));return{thr:thr,vol:vol,enc:enc,label:thr?eur(thr)+' sur 90 jours':'Aucun montant'}}
- if(mp.goal_type==='eur'){var t=Number(mp.goal_eur)||0;return{thr:t,vol:vol,enc:enc,label:t?eur(t)+' sur l’exercice':'Aucun montant'}}
- var oi=prefs.objective;return{thr:oi!=null?OBJ[oi][1]:0,vol:vol,enc:enc,label:oi!=null?OBJ[oi][0]:'Aucun palier'}}
+ if(mp.rhythm==='90'){var thr=Number(mp.goal_eur)||0,pg=vol===null?null:Math.max(0,vol-(Number(mp.base_vol)||0));return{thr:thr,vol:vol,prog:pg,enc:enc,label:thr?eur(thr)+' sur 90 jours':'Aucun montant'}}
+ if(mp.goal_type==='eur'){var t=Number(mp.goal_eur)||0;return{thr:t,vol:vol,prog:vol,enc:enc,label:t?eur(t)+' sur l’exercice':'Aucun montant'}}
+ var oi=prefs.objective;return{thr:oi!=null?OBJ[oi][1]:0,vol:vol,prog:vol,enc:enc,label:oi!=null?OBJ[oi][0]:'Aucun palier'}}
 function mjRew(){return (mp.reward||'').trim()}
 /* R1 de l'exercice : avant le démarrage MOJO, comptage historique ; ensuite, R1 saisis dans MOJO */
 function mjWeekR1(m){var s=mp.start_day||TODAY,n=0,g=exoRange();span(m,7).forEach(function(d){if(d<g.s||d>g.e)return;n+=d<s?((mine[d]&&mine[d].r1)||0):(Number((mdays[d]||{}).r1)||0)});return n+(exoW[m]||0)}
@@ -974,10 +983,10 @@ async function mjMessages(){
   if(w<o){var r=Math.ceil(o-w),pl=r>40?'chaque jour, vendredi et samedi : '+mjPlan(Math.ceil(r/2)):mjPlan(r);var t=fill(mjPick(MJ_FRI),{r:r,w:fp(w),o:o,plan:pl,first:pl.split(',')[0].split(' et ')[0]});mpSave();
    await ask({badge:'⚡',title:'Vendredi : on finit fort',paras:[t,'Le dimanche, on souffle : tout se joue aujourd’hui et demain.'],buttons:[{t:'J’y vais',cls:'p',v:1}]})}else mpSave()}
  /* objectif de volume d'affaires */
- var g=mjGoal();if(!g.thr||g.vol===null)return;var rec=mjRew()||'ta récompense',p=g.vol/g.thr;
+ var g=mjGoal();if(!g.thr||g.prog===null)return;var rec=mjRew()||'ta récompense',p=g.prog/g.thr;
  if(p>=1){if(!mp.shown.win||mp.shown.win<P.s){mp.shown.win=TODAY;var t2=fill(mjPick(MJ_WIN),{rec:rec});mpSave();await ask({badge:'🏆',title:'Objectif atteint',paras:[t2],buttons:[{t:'Merci !',cls:'p',v:1}]})}return}
  var j=Math.round((Date.parse(P.e)-Date.parse(TODAY))/864e5)+1,win=mp.rhythm==='90'?14:30;
- if(j<=win&&p>=0.7&&mp.shown.end!==mon){mp.shown.end=mon;var t3=fill(mjPick(MJ_END),{j:j,m:eur(g.thr-g.vol),rec:rec,p:Math.floor(p*100)});mpSave();
+ if(j<=win&&p>=0.7&&mp.shown.end!==mon){mp.shown.end=mon;var t3=fill(mjPick(MJ_END),{j:j,m:eur(g.thr-g.prog),rec:rec,p:Math.floor(p*100)});mpSave();
   await ask({badge:'🎯',title:'La ligne d’arrivée approche',paras:[t3],buttons:[{t:'Je fonce',cls:'p',v:1}]})}
 }
 
@@ -1102,11 +1111,12 @@ function mjR1Card(){
 function mjObjCard(){
  var c=$('mjObj');if(!c)return;c.innerHTML='';var g=mjGoal();
  var hh=el('div','row sp');hh.appendChild(el('h2','h','Mon objectif'));hh.lastChild.style.margin='0';hh.appendChild(el('span','tag',g.label));c.appendChild(hh);
- if(mp.rhythm==='90')c.appendChild(el('div','tiny','Volume compté depuis le début du 90 jours (point de départ : '+eur(Number(mp.base_vol)||0)+').'));
- c.appendChild(gaugeEl(g.vol,g.enc,g.thr));
+ c.appendChild(gaugeEl(g.vol,g.enc,g.thr,g.prog));
+ if(mp.rhythm==='90'&&g.vol!==null){var p9=el('p','mut');p9.style.textAlign='center';p9.innerHTML='Depuis le début du 90 jours : <b>+'+eur(g.prog)+'</b><br><small>Point de départ : '+eur(Number(mp.base_vol)||0)+' de volume d’affaires sur l’exercice</small>';c.appendChild(p9)}
  if(g.vol===null){var nv=el('p','mut','Aucun volume d’affaires renseigné.');nv.style.textAlign='center';c.appendChild(nv)}
+ if(vaHist[0]){var lu=el('div','tiny','Dernière mise à jour le '+dm(String(vaHist[0].created_at||vaHist[0].week).slice(0,10))+'.');lu.style.textAlign='center';c.appendChild(lu)}
  var rw=mjRew();if(rw){var rb=el('div','mjrew');rb.innerHTML='<span>🎁</span><div><small>Ce que tu t’offres à l’arrivée</small><b>'+esc(rw)+'</b></div>';c.appendChild(rb)}
- if(g.thr&&g.vol!==null&&g.vol<g.thr){var P=mjPeriod(),j=Math.max(0,Math.round((Date.parse(P.e)-Date.parse(TODAY))/864e5)+1);c.appendChild(el('p','mut','Il te reste '+eur(g.thr-g.vol)+' à aller chercher en '+j+' jours.')).style.textAlign='center'}
+ if(g.thr&&g.prog!==null&&g.prog<g.thr){var P=mjPeriod(),j=Math.max(0,Math.round((Date.parse(P.e)-Date.parse(TODAY))/864e5)+1);c.appendChild(el('p','mut','Il te reste '+eur(g.thr-g.prog)+' à aller chercher en '+j+' jours.')).style.textAlign='center'}
  var row=el('div','row');row.style.cssText='margin-top:12px;gap:8px;flex-wrap:wrap';
  var ub=el('button','btn p','Mettre à jour mon volume d’affaires');ub.onclick=async function(){await vaForm();mjObjCard();mjMessages()};
  var sb2=el('button','btn','Modifier mes réglages');sb2.onclick=function(){mjSetup(false)};row.appendChild(ub);row.appendChild(sb2);c.appendChild(row);
@@ -1874,7 +1884,8 @@ function scDraw(){
  var r=$('scRes');if(!r)return;r.innerHTML='';var sel=scSel();
  if(!sel.length){r.appendChild(el('div','card mut','Choisis au moins une SCPI pour lancer la simulation.'));return}
  if(SC.mode==='usu'&&SC.isCo!==true)return;
- if(SC.mode==='fam'){var fp0=scFamPlan(SC.fam);SC.famPlan=fp0;var o=scO();o.A=fp0.T;o.H=SC.fam.H;var al=scAlloc(sel,fp0.T)}else{var o=scO(),al=scAlloc(sel,SC.A);
+ var o=scO(),al;
+ if(SC.mode==='fam'){var fp0=scFamPlan(SC.fam);SC.famPlan=fp0;o.A=fp0.T;o.H=SC.fam.H;al=scAlloc(sel,fp0.T)}else{al=scAlloc(sel,SC.A);
   if(SC.mode==='cash'||SC.mode==='credit'){al=al.map(function(x){var n=scPartsN(x.a,x.s.prix,x.fl);return{s:x.s,a:n*x.s.prix,parts:n,fl:x.fl}});
    var sum=function(){return al.reduce(function(a,x){return a+x.a},0)};
    if(SC.w&&SC.w.auto&&al.length>1)al.forEach(function(x){var R=SC_RULES[x.s.n];if(!R)return;while(x.parts>1&&(x.a>R.max*sum()+1e-6||x.a>scCap(x.s.n)+1e-6)){x.parts--;x.a=x.parts*x.s.prix}});
@@ -1997,7 +2008,7 @@ function scDrawFam(r,al,o,out){
   'Avec cet argent, '+(F.nE>1?'les enfants achètent':'l’enfant achète')+' la nue-propriété ; les parents ajoutent <b>'+eur(P.U)+'</b> pour l’usufruit. Au total, <b>'+eur(P.T)+'</b> de parts.',
   'Les parents touchent <b>tous les loyers à vie</b> : environ <b>'+eur(f.netY/12)+' net par mois</b>.',
   'Au décès, l’usufruit s’éteint : '+(F.nE>1?'les enfants deviennent':'l’enfant devient')+' plein propriétaire de parts estimées à <b>'+eur(f.V)+'</b>, <b>sans droits de succession</b> '+scI('fam')+'.']));
- if(F.cmp){var c=el('div','card');var mx=Math.max(f.droits,1);
+ if(F.cmp){var c=el('div','card');
   c.innerHTML='<div class="row sp"><b>Et sans ce montage ?</b><span class="tag">dans '+o.H+' ans</span></div><p class="mut" style="margin:6px 0 10px">Les parents placent eux-mêmes les '+eur(P.T)+' et touchent les mêmes loyers. À leur décès, '+(F.nE>1?'les enfants héritent':'l’enfant hérite')+' des parts et paie'+(F.nE>1?'nt':'')+' des droits de succession.</p>'+
    '<div class="scbar alt"><span>Succession classique</span><div><i style="width:100%"></i></div><b>'+eur(f.droits)+'</b></div><div class="scbar"><span>Parent / enfant</span><div><i style="width:0"></i></div><b>0 €</b></div>'+
    '<p style="margin-top:10px">'+(f.droits>0?'Le montage fait économiser <b>'+eur(f.droits)+'</b> de droits de succession.':'Ici, les abattements suffiraient à couvrir la succession : l’intérêt du montage est surtout de transmettre dès maintenant et de préserver les abattements pour le reste du patrimoine.')+'</p>'+
