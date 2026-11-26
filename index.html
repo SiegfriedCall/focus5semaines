@@ -268,6 +268,7 @@ table.rg{width:100%;border-collapse:collapse}.rg th,.rg td{padding:7px 2px;font-
 <!-- MON EXERCICE -->
 <section id="exo" class="stack" hidden></section>
 <section id="run" class="stack" hidden></section>
+<div id="topSlot" class="stack" style="margin-top:14px" hidden></div>
 
 <!-- OUTILS -->
 <section id="outils" class="stack" hidden>
@@ -511,10 +512,14 @@ async function reloadMine(){mine=await loadCounts(me.id);if(tg&&tg.id===me.id)da
 /* ===== Onglets ===== */
 function setupTabs(){var isA=me.role==='admin',sd=!isA&&defiEligible();$('tabTeam').hidden=!isA;$('tabRun').hidden=!(isA||me.run90||(mojoOn()&&mp&&mp.rhythm==='90'));$('tabDefis').hidden=!sd;$('defiDot').hidden=true;$('defiBack').hidden=isA||!((prefs.defi_no&&!dst)||(defiRecent()&&dst.choice==='no'));
  $('tabs').style.gridTemplateColumns='repeat('+(3+(isA?2:0)+(sd?1:0))+',1fr)'}
+var topHome=null;function topPlace(t){ /* le top 5 du Focus s'affiche aussi en bas de Mon exercice et de 90 jours */
+ var c=$('topCard'),sl=$('topSlot');if(!c||!sl)return;if(!topHome)topHome={p:c.parentNode,n:c.nextSibling};
+ var away=t==='exo'||t==='run';if(away){if(c.parentNode!==sl)sl.appendChild(c)}else if(c.parentNode!==topHome.p)topHome.p.insertBefore(c,topHome.n);sl.hidden=!away}
 function showTab(t){
  curTab=t;try{localStorage.setItem('f5_tab',t)}catch(e){}
  $$('.tab').forEach(function(b){b.setAttribute('aria-selected',b.dataset.tab===t)});
  ['focus','exo','outils','defis','team','run'].forEach(function(id){$(id).hidden=id!==t});
+ topPlace(t);
  document.body.classList.toggle('tools',t==='outils');
  window.scrollTo({top:0});
  if(t==='exo')exoOpen();
@@ -662,7 +667,7 @@ async function focusIntro(save){
 async function exoOpen(){
  if(!prefs.seen_exo){
   var v=await ask({badge:'📅',title:'Mon exercice',paras:[
-   'Cet onglet est personnel : il te suit toute l’année, du 1er août au 31 juillet. Il n’y a pas de classement, seuls tes chiffres comptent.',
+   'Cet onglet est personnel : il te suit toute l’année, du 1er août au 31 juillet. Tes chiffres restent personnels ; en bas de l’onglet, tu retrouves le top 5 des consultants du Focus.',
    'Tu y notes tes R1 par semaine (avec le numéro de semaine et les dates), ton volume d’affaires et ton encours, et tu choisis ton objectif : Senior, Major, Expert, Double Expert ou Triple Expert.',
    'Les R1 du Focus 5 semaines sont repris automatiquement : tu notes seulement ceux réalisés en dehors.',
    'Ces données ne sont visibles que par toi et ne sont partagées avec personne. C’est facultatif.'],
